@@ -7,7 +7,6 @@ import urllib3
 import ipaddress
 import os
 import re
-import app_config
 import logging
 import logging.handlers
 import sqlite3
@@ -38,6 +37,7 @@ def viptela_deploy(gns3_server_data):
     isp_2_overall = []
     vedge_nodes = []
     vmanage_root_cert = ""
+    configure_mgmt_tap = 0
     # endregion
 
     # region Runtime
@@ -158,7 +158,7 @@ def viptela_deploy(gns3_server_data):
     gns3_connect_nodes(gns3_server_data, new_project_id, cloud_isp_node_id, 1, 0, vmanage_node_id, 1, 0)
     gns3_connect_nodes(gns3_server_data, new_project_id, cloud_isp_node_id, 2, 0, vsmart_node_id, 1, 0)
     gns3_connect_nodes(gns3_server_data, new_project_id, cloud_isp_node_id, 3, 0, vbond_node_id, 1, 0)
-    if app_config.configure_mgmt_tap == 1:
+    if configure_mgmt_tap == 1:
         gns3_connect_nodes(gns3_server_data, new_project_id, cloud_node_id, 0, mgmt_tap_interface,
                            mgmt_main_switch_node_id, 0, 0)
     gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, 1, vmanage_node_id, 0, 0)

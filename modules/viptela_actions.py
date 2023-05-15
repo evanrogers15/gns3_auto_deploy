@@ -7,7 +7,6 @@ import urllib3
 import ipaddress
 import os
 import re
-import app_config
 import logging
 import logging.handlers
 import sqlite3
