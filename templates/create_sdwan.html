@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create GNS3 Project</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .form-container {
+        width: 300px; /* Adjust the width as desired */
+        }
+
+        .form-container form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-container form label {
+            margin-bottom: 5px;
+        }
+
+        .form-container form input[type="text"] {
+            margin-bottom: 10px;
+        }
+        #log-box {
+            height: 300px;
+            overflow-y: scroll;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background-color: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: #888;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #555;
+        }
+    </style>
+    <script>
+        function submitForm() {
+            var server_ip = document.getElementById("server_ip").value;
+            var server_port = document.getElementById("server_port").value;
+            var project_name = document.getElementById("project_name").value;
+            var vmanage_api_ip = document.getElementById("vmanage_api_ip").value;
+            var site_count = document.getElementById("site_count").value;
+            var tap_name = document.getElementById("tap_name").value;
+            var use_tap = document.getElementById("use_tap").value;
+
+            var xhr = new XMLHttpRequest();
+            var url = "/api/create_project";
+            xhr.open("POST", url, true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    alert(xhr.responseText);
+                }
+            };
+
+            var data = JSON.stringify({
+                "server_ip": server_ip,
+                "server_port": server_port,
+                "project_name": project_name,
+                "vmanage_api_ip": vmanage_api_ip,
+                "site_count": site_count,
+                "tap_name": tap_name,
+                "use_tap": use_tap
+            });
+
+            xhr.send(data);
+        }
+        // Function to fetch log content from the server and update the log-box div
+        function updateLogContent() {
+            $.ajax({
+                url: "/api/get_log_content",
+                method: "GET",
+                success: function(response) {
+                    var logEntries = response.split('\n').reverse();
+                    var formattedContent = "";
+                    for (var i = 0; i < logEntries.length; i++) {
+                        formattedContent += "<p>" + logEntries[i] + "</p>";
+                    }
+                    $("#log-box").html(formattedContent);
+                },
+                error: function(xhr, status, error) {
+                    console.error(error);
+                }
+            });
+        }
+
+        // Refresh the log content every 5 seconds
+        setInterval(function() {
+            updateLogContent();
+        }, 5000);
+    </script>
+</head>
+<body>
+    <h1>Deploy Viptela SDWAN GNS3 Lab</h1>
+    <div class="form-container">
+        <form>
+            <label for="server_ip">Server IP:</label>
+            <select id="server_ip" name="server_ip">
+            <option value="100.101.213.21">boot-pod1-4-sdwan-server</option>
+            <option value="100.92.8.44">er-test-lab-02</option>
+            </select>
+
+            <label for="server_port">Server Port:</label>
+            <select id="server_port" name="server_port">
+            <option value="80">80</option>
+            <option value="3080">3080</option>
+            </select>
+
+            <label for="project_name">Project Name:</label>
+            <input type="text" id="project_name" name="project_name">
+
+            <label for="vmanage_api_ip">vManage API IP:</label>
+            <select id="vmanage_api_ip" name="use_tap">
+            <option value="172.16.2.2">Local</option>
+            <option value=server_ip>Remote</option>
+            </select>
+
+            <label for="site_count">Site Count:</label>
+            <input type="text" id="site_count" name="site_count">
+
+            <label for="tap_name">Tap Interface Name:</label>
+            <input type="text" id="tap_name" name="tap_name">
+
+            <label for="use_tap">Use Tap:</label>
+            <select id="use_tap" name="use_tap">
+            <option value="1">Yes</option>
+            <option value="0">No</option>
+            </select>
+
+            <input type="button" value="Submit" onclick="submitForm()">
+        </form>
+    </div>
+
+    <h1>Deployment Log</h1>
+    <div id="log-box">
+        {% for entry in log_content.split('\n')|reverse %}
+        <p>{{ entry }}</p>
+        {% endfor %}
+    </div>
+</body>
+</html>

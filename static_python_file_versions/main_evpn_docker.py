@@ -428,19 +428,35 @@ def main():
         else:
             return []
 
-    def gns3_get_location_data():
+    def gns3_get_location_data(item_type):
+        new_project_id = gns3_get_project_id(project_name)
         for server_record in gns3_server_data:
             server_ip, server_port = server_record['GNS3 Server'], server_record['Server Port']
-            url = f"http://{server_ip}:{server_port}/v2/projects/{new_project_id}/drawings"
+            url = f"http://{server_ip}:{server_port}/v2/projects/{new_project_id}/{item_type}"
             response = requests.get(url)
             data = json.loads(response.text)
             nodes = []
-            for node in data:
-                svg = node['svg']
-                x = node['x']
-                y = node['y']
-                z = node['z']
-                nodes.append({'svg': svg, 'x': x, 'y': y, 'z': z})
+            if item_type == 'nodes':
+                for node in data:
+                    name = node['name']
+                    x = node['x']
+                    y = node['y']
+                    z = node['z']
+                    nodes.append({'name': name, 'x': x, 'y': y, 'z': z})
+            elif item_type == 'drawings':
+                for node in data:
+                    svg = node['svg']
+                    x = node['x']
+                    y = node['y']
+                    z = node['z']
+                    nodes.append({'svg': svg, 'x': x, 'y': y, 'z': z})
+            location_data = nodes
+            drawing_data = {}
+            for i, item_data in enumerate(location_data):
+                drawing_key = f"drawing_{i + 1:02}"
+                drawing_data[drawing_key] = item_data
+
+            print("\n".join([f'"{k}": {json.dumps(v, separators=(",", ":"))},' for k, v in drawing_data.items()]))
             return nodes
 
     def gns3_find_nodes_by_field(search_field, return_field, search_string):
@@ -857,20 +873,45 @@ def main():
         #gns3_actions_upload_images()
 
         new_project_id = gns3_get_project_id(project_name)
-        gns3_delete_all_drawings(new_project_id)
-        #location_data = gns3_get_location_data()
-        #drawing_data = {}
-        #for i, item_data in enumerate(location_data):
-        #    drawing_key = f"drawing_{i + 1:02}"  # e.g., drawing_01, drawing_02, etc.
-        #    drawing_data[drawing_key] = item_data
+        gns3_get_location_data('nodes')
+        sys.exit()
 
-        #print("\n".join([json.dumps({k:v}, separators=(",", ":")) for k,v in drawing_data.items()]))
-        #output = "\n".join([f'"{k}": {json.dumps(v, separators=(",", ":"))},' for k,v in drawing_data.items()])
-
-        drawing_index = 1
-        for drawing_data in drawing_deploy_data:
-            gns3_create_drawing(new_project_id, drawing_deploy_data[f'drawing_{drawing_index:02}'])
-            drawing_index += 1
+        # region Configure
+        server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
+        for server_ip in server_ips:
+            arista_nodes = f'arista-'
+            client_nodes = gns3_find_nodes_by_name(arista_nodes)
+            abs_path = os.path.abspath(__file__)
+            configs_path = os.path.join(os.path.dirname(abs_path), 'configs/arista')
+            if client_nodes:
+                for client_node in client_nodes:
+                    client_node_id, client_console_port, client_aux = client_node
+                    temp_node_name = gns3_find_nodes_by_field('node_id', 'name', client_node_id)
+                    temp_file = 'arista_update'
+                    file_name = os.path.join(configs_path, temp_file)
+                    tn = telnetlib.Telnet(server_ip, client_aux)
+                    print(f"[{util_current_time()}] - Starting Configuration Deploy to {temp_node_name[0]}")
+                    tn.write(b"\r\n")
+                    tn.read_until(b"#")
+                    tn.write(b"Cli\n")
+                    tn.read_until(b">")
+                    tn.write(b"enable\n")
+                    tn.read_until(b"#")
+                    tn.write(b"conf t\n")
+                    tn.read_until(b"#")
+                    with open(file_name, 'r') as f:
+                        lines = f.readlines()
+                        print(
+                            f"[{util_current_time()}] - Sending configuration commands to {temp_node_name[0]}")
+                        for line in lines:
+                            formatted_line = line.format(
+                            )
+                            tn.write(formatted_line.encode('ascii') + b"\n")
+                            tn.read_until(b"#")
+                    tn.write(b"wr mem\n")
+                    tn.read_until(b"Copy completed successfully.")
+                    time.sleep(2)
+        # endregion
         sys.exit()
     if cleanup_gns3 == 1:
         gns3_delete_project(project_name)
@@ -906,6 +947,12 @@ def main():
         #generate_arista_interfaces_file(client_filename, temp_ip)
         #gns3_upload_file_to_node(new_project_id, node_id, client_node_file_path, client_filename)
     gns3_start_all_nodes(new_project_id)
+    # endregion
+    # region Create GNS3 Drawings
+    drawing_index = 1
+    for drawing_data in drawing_deploy_data:
+        gns3_create_drawing(new_project_id, drawing_deploy_data[f'drawing_{drawing_index:02}'])
+        drawing_index += 1
     # endregion
     # region Connect Nodes
     if app_config.configure_mgmt_tap == 1:
@@ -1023,12 +1070,7 @@ def main():
             gns3_start_node(client_node_id)
             v += 1
     # endregion
-    # region Create GNS3 Drawings
-    drawing_index = 1
-    for drawing_data in drawing_deploy_data:
-        gns3_create_drawing(new_project_id, drawing_deploy_data[f'drawing_{drawing_index:02}'])
-        drawing_index += 1
-    # endregion
+
     end_time = time.time()
     total_time = (end_time - start_time) / 60
     print(f"Total time for GNS3 Lab Deployment for project {project_name} deployment: {total_time:.2f} minutes")

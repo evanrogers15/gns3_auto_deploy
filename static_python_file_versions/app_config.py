@@ -1,17 +1,16 @@
 # Deployment Settings
-project_name = "viptela_sdwan_lab"
-vedge_count = 10
+project_name = "arista_deploy"
+vedge_count = 0
 client_every = 1
-configure_mgmt_tap = 1
+configure_mgmt_tap = 0
 tap_name = 'tap1'
 mgmt_network_address = '172.16.3.'
 
 # Controls -- Set desired action value to 1
-deploy_new_gns3_project = 0
+deploy_new_gns3_project = 1
 use_existing_gns3_project = 0
 cleanup_gns3 = 0
-test_lab = 1
-
+test_lab = 0
 
 # region GNS3 Server Definition
 er_test_lab_02 = [
@@ -70,7 +69,7 @@ er_test_01 = [
 ]
 
 # endregion
-gns3_server_data = ss_lab_gns3_01
+gns3_server_data = er_test_01
 
 # region City Data
 city_data = {
