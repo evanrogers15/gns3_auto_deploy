@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, abort, make_response, request, render_template
 import sqlite3
-from modules_old.use_cases import use_case_1, use_case_3, use_case_4, use_case_4_sim_user
+from modules.use_cases import use_case_1, use_case_3, use_case_4, use_case_4_sim_user
 from modules.gns3_query import get_projects, get_computes_name
 from modules.gns3_actions import reset_lab_client_states
 import json
