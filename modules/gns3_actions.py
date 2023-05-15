@@ -82,6 +82,12 @@ def gns3_create_project(gns3_server_data):
         project_id = node_response["project_id"]
         return project_id
 
+def gns3_create_project_static(server_ip, server_port, project_name):
+    template_data = {"name": project_name}
+    node_url = f"http://{server_ip}:{server_port}/v2/projects"
+    node_response = make_request("POST", node_url, data=template_data)
+    project_id = node_response["project_id"]
+    return project_id
 
 def gns3_create_project_test():
     for server_record in gns3_server_data:

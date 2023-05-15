@@ -55,11 +55,14 @@ def update_config():
     new_project_name = req_data.get('project_name')
     vmanage_api_ip = req_data.get('vmanage_api_ip')
     site_count = req_data.get('site_count')
+    tap_name = req_data.get('tap_name')
+
     projects = get_projects(server_ip, server_port)
     server_name = get_computes_name(server_ip, server_port)
     project_ids = [project['project_id'] for project in projects]
     if new_project_name not in [project['name'] for project in projects]:
-        gns3_create_project()
+        gns3_create_project_static(server_ip, server_port, new_project_name)
+        projects = get_projects(server_ip, server_port)
     project_names = [project['name'] for project in projects]
     project_status = [project['status'] for project in projects]
     conn = sqlite3.connect(DB_PATH)
@@ -67,9 +70,9 @@ def update_config():
     c.execute("SELECT COUNT(*) FROM config WHERE server_ip=?", (server_ip,))
     row = c.fetchone()
     if row[0] == 0:
-        c.execute("INSERT INTO config (server_ip, server_port, server_name, project_list, project_name, project_status) VALUES (?, ?, ?, ?, ?, ?)", (server_ip, server_port, server_name, json.dumps(project_ids), json.dumps(project_names), json.dumps(project_status)))
+        c.execute("INSERT INTO config (server_ip, server_port, server_name, project_list, project_name, project_status, vmanage_api_ip, site_count, tap_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", (server_ip, server_port, server_name, json.dumps(project_ids), json.dumps(project_names), json.dumps(project_status), vmanage_api_ip, site_count, tap_name))
     else:
-        c.execute("UPDATE config SET server_port = ?, server_name = ?, project_list = ?, project_name = ?, project_status = ? WHERE server_ip = ?", (server_port, server_name, json.dumps(project_ids), json.dumps(project_names), json.dumps(project_status), server_ip))
+        c.execute("UPDATE config SET server_port = ?, server_name = ?, project_list = ?, project_name = ?, project_status = ? WHERE server_ip = ? WHERE vmanage_api_ip = ? WHERE site_count = ? WHERE tap_name = ?", (server_port, server_name, json.dumps(project_ids), json.dumps(project_names), json.dumps(project_status), server_ip, vmanage_api_ip, site_count, tap_name))
     # Insert data into the projects table if project_id is present
     if 'project_id' in req_data:
         project_id = req_data['project_id']
