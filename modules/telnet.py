@@ -2,7 +2,7 @@ import telnetlib
 import socket
 import time
 
-from modules.gns3_actions import restart_node
+from modules.gns3_actions_old import restart_node
 
 def is_node_responsive(host, port):
     try:

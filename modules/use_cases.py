@@ -1,6 +1,6 @@
 from modules.gns3_query import get_links, get_nodes, get_node_links, find_node_by_name
 from modules.gns3_actions_old import set_single_packet_filter, remove_single_packet_filter, set_suspend, change_node_state, reset_single_suspend
-from modules.telnet import  run_telnet_command
+from modules.telnet import run_telnet_command
 import time
 
 def use_case_1(server, port, project_id, state):
