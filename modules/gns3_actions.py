@@ -36,7 +36,7 @@ def make_request(method, url, data=None):
 
 def log_and_update_db(server_name=None, project_name=None, deployment_type=None, deployment_status=None, deployment_step=None, log_message=None):
     # Log the message using logging.info
-    logging.info(server_name, project_name, deployment_type, deployment_status, deployment_step, log_message)
+    logging.info(log_message)
 
     # Insert a new record into the deployments table
     conn = sqlite3.connect(db_path)
