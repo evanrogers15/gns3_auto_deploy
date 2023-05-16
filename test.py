@@ -1,10 +1,13 @@
+from selenium import webdriver
 
-#from modules.dependencies import *
-from modules.gns3_variables import *
-from modules.gns3_actions import *
-from modules.arista_evpn_deploy import *
+# Create a WebDriver instance (e.g., Chrome)
+driver = webdriver.Chrome()
 
-#test_project_id = gns3_create_project_test()
-#print(test_project_id)
+# Navigate to the desired website
+driver.get("http://100.92.8.44/static/web-ui/server/1/project/8c622e19-44aa-4703-9d46-b1a49399007b")
 
-evpn_deploy()
+# Capture a screenshot and save it as "screenshot.png"
+driver.save_screenshot("screenshot.png")
+
+# Close the WebDriver
+driver.quit()

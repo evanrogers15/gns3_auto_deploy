@@ -59,7 +59,7 @@ def update_config():
         use_tap = 1
     else:
         use_tap = 0
-    server_data = [{"GNS3 Server": server_ip, "Server Name": server_name, "Server Port": server_port, "vManage API IP": vmanage_api_ip, "Project Name": new_project_name, "Tap Name": tap_name, "Site Count": site_count, "Use Tap": use_tap}]
+    server_data = [{"GNS3 Server": server_ip, "Server Name": server_name, "Server Port": server_port, "vManage API IP": vmanage_api_ip, "Project Name": new_project_name, "Tap Name": tap_name, "Site Count": site_count, "Use Tap": use_tap, "Deployment Type": deployment_type, "Deployment Status": deployment_status, "Deployment Step": deployment_step}]
     project_ids = [project['project_id'] for project in projects]
     if new_project_name not in [project['name'] for project in projects]:
         project_id = gns3_create_project_static(server_ip, server_port, new_project_name)

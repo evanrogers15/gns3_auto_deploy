@@ -6,6 +6,10 @@ processes = {}
 
 db_path = 'gns3.db'
 
+deployment_type = ''
+deployment_status = ''
+deployment_step = ''
+
 # region Viptela Variables
 viptela_username = 'admin'
 viptela_old_password = "admin"

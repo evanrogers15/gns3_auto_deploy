@@ -39,7 +39,7 @@ def viptela_deploy():
     vmanage_root_cert = ""
     configure_mgmt_tap = 0
     deployment_type = 'viptela'
-    deployment_status = 'ok'
+    deployment_status = 'running'
     deployment_step = 'Starting'
     # endregion
     conn = sqlite3.connect(db_path)
@@ -81,9 +81,9 @@ def viptela_deploy():
     mgmt_switch_count = (vedge_count // 30) + 1
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
+    c.execute("DELETE FROM deployments")
     c.execute("SELECT COUNT(*) FROM deployments")
     count = c.fetchone()[0]
-
     if count == 0:
         # Perform initial insertion to populate the table
         c.execute(
@@ -1002,6 +1002,7 @@ def viptela_deploy():
     end_time = time.time()
     total_time = (end_time - start_time) / 60
     deployment_step = 'Complete'
-    log_and_update_db(server_name, project_name, deployment_type, 'Complete', deployment_step, f"Total time for GNS3 Lab Deployment with {vedge_count} vEdge Devices: {total_time:.2f} minutes")
+    deployment_status = 'Complete'
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Total time for GNS3 Lab Deployment with {vedge_count} vEdge Devices: {total_time:.2f} minutes")
     # endregion
 

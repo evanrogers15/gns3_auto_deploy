@@ -1,50 +1,183 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Create GNS3 Project</title>
+    <title>GNS3 SDWAN Viptela Lab Auto Deployment</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        .form-container {
-        width: 300px; /* Adjust the width as desired */
-        }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f6f6f6;
+      color: #333333;
+    }
 
-        .form-container form {
-            display: flex;
-            flex-direction: column;
-        }
+    .form-container {
+      max-width: 400px;
+      margin: 20px auto;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      background-color: #ffffff;
+    }
 
-        .form-container form label {
-            margin-bottom: 5px;
-        }
+    .form-container label {
+      display: block;
+      margin-top: 5px;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
 
-        .form-container form input[type="text"] {
-            margin-bottom: 10px;
-        }
-        #log-box {
-            height: 300px;
-            overflow-y: scroll;
-            border: 1px solid #ccc;
-            padding: 10px;
-        }
+    .form-container .input-group {
+      margin-bottom: 15px; /* Increase the margin-bottom value to add more space */
+    }
 
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
+    .form-container select,
+    .form-container input[type="text"] {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 8px;
+      border: 1px solid #dddddd;
+      border-radius: 5px;
+      background-color: #ffffff;
+    }
 
-        ::-webkit-scrollbar-track {
-            background-color: #f1f1f1;
-        }
+    .form-container select {
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: linear-gradient(to bottom, #ffffff, #ffffff), url('down-arrow.svg');
+      background-repeat: no-repeat, repeat;
+      background-position: right center, 100% 0;
+      background-size: 20px auto, auto;
+      padding-right: 30px;
+    }
 
-        ::-webkit-scrollbar-thumb {
-            background-color: #888;
-            border-radius: 4px;
-        }
+    .form-container input[type="button"] {
+      display: block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      background-color: #337ab7;
+      color: #ffffff;
+      font-weight: bold;
+      cursor: pointer;
+    }
 
-        ::-webkit-scrollbar-thumb:hover {
-            background-color: #555;
-        }
-    </style>
+    .form-container input[type="button"]:hover {
+      background-color: #286090;
+    }
+
+    .scrollable-table {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 8px;
+      border-bottom: 1px solid #dddddd;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f2f2f2;
+      position: sticky;
+      top: 0;
+    }
+
+    h1 {
+      text-align: center;
+      margin-top: 30px;
+    }
+  </style>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
+</head>
+<body>
+    <h1>Deploy Viptela SDWAN GNS3 Lab</h1>
+        <div class="form-container">
+            <form>
+                <label for="server_ip">Server IP:</label>
+                <select id="server_ip" name="server_ip">
+                  <option value="custom">Custom</option><option value="100.101.213.21">boot-pod1-4-sdwan-server</option>
+                  <option value="100.92.8.44">er-test-lab-02</option>
+                </select>
+                <input type="text" id="server_ip_input" name="server_ip_input" style="display: block;">
+
+                <label for="server_port">Server Port:</label>
+                <select id="server_port" name="server_port">
+                <option value="80">80</option>
+                <option value="3080">3080</option>
+                <option value="custom">Custom</option>
+                </select>
+                <input type="text" id="server_port_input" name="server_ip_input" style="display: none;">
+
+                <label for="project_name">New GNS3 Project Name:</label>
+                <input type="text" id="project_name" name="project_name">
+
+                <label for="vmanage_api_ip">vManage API IP:</label>
+                <select id="vmanage_api_ip" name="use_tap">
+                <option value="172.16.2.2">Local</option>
+                <option value=server_ip>Remote</option>
+                </select>
+
+                <label for="site_count">Site Count:</label>
+                <input type="text" id="site_count" name="site_count">
+
+                <label for="tap_name">Tap Interface Name:</label>
+                <input type="text" id="tap_name" name="tap_name">
+
+                <label for="use_tap">Use Tap:</label>
+                <select id="use_tap" name="use_tap">
+                <option value="1">Yes</option>
+                <option value="0">No</option>
+                </select>
+
+                <input type="button" value="Submit" onclick="submitForm()">
+            </form>
+        </div>
+
+        <h1>Deployment Log</h1>
+          <div class="scrollable-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Server Name</th>
+              <th>Project Name</th>
+              <th>Deployment Type</th>
+              <th>Deployment Status</th>
+              <th>Deployment Step</th>
+              <th>Log Message</th>
+            </tr>
+          </thead>
+          <tbody id="deploymentTableBody">
+            <!-- Data will be populated dynamically using JavaScript -->
+          </tbody>
+        </table>
+      </div>
     <script>
+        document.getElementById("server_ip").addEventListener("change", function() {
+            var selectedValue = this.value;
+
+            if (selectedValue === "custom") {
+            document.getElementById("server_ip_input").style.display = "block";
+            } else {
+            document.getElementById("server_ip_input").style.display = "none";
+            }
+        });
+        document.getElementById("server_port").addEventListener("change", function() {
+            var selectedValue = this.value;
+
+            if (selectedValue === "custom") {
+            document.getElementById("server_port_input").style.display = "block";
+            } else {
+            document.getElementById("server_port_input").style.display = "none";
+            }
+        });
+
         function submitForm() {
         var server_ip = document.getElementById("server_ip").value;
         var server_port = document.getElementById("server_port").value;
@@ -80,7 +213,7 @@
         // Delay the PUT request by 5 seconds
         setTimeout(function () {
         var putXhr = new XMLHttpRequest();
-        var putUrl = "/api/start_viptela_deploy";
+        var putUrl = "/api/tasks/start_viptela_deploy";
         putXhr.open("PUT", putUrl, true);
         putXhr.setRequestHeader("Content-Type", "application/json");
 
@@ -130,66 +263,6 @@
         }
         });
     </script>
-</head>
-<body>
-    <h1>Deploy Viptela SDWAN GNS3 Lab</h1>
-    <div class="form-container">
-        <form>
-            <label for="server_ip">Server IP:</label>
-            <select id="server_ip" name="server_ip">
-            <option value="100.101.213.21">boot-pod1-4-sdwan-server</option>
-            <option value="100.92.8.44">er-test-lab-02</option>
-            </select>
 
-            <label for="server_port">Server Port:</label>
-            <select id="server_port" name="server_port">
-            <option value="80">80</option>
-            <option value="3080">3080</option>
-            </select>
-
-            <label for="project_name">Project Name:</label>
-            <input type="text" id="project_name" name="project_name">
-
-            <label for="vmanage_api_ip">vManage API IP:</label>
-            <select id="vmanage_api_ip" name="use_tap">
-            <option value="172.16.2.2">Local</option>
-            <option value=server_ip>Remote</option>
-            </select>
-
-            <label for="site_count">Site Count:</label>
-            <input type="text" id="site_count" name="site_count">
-
-            <label for="tap_name">Tap Interface Name:</label>
-            <input type="text" id="tap_name" name="tap_name">
-
-            <label for="use_tap">Use Tap:</label>
-            <select id="use_tap" name="use_tap">
-            <option value="1">Yes</option>
-            <option value="0">No</option>
-            </select>
-
-            <input type="button" value="Submit" onclick="submitForm()">
-        </form>
-    </div>
-
-    <h1>Deployment Log</h1>
-      <div class="scrollable-table">
-    <table>
-      <thead>
-        <tr>
-          <th>Timestamp</th>
-          <th>Server Name</th>
-          <th>Project Name</th>
-          <th>Deployment Type</th>
-          <th>Deployment Status</th>
-          <th>Deployment Step</th>
-          <th>Log Message</th>
-        </tr>
-      </thead>
-      <tbody id="deploymentTableBody">
-        <!-- Data will be populated dynamically using JavaScript -->
-      </tbody>
-    </table>
-  </div>
 </body>
 </html>
