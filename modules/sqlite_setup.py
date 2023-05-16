@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS config (
     server_ip TEXT,
     server_port INTEGER,
     project_list TEXT,
-    project_id INTEGER,
+    project_id TEXT,
     project_name TEXT,
     project_status TEXT,
     site_count INTEGER,

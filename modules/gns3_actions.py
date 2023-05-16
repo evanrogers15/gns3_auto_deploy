@@ -234,6 +234,14 @@ def gns3_delete_project(gns3_server_data):
         else:
             logging.info(f"No projects with '{project_name}' in their name were found on GNS3 Server {server_ip}")
 
+def gns3_delete_project_static(server_ip, server_port, project_name, project_id):
+        if project_id:
+            delete_url = f"http://{server_ip}:{server_port}/v2/projects/{project_id}"
+            make_request("DELETE", delete_url)
+            logging.info(f"Deploy - Deleted project ID {project_name} on GNS3 Server {server_ip}")
+        else:
+            logging.info(f"No projects with '{project_name}' in their name were found on GNS3 Server {server_ip}")
+
 
 def gns3_find_nodes_by_name(gns3_server_data, project_id, search_string=None):
     node_data = gns3_get_nodes(gns3_server_data, project_id)
