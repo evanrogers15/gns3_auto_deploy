@@ -87,7 +87,7 @@ def viptela_deploy():
     if count == 0:
         # Perform initial insertion to populate the table
         c.execute(
-            "INSERT INTO deployments (server_name, server_ip, server_port, project_name) VALUES (?, ?, ?, ?)", (server_ip, server_port, server_name, project_name))
+            "INSERT INTO deployments (server_name, server_ip, project_name) VALUES (?, ?, ?)", (server_ip, server_name, project_name))
         conn.commit()
 
     #gns3_delete_project(gns3_server_data)

@@ -46,8 +46,8 @@ def log_and_update_db(server_name=None, project_name=None, deployment_type=None,
         INSERT INTO deployments (server_name, project_name, deployment_type, deployment_status, deployment_step, log_message)
         VALUES (?, ?, ?, ?, ?, ?);
     '''
-
-    c.execute(insert_query, (server_name, project_name, deployment_type, deployment_status, deployment_step, log_message))
+    current_time = util_current_time()
+    c.execute(insert_query, (server_name, project_name, deployment_type, deployment_status, deployment_step, current_time, log_message))
     conn.commit()
     conn.close()
 

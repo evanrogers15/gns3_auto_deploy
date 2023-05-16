@@ -7,6 +7,23 @@
       max-height: 300px;
       overflow-y: auto;
     }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    th, td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #f2f2f2;
+      position: sticky;
+      top: 0;
+    }
   </style>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script>
@@ -27,8 +44,8 @@
             var tableRows = '';
             $.each(data, function(index, deployment) {
               tableRows += '<tr>';
+              tableRows += '<td>' + deployment.timestamp + '</td>';
               tableRows += '<td>' + deployment.server_name + '</td>';
-              tableRows += '<td>' + deployment.server_ip + '</td>';
               tableRows += '<td>' + deployment.project_name + '</td>';
               tableRows += '<td>' + deployment.deployment_type + '</td>';
               tableRows += '<td>' + deployment.deployment_status + '</td>';
@@ -37,7 +54,7 @@
               tableRows += '</tr>';
             });
 
-            $('#deploymentTable').html(tableRows);
+            $('#deploymentTableBody').html(tableRows);
           },
           error: function() {
             console.log('Error occurred while fetching data.');
@@ -49,11 +66,10 @@
 </head>
 <body>
   <div class="scrollable-table">
-    <table id="deploymentTable">
+    <table>
       <thead>
         <tr>
           <th>Server Name</th>
-          <th>Server IP</th>
           <th>Project Name</th>
           <th>Deployment Type</th>
           <th>Deployment Status</th>
@@ -61,7 +77,7 @@
           <th>Log Message</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody id="deploymentTableBody">
         <!-- Data will be populated dynamically using JavaScript -->
       </tbody>
     </table>

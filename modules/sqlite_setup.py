@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS projects (
 conn.execute('''
 CREATE TABLE IF NOT EXISTS deployments (
     id INTEGER PRIMARY KEY,
+    timestamp TEXT, 
     server_name TEXT,
     server_ip TEXT,
     project_name TEXT,
