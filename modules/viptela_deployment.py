@@ -76,7 +76,7 @@ def viptela_deploy():
     gns3_server_data = [{"GNS3 Server": server_ip, "Server Name": server_name, "Server Port": server_port,
                     "vManage API IP": vmanage_api_ip, "Project Name": project_name, "Project ID": new_project_id,
                     "Tap Name": tap_name,
-                    "Site Count": vedge_count, "Use Tap": use_tap, "Deployment Type": deployment_type, "Deployment Status": deployment_status, "Deployment Step": 'Starting'}]
+                    "Site Count": vedge_count, "Use Tap": use_tap, "Deployment Type": deployment_type, "Deployment Status": '', "Deployment Step": ''}]
     isp_switch_count = (vedge_count // 40) + 1
     mgmt_switch_count = (vedge_count // 30) + 1
     conn = sqlite3.connect(db_path)
@@ -291,12 +291,12 @@ def viptela_deploy():
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting All Nodes")
     gns3_start_all_nodes(gns3_server_data, new_project_id)
     wait_time = 5  # minutes
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - Waiting {wait_time} mins for devices to come up, to resume at {util_resume_time(wait_time)}")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Waiting {wait_time} mins for devices to come up, to resume at {util_resume_time(wait_time)}")
     time.sleep(wait_time * 60)
     # endregion
     # region Viptela vManage Setup Part 1
     deployment_step = 'vManage Setup Part 1'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, "Deploy - Starting vManage device setup part 1")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, "Starting vManage device setup part 1")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     for server_ip in server_ips:
         temp_node_name = f'vManage'
@@ -304,7 +304,7 @@ def viptela_deploy():
         if matching_nodes:
             for matching_node in matching_nodes:
                 node_id, console_port, aux = matching_node
-                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - Logging in to console for node {temp_node_name}")
+                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Logging in to console for node {temp_node_name}")
                 tn = telnetlib.Telnet(server_ip, console_port)
                 while True:
                     tn.write(b"\r\n")
@@ -315,7 +315,7 @@ def viptela_deploy():
                     output = tn.read_until(b"Password:", timeout=5).decode('ascii')
                     if 'Welcome' in output:
                         break
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - {temp_node_name} not available yet, trying again in 30 seconds")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"{temp_node_name} not available yet, trying again in 30 seconds")
                     time.sleep(30)
                 tn.write(viptela_password.encode("ascii") + b"\n")
                 tn.read_until(b"password:")
@@ -330,11 +330,11 @@ def viptela_deploy():
                 tn.write(b'y\n')
                 tn.read_until(b"umount")
                 tn.close()
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - Completed vManage Device Setup Part 1")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vManage Device Setup Part 1")
     # endregion
     # region Viptela vSmart Setup
     deployment_step = 'vSmart Setup'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - Starting vSmart Device Setup")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vSmart Device Setup")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     abs_path = os.path.abspath(__file__)
     configs_path = os.path.join(os.path.dirname(abs_path), 'configs/viptela')
@@ -346,7 +346,7 @@ def viptela_deploy():
             for matching_node in matching_nodes:
                 node_id, console_port, aux = matching_node
                 node_name = gns3_find_nodes_by_field(gns3_server_data, new_project_id, 'node_id', 'name', node_id)
-                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - Logging in to console for node {node_name[0]}")
+                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Logging in to console for node {node_name[0]}")
                 tn = telnetlib.Telnet(server_ip, console_port)
                 while True:
                     tn.write(b"\r\n")
@@ -371,13 +371,13 @@ def viptela_deploy():
                         tn.write(viptela_password.encode("ascii") + b"\n")
                         tn.write(b"\r\n")
                         break
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - {temp_node_name} not available yet, trying again in 30 seconds")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"{temp_node_name} not available yet, trying again in 30 seconds")
                     time.sleep(30)
                 tn.write(b"\r\n")
                 tn.read_until(b"#")
                 with open(file_name, 'r') as f:
                     lines = f.readlines()
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - Sending configuration commands to {node_name[0]}")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Sending configuration commands to {node_name[0]}")
                     for line in lines:
                         formatted_line = line.format(
                             hostname=temp_node_name,
@@ -402,11 +402,11 @@ def viptela_deploy():
                 tn.write(b"exit\r")
                 tn.read_until(b"exit")
                 tn.close()
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - Completed vSmart Device Setup")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vSmart Device Setup")
     # endregion
     # region Viptela vBond Setup
     deployment_step = 'vBond Setup'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - Starting vBond Device Setup")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vBond Device Setup")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     abs_path = os.path.abspath(__file__)
     configs_path = os.path.join(os.path.dirname(abs_path), 'configs/viptela')
@@ -418,7 +418,7 @@ def viptela_deploy():
             for matching_node in matching_nodes:
                 node_id, console_port, aux = matching_node
                 node_name = gns3_find_nodes_by_field(gns3_server_data, new_project_id, 'node_id', 'name', node_id)
-                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - Logging in to console for node {temp_node_name}")
+                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Logging in to console for node {temp_node_name}")
                 tn = telnetlib.Telnet(server_ip, console_port)
                 while True:
                     tn.write(b"\r\n")
@@ -443,13 +443,13 @@ def viptela_deploy():
                         tn.write(viptela_password.encode("ascii") + b"\n")
                         tn.write(b"\r\n")
                         break
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - {temp_node_name} not available yet, trying again in 30 seconds")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"{temp_node_name} not available yet, trying again in 30 seconds")
                     time.sleep(30)
                 tn.write(b"\r\n")
                 tn.read_until(b"#")
                 with open(file_name, 'r') as f:
                     lines = f.readlines()
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - Sending configuration commands to {temp_node_name}")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Sending configuration commands to {temp_node_name}")
                     for line in lines:
                         formatted_line = line.format(
                             hostname=temp_node_name,
@@ -473,11 +473,11 @@ def viptela_deploy():
                 #        sys.exit()
                 tn.write(b"exit\r")
                 tn.read_until(b"exit")
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - Completed vBond Device Setup")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vBond Device Setup")
     # endregion
     # region Viptela vManage Setup Part 2
     deployment_step = 'vManage Setup Part 2'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - Starting vManage setup part 2")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vManage setup part 2")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     abs_path = os.path.abspath(__file__)
     configs_path = os.path.join(os.path.dirname(abs_path), 'configs/viptela')
@@ -489,7 +489,7 @@ def viptela_deploy():
         if matching_nodes:
             for matching_node in matching_nodes:
                 node_id, console_port, aux = matching_node
-                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - Logging in to console for node {temp_node_name}")
+                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Logging in to console for node {temp_node_name}")
                 tn = telnetlib.Telnet(server_ip, console_port)
                 while True:
                     tn.write(b"\r\n")
@@ -506,13 +506,13 @@ def viptela_deploy():
                     output = tn.read_until(b"#", timeout=1).decode('ascii')
                     if 'vmanage#' in output:
                         break
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - {temp_node_name} not available yet, trying again in 30 seconds")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"{temp_node_name} not available yet, trying again in 30 seconds")
                     time.sleep(30)
                 tn.write(b"\r\n")
                 tn.read_until(b"#")
                 with open(file_name, 'r') as f:
                     lines = f.readlines()
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - Sending configuration commands to {temp_node_name}")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Sending configuration commands to {temp_node_name}")
                     for line in lines:
                         formatted_line = line.format(
                             hostname=temp_node_name,
@@ -554,11 +554,11 @@ def viptela_deploy():
                     tn.read_until(b'#')
                 tn.write(b'exit\r\n')
                 tn.close()
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, "Deploy - Completed vManage Device Setup Part 2")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, "Completed vManage Device Setup Part 2")
     # endregion
     # region Viptela vEdge Device Setup
     deployment_step = 'vEdge Device Setup'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - Starting vEdge Device Setup for {vedge_count} vEdges")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vEdge Device Setup for {vedge_count} vEdges")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     abs_path = os.path.abspath(__file__)
     configs_path = os.path.join(os.path.dirname(abs_path), 'configs/viptela')
@@ -593,7 +593,7 @@ def viptela_deploy():
                             vpn_0_ge0_1_ip_address = dictionary_1['vedge_address']
                             vpn_0_ge0_1_ip_gateway = dictionary_1['router_address']
                     vedge_hostname = f"{temp_node_name}_{city_data[temp_node_name]['city']}"
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - Starting vEdge Device Setup for {node_name[0]} - vEdge {i} of {vedge_count}")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vEdge Device Setup for {node_name[0]} - vEdge {i} of {vedge_count}")
                     tn = telnetlib.Telnet(server_ip, console_port)
                     while True:
                         tn.write(b"\r\n")
@@ -618,13 +618,13 @@ def viptela_deploy():
                             tn.write(viptela_password.encode("ascii") + b"\n")
                             tn.write(b"\r\n")
                             break
-                        log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - {temp_node_name} not available yet, trying again in 30 seconds")
+                        log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"{temp_node_name} not available yet, trying again in 30 seconds")
                         time.sleep(30)
                     tn.write(b"\r\n")
                     tn.read_until(b"#")
                     with open(file_name, 'r') as f:
                         lines = f.readlines()
-                        log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - Sending configuration commands to {node_name[0]}")
+                        log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Sending configuration commands to {node_name[0]}")
                         for line in lines:
                             formatted_line = line.format(
                                 vedge_hostname=vedge_hostname,
@@ -653,22 +653,22 @@ def viptela_deploy():
                     tn.write(b"exit\r")
                     tn.read_until(b"exit")
                     tn.close()
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - Completed vEdge Device Setup for {temp_node_name}, Remaining - {vedge_count - i}")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vEdge Device Setup for {temp_node_name}, Remaining - {vedge_count - i}")
                     if i % 44 == 0 and i != 0:
                         isp_index += 1
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - Completed vEdge Device Setup for {vedge_count} vEdge devices")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vEdge Device Setup for {vedge_count} vEdge devices")
     # endregion
     # region Viptela vManage API Setup
     deployment_step = ' vManage API Setup'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - Starting vManage API Setup")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vManage API Setup")
     auth = Authentication()
     while True:
         try:
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - Checking if vManage API is available..")
+            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Checking if vManage API is available..")
             response = auth.get_jsessionid(gns3_server_data)
             break
         except:
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f'Deploy - vManage API is yet not available, checking again in 1 minute at {util_resume_time(1)}')
+            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f'vManage API is yet not available, checking again in 1 minute at {util_resume_time(1)}')
             time.sleep(60)
     vmanage_headers = vmanage_create_auth(gns3_server_data)
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
@@ -699,7 +699,7 @@ def viptela_deploy():
                         tn.read_until(b"#")
                         tn.write(b'vshell\r\n')
                         break
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - {temp_node_name} not available yet, trying again in 30 seconds")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"{temp_node_name} not available yet, trying again in 30 seconds")
                     time.sleep(30)
                 tn.write(b"\r\n")
                 tn.read_until(b'$')
@@ -772,11 +772,11 @@ def viptela_deploy():
                 tn.write(b'exit\r\n')
                 tn.read_until(b'#')
                 tn.close()
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - Completed vManage API Setup")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vManage API Setup")
     # endregion
     # region Viptela vEdge Final Setup
     deployment_step = 'vEdge Final Setup'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - Starting vEdge Certificate setup and deployment into Viptela Environment")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vEdge Certificate setup and deployment into Viptela Environment")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     ve = 101
     v = 1
@@ -787,7 +787,7 @@ def viptela_deploy():
         if matching_nodes:
             for matching_node in matching_nodes:
                 node_id, console_port, aux = matching_node
-                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - Logging in to console for node {temp_node_name}")
+                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Logging in to console for node {temp_node_name}")
                 for vedge_node in vedge_nodes:
                     vedge_id, vedge_console, vedge_aux = vedge_node
                     node_name = gns3_find_nodes_by_field(gns3_server_data, new_project_id, 'node_id', 'name', vedge_id)
@@ -796,7 +796,7 @@ def viptela_deploy():
                     ssh_command = f"request execute vpn 512 ssh admin@172.16.2.{ve}"
                     ssh_2_command = f"request execute vpn 512 ssh admin@172.16.2.10"
                     tn = telnetlib.Telnet(server_ip, console_port)
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - Starting vEdge Certificate Setup for {node_name[0]} - vEdge {v} of {vedge_count}")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vEdge Certificate Setup for {node_name[0]} - vEdge {v} of {vedge_count}")
                     while True:
                         tn.write(b"\r\n")
                         output = tn.read_until(b"login:", timeout=2).decode('ascii')
@@ -817,7 +817,7 @@ def viptela_deploy():
                             tn.read_until(b"#")
                             tn.write(b'vshell\r\n')
                             break
-                        log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - {temp_node_name} not available yet, trying again in 30 seconds")
+                        log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"{temp_node_name} not available yet, trying again in 30 seconds")
                         time.sleep(30)
                     tn.write(b"\r\n")
                     tn.read_until(b'$')
@@ -889,7 +889,7 @@ def viptela_deploy():
                         serial_number = re.search(serial_regex, cert_output).group(1)
                         if chassis_number and serial_number:
                             break
-                        log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - {node_name[0]} tried to install certificate too quickly, trying again in 10 seconds ")
+                        log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"{node_name[0]} tried to install certificate too quickly, trying again in 10 seconds ")
                         time.sleep(10)
                     tn.write(b'exit\r\n')
                     tn.read_until(b'#')
@@ -905,7 +905,7 @@ def viptela_deploy():
                     tn.write(vedge_install_command.encode('ascii') + b"\n")
                     tn.read_until(b'#')
                     ve += 1
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - Completed vEdge Certificate Setup for {node_name[0]}, Remaining - {vedge_count - v}")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vEdge Certificate Setup for {node_name[0]}, Remaining - {vedge_count - v}")
                     tn.close()
                     v += 1
     while True:
@@ -914,16 +914,16 @@ def viptela_deploy():
             response = auth.get_jsessionid(gns3_server_data)
             break
         except:
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f'Deploy - vManage API is yet not available')
+            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f'vManage API is yet not available')
             time.sleep(60)
     vmanage_headers = vmanage_create_auth(gns3_server_data)
     vmanage_push_certs(gns3_server_data, vmanage_headers)
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - Completed vEdge Certificate setup and deployment into Viptela Environment")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vEdge Certificate setup and deployment into Viptela Environment")
     # endregion
     # region Deploy Site Clients in Lab
     deployment_step = 'Deploy Site Clients'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
-                      f"Deploy - Deploying clients into each site.")
+                      f"Deploying clients into each site.")
     network_test_tool_template_id = gns3_get_template_id(gns3_server_data, 'Network_Test_Tool')
     client_filename = 'client_interfaces'
     client_node_file_path = 'etc/network/interfaces'
@@ -949,7 +949,7 @@ def viptela_deploy():
     # endregion
     # region Push vEdge Certs to Control Devices
     deployment_step = 'Push vEdge Certs'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - Waiting 5 mins to send final API call to vManage to push vEdge certificates to control devices, to resume at {util_resume_time(5)}")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Waiting 5 mins to send final API call to vManage to push vEdge certificates to control devices, to resume at {util_resume_time(5)}")
     time.sleep(300)
     while True:
         try:
@@ -957,7 +957,7 @@ def viptela_deploy():
             response = auth.get_jsessionid(gns3_server_data)
             break
         except:
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f'Deploy - vManage API is yet not available')
+            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f'vManage API is yet not available')
             time.sleep(60)
     vmanage_headers = vmanage_create_auth(gns3_server_data)
     vmanage_push_certs(gns3_server_data, vmanage_headers)
@@ -965,7 +965,7 @@ def viptela_deploy():
     # region Validation
     wait_time = 10  # minutes
     deployment_step = 'Validation'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - Waiting {wait_time} minutes to validate deployment, to resume at {util_resume_time(wait_time)}")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Waiting {wait_time} minutes to validate deployment, to resume at {util_resume_time(wait_time)}")
     time.sleep(wait_time * 60)
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     for server_ip in server_ips:
@@ -979,7 +979,7 @@ def viptela_deploy():
         if matching_nodes:
             node_id, console_port, aux = matching_nodes[0]
             node_name = gns3_find_nodes_by_field(gns3_server_data, new_project_id, 'node_id', 'name', node_id)
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - Starting deployment validation on node {node_name[0]}")
+            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting deployment validation on node {node_name[0]}")
             tn = telnetlib.Telnet(server_ip, console_port)
             tn.write(b"\r\n")
             tn.read_until(b"#")
@@ -990,13 +990,13 @@ def viptela_deploy():
                 if "100% packet" in output:
                     client_node_name = \
                     gns3_find_nodes_by_field(gns3_server_data, new_project_id, 'node_id', 'name', client_nodes[i][0])[0]
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - Packet Loss to Site {client_ip}")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Packet Loss to Site {client_ip}")
                 else:
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,f"Deploy - Successfully connected to Site {client_ip}")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,f"Successfully connected to Site {client_ip}")
                     successful_site += 1
                 client_ip += 1
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - Successful connection to {successful_site} of {len(client_nodes)} Sites")
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deploy - Completed deployment validation for project {project_name}")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Successful connection to {successful_site} of {len(client_nodes)} Sites")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed deployment validation for project {project_name}")
     # endregion
 
     end_time = time.time()

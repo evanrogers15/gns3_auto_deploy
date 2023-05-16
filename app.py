@@ -31,6 +31,10 @@ def adminPage():
 def statusPage():
     return render_template('status.html')
 
+@app.route('/create_sdwan')
+def create_sdwan_page():
+    return render_template('create_sdwan.html')
+
 @app.route('/scenarios')
 def scenariosPage():
     return render_template('scenarios.html')

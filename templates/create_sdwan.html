@@ -55,7 +55,7 @@
             var use_tap = document.getElementById("use_tap").value;
 
             var xhr = new XMLHttpRequest();
-            var url = "/api/create_project";
+            var url = "/api/config";
             xhr.open("POST", url, true);
             xhr.setRequestHeader("Content-Type", "application/json");
 
@@ -77,29 +77,41 @@
 
             xhr.send(data);
         }
-        // Function to fetch log content from the server and update the log-box div
-        function updateLogContent() {
-            $.ajax({
-                url: "/api/get_log_content",
-                method: "GET",
-                success: function(response) {
-                    var logEntries = response.split('\n').reverse();
-                    var formattedContent = "";
-                    for (var i = 0; i < logEntries.length; i++) {
-                        formattedContent += "<p>" + logEntries[i] + "</p>";
-                    }
-                    $("#log-box").html(formattedContent);
-                },
-                error: function(xhr, status, error) {
-                    console.error(error);
-                }
-            });
-        }
+        $(document).ready(function() {
+        refreshData();
 
-        // Refresh the log content every 5 seconds
-        setInterval(function() {
-            updateLogContent();
-        }, 5000);
+        setInterval(refreshData, 5000); // Refresh every 5 seconds
+
+        function refreshData() {
+        $.ajax({
+          url: '/api/deployment_status',
+          type: 'GET',
+          dataType: 'json',
+          success: function(data) {
+            // Reverse the order of entries
+            data.reverse();
+
+            var tableRows = '';
+            $.each(data, function(index, deployment) {
+              tableRows += '<tr>';
+              tableRows += '<td>' + deployment.timestamp + '</td>';
+              tableRows += '<td>' + deployment.server_name + '</td>';
+              tableRows += '<td>' + deployment.project_name + '</td>';
+              tableRows += '<td>' + deployment.deployment_type + '</td>';
+              tableRows += '<td>' + deployment.deployment_status + '</td>';
+              tableRows += '<td>' + deployment.deployment_step + '</td>';
+              tableRows += '<td>' + deployment.log_message + '</td>';
+              tableRows += '</tr>';
+            });
+
+            $('#deploymentTableBody').html(tableRows);
+          },
+          error: function() {
+            console.log('Error occurred while fetching data.');
+          }
+        });
+        }
+        });
     </script>
 </head>
 <body>
@@ -144,10 +156,23 @@
     </div>
 
     <h1>Deployment Log</h1>
-    <div id="log-box">
-        {% for entry in log_content.split('\n')|reverse %}
-        <p>{{ entry }}</p>
-        {% endfor %}
-    </div>
+      <div class="scrollable-table">
+    <table>
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Server Name</th>
+          <th>Project Name</th>
+          <th>Deployment Type</th>
+          <th>Deployment Status</th>
+          <th>Deployment Step</th>
+          <th>Log Message</th>
+        </tr>
+      </thead>
+      <tbody id="deploymentTableBody">
+        <!-- Data will be populated dynamically using JavaScript -->
+      </tbody>
+    </table>
+  </div>
 </body>
 </html>
