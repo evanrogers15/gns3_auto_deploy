@@ -48,7 +48,8 @@ CREATE TABLE IF NOT EXISTS deployments (
     project_name TEXT,
     deployment_type TEXT,
     deployment_status TEXT,
-    deployment_step TEXT
+    deployment_step TEXT,
+    log_message TEXT
 );
 ''')
 # Create the scenarios table
