@@ -41,6 +41,9 @@ def viptela_deploy():
     deployment_type = 'viptela'
     deployment_status = 'running'
     deployment_step = 'Starting'
+    cloud_node_deploy_data = {"x": -154, "y": -554, "name": "MGMT-Cloud-TAP", "node_type": "cloud",
+                              "compute_id": "local", "symbol": ":/symbols/cloud.svg"}
+
     # endregion
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
@@ -76,7 +79,7 @@ def viptela_deploy():
     gns3_server_data = [{"GNS3 Server": server_ip, "Server Name": server_name, "Server Port": server_port,
                     "vManage API IP": vmanage_api_ip, "Project Name": project_name, "Project ID": new_project_id,
                     "Tap Name": tap_name,
-                    "Site Count": vedge_count, "Use Tap": use_tap, "Deployment Type": deployment_type, "Deployment Status": '', "Deployment Step": ''}]
+                    "Site Count": vedge_count, "Use Tap": use_tap, "Deployment Type": deployment_type, "Deployment Status": deployment_status, "Deployment Step": ''}]
     isp_switch_count = (vedge_count // 40) + 1
     mgmt_switch_count = (vedge_count // 30) + 1
     conn = sqlite3.connect(db_path)
@@ -90,9 +93,7 @@ def viptela_deploy():
             "INSERT INTO deployments (server_name, server_ip, project_name) VALUES (?, ?, ?)", (server_ip, server_name, project_name))
         conn.commit()
 
-    #gns3_delete_project(gns3_server_data)
     gns3_actions_remove_templates(gns3_server_data)
-    #new_project_id = gns3_create_project(gns3_server_data)
     gns3_set_project(gns3_server_data, new_project_id)
     # endregion
     # region Create GNS3 Templates
