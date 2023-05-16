@@ -13,7 +13,6 @@ from modules.gns3_variables import *
 from modules.use_cases import *
 
 app = Flask(__name__)
-DB_PATH = 'gns3.db'
 
 @app.route('/')
 def index():
@@ -44,7 +43,7 @@ def update_config():
     vmanage_api_ip = req_data.get('vmanage_api_ip')
     site_count = req_data.get('site_count')
     tap_name = req_data.get('tap_name')
-    project_id = req_data.get('project_id')
+    # project_id = req_data.get('project_id')
     projects = get_projects(server_ip, server_port)
     server_name = get_computes_name(server_ip, server_port)
     if tap_name:
@@ -58,18 +57,21 @@ def update_config():
         projects = get_projects(server_ip, server_port)
     else:
         gns3_delete_project(server_data)
+        project_id = gns3_create_project_static(server_ip, server_port, new_project_name)
+        projects = get_projects(server_ip, server_port)
     project_names = [project['name'] for project in projects]
     project_status = [project['status'] for project in projects]
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(db_path)
     c = conn.cursor()
     c.execute("DELETE FROM config")
     c.execute("INSERT INTO config (server_ip, server_port, server_name, project_list, project_name, project_id, project_status, vmanage_api_ip, site_count, tap_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (server_ip, server_port, server_name, json.dumps(project_ids), json.dumps(project_names), project_id, json.dumps(project_status), vmanage_api_ip, site_count, tap_name))
+    conn.commit()
     conn.close()
     return jsonify({'success': True})
 
 @app.route('/api/config', methods=['GET'])
 def get_config():
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
     c.execute("SELECT * FROM config")
@@ -107,9 +109,36 @@ def create_project():
     # return jsonify([server_data])
     return make_response(jsonify({'Deployment Started Successfully'}), 200)
 
+
+@app.route('/api/tasks/start_viptela_deploy', methods=['POST'])
+def viptela_deploy_full():
+    req_data = request.get_json()
+    conn = sqlite3.connect(db_path)
+    c = conn.cursor()
+    c.execute("SELECT * FROM config")
+    row = c.fetchone()
+    if row:
+        server_name = row[1]
+        server_ip = row[2]
+        server_port = row[3]
+        project_id = row[5]
+        project_name = row[6]
+        site_count = row[8]
+        tap_name = row[9]
+        vmanage_api_ip = row[10]
+    if tap_name:
+        use_tap = 1
+    else:
+        tap_name = 0
+    server_data = [{"GNS3 Server": server_ip, "Server Name": server_name, "Server Port": server_port,
+                    "vManage API IP": vmanage_api_ip, "Project Name": project_name, "Tap Name": tap_name,
+                    "Site Count": site_count, "Use Tap": use_tap}]
+    threading.Thread(target=viptela_deploy, args=(server_data,)).start()
+    return make_response(jsonify({'Deployment Started Successfully'}), 200)
+
 @app.route('/api/projects', methods=['GET'])
 def get_project_list():
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(db_path)
     c = conn.cursor()
     c.execute("SELECT server_ip, server_port FROM config")
     row = c.fetchone()
@@ -132,7 +161,7 @@ def get_project_list():
 
 @app.route('/api/scenarios', methods=['GET', 'POST', 'PUT'])
 def scenarios():
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(db_path)
     c = conn.cursor()
     if request.method == 'GET':
         c.execute("SELECT id, scenario_name AS title, scenario_description AS description FROM scenarios")
@@ -197,7 +226,7 @@ def scenarios():
 
 @app.route('/api/scenarios/<int:scenario_id>', methods=['GET'])
 def get_scenario(scenario_id):
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(db_path)
     c = conn.cursor()
     c.execute("SELECT * FROM scenarios WHERE id=?", (scenario_id,))
     row = c.fetchone()
@@ -213,7 +242,7 @@ def get_scenario(scenario_id):
 
 @app.route('/api/scenario_status', methods=['GET'])
 def get_scenario_status():
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(db_path)
     c = conn.cursor()
     c.execute("SELECT scenario_status.id, scenario_status.server_ip, config.server_port, config.server_name, scenario_status.project_id, projects.project_name, scenario_status.scenario_id, scenario_status.status, scenario_status.process_id FROM scenario_status JOIN projects ON scenario_status.project_id = projects.project_id JOIN config ON scenario_status.server_ip = config.server_ip;")
     rows = c.fetchall()
@@ -240,7 +269,7 @@ def create_task(scenario_id):
     port = req_data.get('port')
     project_id = req_data.get('project_id')
     use_case_function = None
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(db_path)
     c = conn.cursor()
     c.execute("SELECT COUNT(*) FROM scenario_status WHERE server_ip=? AND project_id=? AND scenario_id=?", (server_ip, project_id, scenario_id,))
     row = c.fetchone()
@@ -287,7 +316,7 @@ def create_task(scenario_id):
             pid = response_data.get('pid')
             project_id = response_data.get('project_id')
             scenario_id = response_data.get('scenario_id')
-            conn = sqlite3.connect(DB_PATH)
+            conn = sqlite3.connect(db_path)
             c = conn.cursor()
             c.execute("UPDATE scenario_status SET status=?, process_id=? WHERE server_ip=? AND project_id=? AND scenario_id=?", (2, pid, server_ip, project_id, scenario_id))
             conn.commit()
@@ -325,7 +354,7 @@ def create_task(scenario_id):
             pid = response_data.get('pid')
             project_id = response_data.get('project_id')
             scenario_id = response_data.get('scenario_id')
-            conn = sqlite3.connect(DB_PATH)
+            conn = sqlite3.connect(db_path)
             c = conn.cursor()
             c.execute("UPDATE scenario_status SET status=?, process_id=? WHERE server_ip=? AND project_id=? AND scenario_id=?", (2, pid, server_ip, project_id, scenario_id))
             conn.commit()
@@ -360,7 +389,7 @@ def create_task(scenario_id):
             pid = response_data.get('pid')
             project_id = response_data.get('project_id')
             scenario_id = response_data.get('scenario_id')
-            conn = sqlite3.connect(DB_PATH)
+            conn = sqlite3.connect(db_path)
             c = conn.cursor()
             c.execute("UPDATE scenario_status SET status=?, process_id=? WHERE server_ip=? AND project_id=? AND scenario_id=?", (2, pid, server_ip, project_id, scenario_id))
             conn.commit()
@@ -370,7 +399,7 @@ def create_task(scenario_id):
     if use_case_function is not None:
         success = use_case_function(server_ip, port, project_id, 'on')
         if success:
-            conn = sqlite3.connect(DB_PATH)
+            conn = sqlite3.connect(db_path)
             c = conn.cursor()
             c.execute("UPDATE scenario_status SET status=? WHERE server_ip=? AND project_id=? AND scenario_id=?", (2, server_ip, project_id, scenario_id))
             conn.commit()
@@ -386,7 +415,7 @@ def delete_task(scenario_id):
     server_ip = req_data.get('server_ip')
     port = req_data.get('port')
     project_id = req_data.get('project_id')
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(db_path)
     status = '3'
     c = conn.cursor()
     c.execute("SELECT COUNT(*) FROM scenario_status WHERE server_ip=? AND project_id=? AND scenario_id=?", (server_ip, project_id, scenario_id,))
@@ -442,7 +471,7 @@ def delete_task(scenario_id):
             return jsonify({'error': 'Could not stop script.'}), 500
         else:
             status = 0
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(db_path)
     c = conn.cursor()
     c.execute("UPDATE scenario_status SET status=? WHERE server_ip=? AND project_id=? AND scenario_id=?", (status, server_ip, project_id, scenario_id))
     conn.commit()
@@ -533,7 +562,7 @@ def stop_script():
     project_id = str(request.json.get('project_id'))
     scenario_id = str(request.json.get('scenario_id'))
     # Get the process ID from the scenario status table
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(db_path)
     c = conn.cursor()
     c.execute("SELECT process_id FROM scenario_status WHERE project_id=? AND scenario_id=?", (project_id, scenario_id,))
     row = c.fetchone()
@@ -553,7 +582,7 @@ def stop_script():
     try:
         process.terminate()
         # Update the scenario status table with null process ID
-        conn = sqlite3.connect(DB_PATH)
+        conn = sqlite3.connect(db_path)
         c = conn.cursor()
         c.execute("UPDATE scenario_status SET process_id = NULL WHERE project_id = ? AND scenario_id = ?", (project_id, scenario_id,))
         conn.commit()
@@ -603,7 +632,7 @@ def process_info():
 
 @app.route('/api/reset-tables', methods=['POST'])
 def reset_tables():
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(db_path)
     c = conn.cursor()
     # Delete all rows from the config and projects tables
     c.execute('DELETE FROM config')

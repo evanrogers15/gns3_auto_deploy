@@ -37,6 +37,20 @@ CREATE TABLE IF NOT EXISTS projects (
     project_status TEXT
 );
 ''')
+# Create the deployments table
+conn.execute('''
+CREATE TABLE IF NOT EXISTS deployments (
+    id INTEGER PRIMARY KEY,
+    server_name TEXT,
+    server_ip TEXT,
+    server_port INTEGER,
+    project_name TEXT,
+    project_status TEXT,
+    deployment_type TEXT,
+    deployment_status TEXT,
+    deployment_step TEXT
+);
+''')
 # Create the scenarios table
 conn.execute('''
 CREATE TABLE IF NOT EXISTS scenarios (
