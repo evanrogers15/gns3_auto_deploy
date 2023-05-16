@@ -40,7 +40,7 @@ def viptela_deploy():
     configure_mgmt_tap = 0
     deployment_type = 'viptela'
     deployment_status = 'running'
-    deployment_step = 'Starting'
+    deployment_step = '- Action - '
     cloud_node_deploy_data = {"x": -154, "y": -554, "name": "MGMT-Cloud-TAP", "node_type": "cloud",
                               "compute_id": "local", "symbol": ":/symbols/cloud.svg"}
 
@@ -79,7 +79,7 @@ def viptela_deploy():
     gns3_server_data = [{"GNS3 Server": server_ip, "Server Name": server_name, "Server Port": server_port,
                     "vManage API IP": vmanage_api_ip, "Project Name": project_name, "Project ID": new_project_id,
                     "Tap Name": tap_name,
-                    "Site Count": vedge_count, "Use Tap": use_tap, "Deployment Type": deployment_type, "Deployment Status": deployment_status, "Deployment Step": ''}]
+                    "Site Count": vedge_count, "Use Tap": use_tap, "Deployment Type": deployment_type, "Deployment Status": deployment_status, "Deployment Step": deployment_step}]
     isp_switch_count = (vedge_count // 40) + 1
     mgmt_switch_count = (vedge_count // 30) + 1
     conn = sqlite3.connect(db_path)
@@ -140,7 +140,7 @@ def viptela_deploy():
                                                                isp_deploy_data[f"isp_{i:03}_deploy_data"])
             isp_switch_nodes.append({'node_name': node_name, 'node_id': node_id})
         else:
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, 'place_holder',f"Node {node_name} already exists in project {project_name}")
+            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Node {node_name} already exists in project {project_name}")
     for i in range(1, mgmt_switch_count + 1):
         node_name = f"MGMT_switch_{i:03}"
         matching_nodes = gns3_find_nodes_by_name(gns3_server_data, new_project_id, node_name)
@@ -150,7 +150,7 @@ def viptela_deploy():
                                                                    f"mgmt_switch_{i:03}_deploy_data"])
             mgmt_switch_nodes.append({'node_name': node_name, 'node_id': node_id})
         else:
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, 'place_holder',f"Node {node_name} already exists in project {project_name}")
+            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Node {node_name} already exists in project {project_name}")
     for i in range(1, vedge_count + 1):
         node_name = f"vEdge_{i:03}"
         matching_nodes = gns3_find_nodes_by_name(gns3_server_data, new_project_id, node_name)
@@ -159,7 +159,7 @@ def viptela_deploy():
                                                                vedge_deploy_data[f"vedge_{i:03}_deploy_data"])
             vedge_info.append({'node_name': node_name, 'node_id': node_id})
         else:
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, 'place_holder',f"Node {node_name} already exists in project {project_name}")
+            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Node {node_name} already exists in project {project_name}")
     gns3_update_nodes(gns3_server_data, new_project_id, vmanage_node_id, vmanage_deploy_data)
     gns3_update_nodes(gns3_server_data, new_project_id, vsmart_node_id, vsmart_deploy_data)
     gns3_update_nodes(gns3_server_data, new_project_id, vbond_node_id, vbond_deploy_data)
@@ -173,7 +173,7 @@ def viptela_deploy():
             node_id = matching_node['node_id']
             gns3_update_nodes(gns3_server_data, new_project_id, node_id, isp_deploy_data[f"isp_{i:03}_deploy_data"])
         else:
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, 'place_holder',f"No nodes found in project {project_name} for isp_switch_{i}")
+            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"No nodes found in project {project_name} for isp_switch_{i}")
 
     for i in range(1, mgmt_switch_count + 1):
         matching_node = mgmt_switch_nodes[i - 1]
@@ -183,7 +183,7 @@ def viptela_deploy():
                               mgmt_switch_deploy_data[f"mgmt_switch_{i:03}_deploy_data"])
             gns3_update_nodes(gns3_server_data, new_project_id, node_id, deploy_data_z)
         else:
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, 'place_holder',f"No nodes found in project {project_name} for MGMT_switch_{i}")
+            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"No nodes found in project {project_name} for MGMT_switch_{i}")
 
     for i in range(1, vedge_count + 1):
         matching_node = vedge_info[i - 1]
@@ -191,7 +191,7 @@ def viptela_deploy():
             node_id = matching_node['node_id']
             gns3_update_nodes(gns3_server_data, new_project_id, node_id, vedge_deploy_data[f"vedge_{i:03}_deploy_data"])
         else:
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, 'place_holder',f"No nodes found in project {project_name} for vEdge {i}")
+            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"No nodes found in project {project_name} for vEdge {i}")
     # endregion
     # region Connect GNS3 Lab Nodes
     deployment_step = 'Connect GNS3 Nodes'

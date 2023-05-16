@@ -52,7 +52,6 @@ def update_config():
     vmanage_api_ip = req_data.get('vmanage_api_ip')
     site_count = req_data.get('site_count')
     tap_name = req_data.get('tap_name')
-    # project_id = req_data.get('project_id')
     projects = get_projects(server_ip, server_port)
     server_name = get_computes_name(server_ip, server_port)
     if new_project_name not in [project['name'] for project in projects]:
@@ -95,35 +94,6 @@ def get_deployment():
     conn.close()
     deployment_data = [dict(row) for row in rows]
     return jsonify(deployment_data)
-
-
-@app.route('/api/create_project', methods=['POST'])
-def create_project():
-    with open('app.log', 'w'):
-        pass
-    server_ip = request.json['server_ip']
-    server_port = request.json['server_port']
-    project_name = request.json['project_name']
-    vmanage_api_ip = request.json['vmanage_api_ip']
-    site_count = request.json['site_count']
-    site_count = int(site_count)
-    tap_name = request.json['tap_name']
-    use_tap = request.json['use_tap']
-    server_data = [{
-        "GNS3 Server": server_ip,
-        "Project Name": project_name,
-        "vManage API IP": vmanage_api_ip,
-        "Site Count": site_count,
-        "Tap Name": tap_name,
-        "Use Tap": use_tap,
-        "Server Name": "er-test-01",
-        "Server Port": server_port,
-    }]
-    logging.info(server_data)
-    threading.Thread(target=viptela_deploy, args=(server_data,)).start()
-    # deploy_sdwan(new_project_id, server_data)
-    # return jsonify([server_data])
-    return make_response(jsonify({'Deployment Started Successfully'}), 200)
 
 
 @app.route('/api/tasks/start_viptela_deploy', methods=['PUT'])
