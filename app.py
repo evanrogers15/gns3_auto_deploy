@@ -111,9 +111,9 @@ def create_project():
     return make_response(jsonify({'Deployment Started Successfully'}), 200)
 
 
-@app.route('/api/tasks/start_viptela_deploy', methods=['POST'])
+@app.route('/api/tasks/start_viptela_deploy', methods=['PUT'])
 def viptela_deploy_full():
-    req_data = request.get_json()
+    # req_data = request.get_json()
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
     c.execute("SELECT * FROM config")
@@ -132,9 +132,9 @@ def viptela_deploy_full():
     else:
         tap_name = 0
     server_data = [{"GNS3 Server": server_ip, "Server Name": server_name, "Server Port": server_port,
-                    "vManage API IP": vmanage_api_ip, "Project Name": project_name, "Tap Name": tap_name,
+                    "vManage API IP": vmanage_api_ip, "Project Name": project_name, "Project ID": project_id, "Tap Name": tap_name,
                     "Site Count": site_count, "Use Tap": use_tap}]
-    threading.Thread(target=viptela_deploy, args=(server_data,)).start()
+    threading.Thread(target=viptela_deploy, args=()).start()
     return make_response(jsonify({'Deployment Started Successfully'}), 200)
 
 @app.route('/api/projects', methods=['GET'])
