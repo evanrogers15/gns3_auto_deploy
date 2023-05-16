@@ -4,7 +4,7 @@ logging.basicConfig(filename='app.log', level=logging.DEBUG,
 
 processes = {}
 
-db_path = 'gns3_db'
+db_path = 'gns3.db'
 
 # region Viptela Variables
 viptela_username = 'admin'
