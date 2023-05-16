@@ -81,6 +81,17 @@ def get_config():
     config_data = [dict(row) for row in rows]
     return jsonify(config_data)
 
+@app.route('/api/deployment_status', methods=['GET'])
+def get_config():
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    c.execute("SELECT * FROM deployments")
+    rows = c.fetchall()
+    conn.close()
+    deployment_data = [dict(row) for row in rows]
+    return jsonify(deployment_data)
+
 
 @app.route('/api/create_project', methods=['POST'])
 def create_project():

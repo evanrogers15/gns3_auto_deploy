@@ -45,7 +45,8 @@ def viptela_deploy():
     start_time = time.time()
     update_query = '''
             UPDATE deployments
-            SET deployment_status = ?,
+            SET deployment_type = ?,
+                deployment_status = ?,
                 deployment_step = ?
             WHERE id = ?;
         '''
@@ -72,7 +73,7 @@ def viptela_deploy():
     gns3_server_data = [{"GNS3 Server": server_ip, "Server Name": server_name, "Server Port": server_port,
                     "vManage API IP": vmanage_api_ip, "Project Name": project_name, "Project ID": new_project_id,
                     "Tap Name": tap_name,
-                    "Site Count": vedge_count, "Use Tap": use_tap}]
+                    "Site Count": vedge_count, "Use Tap": use_tap, "Deployment Type": "viptela"}]
     isp_switch_count = (vedge_count // 40) + 1
     mgmt_switch_count = (vedge_count // 30) + 1
     conn = sqlite3.connect(db_path)
@@ -92,7 +93,7 @@ def viptela_deploy():
     gns3_set_project(gns3_server_data, new_project_id)
     # endregion
     # region Create GNS3 Templates
-    c.execute(update_query, ('ok', 'Creating Templates', 1))
+    c.execute(update_query, ('viptela', 'ok', 'Creating Templates', 1))
     conn.commit()
     
     vmanage_template_id = gns3_create_template(gns3_server_data, viptela_vmanage_template_data)
@@ -115,7 +116,7 @@ def viptela_deploy():
     mgmt_switch_deploy_data = generate_mgmt_switch_deploy_data(mgmt_switch_count)
     # endregion
     # region Deploy GNS3 Nodes
-    c.execute(update_query, ('ok', 'Deploying Nodes', 1))
+    c.execute(update_query, ('viptela', 'ok', 'Deploying Nodes', 1))
     conn.commit()
     
     vmanage_node_id = gns3_create_node(gns3_server_data, new_project_id, vmanage_template_id, vmanage_deploy_data)
@@ -190,7 +191,7 @@ def viptela_deploy():
             logging.info(f"No nodes found in project {project_name} for vEdge {i}")
     # endregion
     # region Connect GNS3 Lab Nodes
-    c.execute(update_query, ('ok', 'Connecting Nodes', 1))
+    c.execute(update_query, ('viptela', 'ok', 'Connecting Nodes', 1))
     conn.commit()
     
     matching_nodes = gns3_find_nodes_by_field(gns3_server_data, new_project_id, 'name', 'ports', 'MGMT-Cloud-TAP')
@@ -250,7 +251,7 @@ def viptela_deploy():
                             site_drawing_deploy_data[f"site_drawing_{i:03}_deploy_data"])
     # endregion
     # region Deploy GNS3 Node Config Files
-    c.execute(update_query, ('ok', 'Creating Config Files', 1))
+    c.execute(update_query, ('viptela', 'ok', 'Creating Config Files', 1))
     conn.commit()
     
     matching_nodes = gns3_find_nodes_by_name(gns3_server_data, new_project_id, "Cloud_ISP")
@@ -286,7 +287,7 @@ def viptela_deploy():
             gns3_upload_file_to_node(gns3_server_data, new_project_id, node_id, "startup-config.cfg", temp_file_name)
     # endregion
     # region Start All GNS3 Nodes
-    c.execute(update_query, ('ok', 'Starting Nodes', 1))
+    c.execute(update_query, ('viptela', 'ok', 'Starting Nodes', 1))
     conn.commit()
     
     gns3_start_all_nodes(gns3_server_data, new_project_id)
@@ -295,7 +296,7 @@ def viptela_deploy():
     time.sleep(wait_time * 60)
     # endregion
     # region Viptela vManage Setup Part 1
-    c.execute(update_query, ('ok', 'vManage Part 1', 1))
+    c.execute(update_query, ('viptela', 'ok', 'vManage Part 1', 1))
     conn.commit()
     
     logging.info(f"Deploy - Starting vManage device setup part 1")
@@ -335,7 +336,7 @@ def viptela_deploy():
     logging.info(f"Deploy - Completed vManage Device Setup Part 1")
     # endregion
     # region Viptela vSmart Setup
-    c.execute(update_query, ('ok', 'vSmart Setup', 1))
+    c.execute(update_query, ('viptela', 'ok', 'vSmart Setup', 1))
     conn.commit()
     
     logging.info(f"Deploy - Starting vSmart Device Setup")
@@ -409,7 +410,7 @@ def viptela_deploy():
     logging.info(f"Deploy - Completed vSmart Device Setup")
     # endregion
     # region Viptela vBond Setup
-    c.execute(update_query, ('ok', 'vBond Setup', 1))
+    c.execute(update_query, ('viptela', 'ok', 'vBond Setup', 1))
     conn.commit()
     
     logging.info(f"Deploy - Starting vBond Device Setup")
@@ -482,7 +483,7 @@ def viptela_deploy():
     logging.info(f"Deploy - Completed vBond Device Setup")
     # endregion
     # region Viptela vManage Setup Part 2
-    c.execute(update_query, ('ok', 'vManage Part 2', 1))
+    c.execute(update_query, ('viptela', 'ok', 'vManage Part 2', 1))
     conn.commit()
     
     logging.info(f"Deploy - Starting vManage setup part 2")
@@ -565,7 +566,7 @@ def viptela_deploy():
     logging.info(f"Deploy - Completed vManage Device Setup Part 2")
     # endregion
     # region Viptela vEdge Device Setup
-    c.execute(update_query, ('ok', 'vEdge Setup', 1))
+    c.execute(update_query, ('viptela', 'ok', 'vEdge Setup', 1))
     conn.commit()
     
     logging.info(f"Deploy - Starting vEdge Device Setup for {vedge_count} vEdges")
@@ -671,7 +672,7 @@ def viptela_deploy():
     logging.info(f"Deploy - Completed vEdge Device Setup for {vedge_count} vEdge devices")
     # endregion
     # region Viptela vManage API Setup
-    c.execute(update_query, ('ok', 'vManage API Setup', 1))
+    c.execute(update_query, ('viptela', 'ok', 'vManage API Setup', 1))
     conn.commit()
     
     auth = Authentication()
@@ -789,7 +790,7 @@ def viptela_deploy():
     logging.info(f"Deploy - Completed vManage API Setup")
     # endregion
     # region Viptela vEdge Final Setup
-    c.execute(update_query, ('ok', 'vEdge Final Setup', 1))
+    c.execute(update_query, ('viptela', 'ok', 'vEdge Final Setup', 1))
     conn.commit()
     
     logging.info(f"Deploy - Starting vEdge Certificate setup and deployment into Viptela Environment")
@@ -939,7 +940,7 @@ def viptela_deploy():
     logging.info(f"Deploy - Completed vEdge Certificate setup and deployment into Viptela Environment")
     # endregion
     # region Deploy Site Clients in Lab
-    c.execute(update_query, ('ok', 'Site Client Deployment', 1))
+    c.execute(update_query, ('viptela', 'ok', 'Site Client Deployment', 1))
     conn.commit()
     
     network_test_tool_template_id = gns3_get_template_id(gns3_server_data, 'Network_Test_Tool')
@@ -967,7 +968,7 @@ def viptela_deploy():
             v += 1
     # endregion
     # region Push vEdge Certs to Control Devices
-    c.execute(update_query, ('ok', 'Pushing vEdge Certs', 1))
+    c.execute(update_query, ('viptela', 'ok', 'Pushing vEdge Certs', 1))
     conn.commit()
     
     logging.info(f"Deploy - Waiting 5 mins to send final API call to vManage to push vEdge certificates to control devices, to resume at {util_resume_time(5)}")
@@ -984,7 +985,7 @@ def viptela_deploy():
     vmanage_push_certs(gns3_server_data, vmanage_headers)
     # endregion
     # region Validation
-    c.execute(update_query, ('ok', 'Validation', 1))
+    c.execute(update_query, ('viptela', 'ok', 'Validation', 1))
     conn.commit()
     
     wait_time = 10  # minutes
@@ -1022,7 +1023,7 @@ def viptela_deploy():
     logging.info(f"Deploy - Successful connection to {successful_site} of {len(client_nodes)} Sites")
     logging.info(f"Deploy - Completed deployment validation for project {project_name}")
     # endregion
-    c.execute(update_query, ('ok', 'Complete', 1))
+    c.execute(update_query, ('viptela', 'ok', 'Complete', 1))
     conn.commit()
     conn.close()
     end_time = time.time()
