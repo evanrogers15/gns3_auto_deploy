@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Deployment Status</title>
+  <style>
+    .scrollable-table {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+  </style>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      refreshData();
+
+      setInterval(refreshData, 5000); // Refresh every 5 seconds
+
+      function refreshData() {
+        $.ajax({
+          url: '/api/deployment_status',
+          type: 'GET',
+          dataType: 'json',
+          success: function(data) {
+            // Reverse the order of entries
+            data.reverse();
+
+            var tableRows = '';
+            $.each(data, function(index, deployment) {
+              tableRows += '<tr>';
+              tableRows += '<td>' + deployment.server_name + '</td>';
+              tableRows += '<td>' + deployment.server_ip + '</td>';
+              tableRows += '<td>' + deployment.project_name + '</td>';
+              tableRows += '<td>' + deployment.deployment_type + '</td>';
+              tableRows += '<td>' + deployment.deployment_status + '</td>';
+              tableRows += '<td>' + deployment.deployment_step + '</td>';
+              tableRows += '<td>' + deployment.log_message + '</td>';
+              tableRows += '</tr>';
+            });
+
+            $('#deploymentTable').html(tableRows);
+          },
+          error: function() {
+            console.log('Error occurred while fetching data.');
+          }
+        });
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="scrollable-table">
+    <table id="deploymentTable">
+      <thead>
+        <tr>
+          <th>Server Name</th>
+          <th>Server IP</th>
+          <th>Project Name</th>
+          <th>Deployment Type</th>
+          <th>Deployment Status</th>
+          <th>Deployment Step</th>
+          <th>Log Message</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Data will be populated dynamically using JavaScript -->
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

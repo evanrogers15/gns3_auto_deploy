@@ -27,6 +27,10 @@ def index_multi():
 def adminPage():
     return render_template('admin.html')
 
+@app.route('/deployment_status')
+def adminPage():
+    return render_template('status.html')
+
 @app.route('/scenarios')
 def scenariosPage():
     return render_template('scenarios.html')
