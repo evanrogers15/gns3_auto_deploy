@@ -55,20 +55,16 @@ def update_config():
     # project_id = req_data.get('project_id')
     projects = get_projects(server_ip, server_port)
     server_name = get_computes_name(server_ip, server_port)
-    if tap_name:
-        use_tap = 1
-    else:
-        use_tap = 0
-    server_data = [{"GNS3 Server": server_ip, "Server Name": server_name, "Server Port": server_port, "vManage API IP": vmanage_api_ip, "Project Name": new_project_name, "Tap Name": tap_name, "Site Count": site_count, "Use Tap": use_tap, "Deployment Type": deployment_type, "Deployment Status": deployment_status, "Deployment Step": deployment_step}]
-    project_ids = [project['project_id'] for project in projects]
     if new_project_name not in [project['name'] for project in projects]:
         project_id = gns3_create_project_static(server_ip, server_port, new_project_name)
-        projects = get_projects(server_ip, server_port)
     else:
-        gns3_delete_project(server_data)
+        matching_projects = [project for project in projects if project['name'] == new_project_name]
+        project_id = matching_projects[0]['project_id']
+        gns3_delete_project_static(server_ip, server_port, new_project_name)
         project_id = gns3_create_project_static(server_ip, server_port, new_project_name)
-        projects = get_projects(server_ip, server_port)
+    projects = get_projects(server_ip, server_port)
     project_names = [project['name'] for project in projects]
+    project_ids = [project['project_id'] for project in projects]
     project_status = [project['status'] for project in projects]
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
