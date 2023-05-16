@@ -54,6 +54,7 @@ def viptela_deploy():
     c = conn.cursor()
     c.execute("SELECT * FROM config")
     row = c.fetchone()
+    conn.close()
     if row:
         server_name = row[1]
         server_ip = row[2]
@@ -74,6 +75,17 @@ def viptela_deploy():
                     "Site Count": vedge_count, "Use Tap": use_tap}]
     isp_switch_count = (vedge_count // 40) + 1
     mgmt_switch_count = (vedge_count // 30) + 1
+    conn = sqlite3.connect(db_path)
+    c = conn.cursor()
+    c.execute("SELECT COUNT(*) FROM deployments")
+    count = c.fetchone()[0]
+
+    if count == 0:
+        # Perform initial insertion to populate the table
+        c.execute(
+            "INSERT INTO deployments (server_name, server_ip, server_port, project_name) VALUES (?, ?, ?, ?)", (server_ip, server_port, server_name, project_name))
+        conn.commit()
+
     #gns3_delete_project(gns3_server_data)
     gns3_actions_remove_templates(gns3_server_data)
     #new_project_id = gns3_create_project(gns3_server_data)
@@ -82,7 +94,7 @@ def viptela_deploy():
     # region Create GNS3 Templates
     c.execute(update_query, ('ok', 'Creating Templates', 1))
     conn.commit()
-    conn.close()
+    
     vmanage_template_id = gns3_create_template(gns3_server_data, viptela_vmanage_template_data)
     vbond_template_id = gns3_create_template(gns3_server_data, viptela_vbond_template_data)
     vsmart_template_id = gns3_create_template(gns3_server_data, viptela_vsmart_template_data)
@@ -105,7 +117,7 @@ def viptela_deploy():
     # region Deploy GNS3 Nodes
     c.execute(update_query, ('ok', 'Deploying Nodes', 1))
     conn.commit()
-    conn.close()
+    
     vmanage_node_id = gns3_create_node(gns3_server_data, new_project_id, vmanage_template_id, vmanage_deploy_data)
     vsmart_node_id = gns3_create_node(gns3_server_data, new_project_id, vsmart_template_id, vsmart_deploy_data)
     vbond_node_id = gns3_create_node(gns3_server_data, new_project_id, vbond_template_id, vbond_deploy_data)
@@ -180,7 +192,7 @@ def viptela_deploy():
     # region Connect GNS3 Lab Nodes
     c.execute(update_query, ('ok', 'Connecting Nodes', 1))
     conn.commit()
-    conn.close()
+    
     matching_nodes = gns3_find_nodes_by_field(gns3_server_data, new_project_id, 'name', 'ports', 'MGMT-Cloud-TAP')
     mgmt_tap_interface = 0
     for port in matching_nodes[0]:
@@ -240,7 +252,7 @@ def viptela_deploy():
     # region Deploy GNS3 Node Config Files
     c.execute(update_query, ('ok', 'Creating Config Files', 1))
     conn.commit()
-    conn.close()
+    
     matching_nodes = gns3_find_nodes_by_name(gns3_server_data, new_project_id, "Cloud_ISP")
     starting_subnet = 6
     router_ip = 0
@@ -276,7 +288,7 @@ def viptela_deploy():
     # region Start All GNS3 Nodes
     c.execute(update_query, ('ok', 'Starting Nodes', 1))
     conn.commit()
-    conn.close()
+    
     gns3_start_all_nodes(gns3_server_data, new_project_id)
     wait_time = 5  # minutes
     logging.info(f"Deploy - Waiting {wait_time} mins for devices to come up, to resume at {util_resume_time(wait_time)}")
@@ -285,7 +297,7 @@ def viptela_deploy():
     # region Viptela vManage Setup Part 1
     c.execute(update_query, ('ok', 'vManage Part 1', 1))
     conn.commit()
-    conn.close()
+    
     logging.info(f"Deploy - Starting vManage device setup part 1")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     for server_ip in server_ips:
@@ -325,7 +337,7 @@ def viptela_deploy():
     # region Viptela vSmart Setup
     c.execute(update_query, ('ok', 'vSmart Setup', 1))
     conn.commit()
-    conn.close()
+    
     logging.info(f"Deploy - Starting vSmart Device Setup")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     abs_path = os.path.abspath(__file__)
@@ -399,7 +411,7 @@ def viptela_deploy():
     # region Viptela vBond Setup
     c.execute(update_query, ('ok', 'vBond Setup', 1))
     conn.commit()
-    conn.close()
+    
     logging.info(f"Deploy - Starting vBond Device Setup")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     abs_path = os.path.abspath(__file__)
@@ -472,7 +484,7 @@ def viptela_deploy():
     # region Viptela vManage Setup Part 2
     c.execute(update_query, ('ok', 'vManage Part 2', 1))
     conn.commit()
-    conn.close()
+    
     logging.info(f"Deploy - Starting vManage setup part 2")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     abs_path = os.path.abspath(__file__)
@@ -555,7 +567,7 @@ def viptela_deploy():
     # region Viptela vEdge Device Setup
     c.execute(update_query, ('ok', 'vEdge Setup', 1))
     conn.commit()
-    conn.close()
+    
     logging.info(f"Deploy - Starting vEdge Device Setup for {vedge_count} vEdges")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     abs_path = os.path.abspath(__file__)
@@ -661,7 +673,7 @@ def viptela_deploy():
     # region Viptela vManage API Setup
     c.execute(update_query, ('ok', 'vManage API Setup', 1))
     conn.commit()
-    conn.close()
+    
     auth = Authentication()
     while True:
         try:
@@ -779,7 +791,7 @@ def viptela_deploy():
     # region Viptela vEdge Final Setup
     c.execute(update_query, ('ok', 'vEdge Final Setup', 1))
     conn.commit()
-    conn.close()
+    
     logging.info(f"Deploy - Starting vEdge Certificate setup and deployment into Viptela Environment")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     ve = 101
@@ -929,7 +941,7 @@ def viptela_deploy():
     # region Deploy Site Clients in Lab
     c.execute(update_query, ('ok', 'Site Client Deployment', 1))
     conn.commit()
-    conn.close()
+    
     network_test_tool_template_id = gns3_get_template_id(gns3_server_data, 'Network_Test_Tool')
     client_filename = 'client_interfaces'
     client_node_file_path = 'etc/network/interfaces'
@@ -957,7 +969,7 @@ def viptela_deploy():
     # region Push vEdge Certs to Control Devices
     c.execute(update_query, ('ok', 'Pushing vEdge Certs', 1))
     conn.commit()
-    conn.close()
+    
     logging.info(f"Deploy - Waiting 5 mins to send final API call to vManage to push vEdge certificates to control devices, to resume at {util_resume_time(5)}")
     time.sleep(300)
     while True:
@@ -974,7 +986,7 @@ def viptela_deploy():
     # region Validation
     c.execute(update_query, ('ok', 'Validation', 1))
     conn.commit()
-    conn.close()
+    
     wait_time = 10  # minutes
     logging.info(f"Deploy - Waiting {wait_time} minutes to validate deployment, to resume at {util_resume_time(wait_time)}")
     time.sleep(wait_time * 60)

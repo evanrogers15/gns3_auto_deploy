@@ -45,8 +45,7 @@ CREATE TABLE IF NOT EXISTS deployments (
     server_name TEXT,
     server_ip TEXT,
     server_port INTEGER,
-    project_names TEXT,
-    project_status TEXT,
+    project_name TEXT,
     deployment_type TEXT,
     deployment_status TEXT,
     deployment_step TEXT
