@@ -46,37 +46,54 @@
     </style>
     <script>
         function submitForm() {
-            var server_ip = document.getElementById("server_ip").value;
-            var server_port = document.getElementById("server_port").value;
-            var project_name = document.getElementById("project_name").value;
-            var vmanage_api_ip = document.getElementById("vmanage_api_ip").value;
-            var site_count = document.getElementById("site_count").value;
-            var tap_name = document.getElementById("tap_name").value;
-            var use_tap = document.getElementById("use_tap").value;
+        var server_ip = document.getElementById("server_ip").value;
+        var server_port = document.getElementById("server_port").value;
+        var project_name = document.getElementById("project_name").value;
+        var vmanage_api_ip = document.getElementById("vmanage_api_ip").value;
+        var site_count = document.getElementById("site_count").value;
+        var tap_name = document.getElementById("tap_name").value;
+        var use_tap = document.getElementById("use_tap").value;
 
-            var xhr = new XMLHttpRequest();
-            var url = "/api/config";
-            xhr.open("POST", url, true);
-            xhr.setRequestHeader("Content-Type", "application/json");
+        var xhr = new XMLHttpRequest();
+        var url = "/api/config";
+        xhr.open("POST", url, true);
+        xhr.setRequestHeader("Content-Type", "application/json");
 
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    alert(xhr.responseText);
-                }
-            };
-
-            var data = JSON.stringify({
-                "server_ip": server_ip,
-                "server_port": server_port,
-                "project_name": project_name,
-                "vmanage_api_ip": vmanage_api_ip,
-                "site_count": site_count,
-                "tap_name": tap_name,
-                "use_tap": use_tap
-            });
-
-            xhr.send(data);
+        xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+          alert(xhr.responseText);
         }
+        };
+
+        var data = JSON.stringify({
+        server_ip: server_ip,
+        server_port: server_port,
+        project_name: project_name,
+        vmanage_api_ip: vmanage_api_ip,
+        site_count: site_count,
+        tap_name: tap_name,
+        use_tap: use_tap,
+        });
+
+        xhr.send(data);
+
+        // Delay the PUT request by 5 seconds
+        setTimeout(function () {
+        var putXhr = new XMLHttpRequest();
+        var putUrl = "/api/start_viptela_deploy";
+        putXhr.open("PUT", putUrl, true);
+        putXhr.setRequestHeader("Content-Type", "application/json");
+
+        putXhr.onreadystatechange = function () {
+          if (putXhr.readyState === 4 && putXhr.status === 200) {
+            alert(putXhr.responseText);
+          }
+        };
+
+        putXhr.send();
+        }, 5000);
+        }
+
         $(document).ready(function() {
         refreshData();
 
