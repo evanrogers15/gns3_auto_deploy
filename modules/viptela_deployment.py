@@ -58,11 +58,11 @@ def viptela_deploy(gns3_server_data):
         server_name = row[1]
         server_ip = row[2]
         server_port = row[3]
-        new_project_id = row[5]
-        project_name = row[6]
-        vedge_count = row[8]
-        tap_name = row[9]
-        vmanage_api_ip = row[10]
+        project_name = row[7]
+        new_project_id = row[8]
+        vedge_count = row[9]
+        tap_name = row[10]
+        vmanage_api_ip = row[11]
     if tap_name:
         use_tap = 1
     else:

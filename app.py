@@ -65,7 +65,7 @@ def update_config():
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
     c.execute("DELETE FROM config")
-    c.execute("INSERT INTO config (server_ip, server_port, server_name, project_list, project_name, project_id, project_status, vmanage_api_ip, site_count, tap_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (server_ip, server_port, server_name, json.dumps(project_ids), json.dumps(project_names), project_id, json.dumps(project_status), vmanage_api_ip, site_count, tap_name))
+    c.execute("INSERT INTO config (server_ip, server_port, server_name, project_list, project_names, project_status, project_name, project_id, vmanage_api_ip, site_count, tap_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (server_ip, server_port, server_name, json.dumps(project_ids), json.dumps(project_names), json.dumps(project_status), new_project_name, project_id, vmanage_api_ip, site_count, tap_name))
     conn.commit()
     conn.close()
     return jsonify({'success': True})
