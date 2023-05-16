@@ -19,8 +19,8 @@ CREATE TABLE IF NOT EXISTS config (
     project_list TEXT,
     project_names TEXT,
     project_status TEXT,
-    project_id TEXT,
     project_name TEXT,
+    project_id TEXT,
     site_count INTEGER,
     tap_name TEXT,
     vmanage_api_ip TEXT
