@@ -51,13 +51,6 @@ def viptela_deploy():
     c = conn.cursor()
     # region Runtime
     start_time = time.time()
-    update_query = '''
-            UPDATE deployments
-            SET deployment_type = ?,
-                deployment_status = ?,
-                deployment_step = ?
-            WHERE id = ?;
-        '''
     # region GNS3 Lab Setup
     # time.sleep(10)
     c = conn.cursor()
@@ -88,13 +81,6 @@ def viptela_deploy():
     c = conn.cursor()
     c.execute("DELETE FROM deployments")
     c.execute("SELECT COUNT(*) FROM deployments")
-    count = c.fetchone()[0]
-    if count == 0:
-        # Perform initial insertion to populate the table
-        c.execute(
-            "INSERT INTO deployments (server_name, server_ip, project_name) VALUES (?, ?, ?)", (server_ip, server_name, project_name))
-        conn.commit()
-
     gns3_actions_upload_images(gns3_server_data)
     gns3_actions_remove_templates(gns3_server_data)
     gns3_set_project(gns3_server_data, new_project_id)
@@ -102,13 +88,13 @@ def viptela_deploy():
         response_code = gns3_get_image(gns3_server_data, 'qemu', image)
         if response_code != 201:
             log_and_update_db(server_name, project_name, deployment_type, deployment_status, 'Image Validation',
-                              f"{image} Image Not on GNS3 Server")
+                              f"{image} image not on GNS3 Server")
             return 404
     for image in required_iou_images:
         response_code = gns3_get_image(gns3_server_data, 'iou', image)
         if response_code != 201:
             log_and_update_db(server_name, project_name, deployment_type, deployment_status, 'Image Validation',
-                              f"{image} Image Not on GNS3 Server")
+                              f"{image} image not on GNS3 Server")
             return 404
     # endregion
     # region Create GNS3 Templates
