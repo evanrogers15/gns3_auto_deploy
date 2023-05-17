@@ -469,7 +469,6 @@ def gns3_upload_image(gns3_server_data, image_type, filename):
     abs_path = os.path.abspath(__file__)
     configs_path = os.path.join(os.path.dirname(abs_path), image_file_path)
     file_path = os.path.join(configs_path, filename)
-    file_size = util_get_file_size(file_path)
     for server_record in gns3_server_data:
         server_ip, server_port, server_name, project_name, vmanage_api_ip, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
             'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['vManage API IP'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
