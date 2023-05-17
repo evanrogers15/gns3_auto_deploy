@@ -10,13 +10,31 @@
       color: #333333;
     }
 
+    .container {
+      display: flex;
+    }
+
+    #drop-zone {
+      flex: 1;
+      border: 2px dashed #ccc;
+      padding: 25px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+      color: #ccc;
+    }
+
+    #drop-zone.hover {
+      background-color: #f0f0f0;
+    }
+
     .form-container {
-    max-width: 400px;
-    margin: 20px auto;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    background-color: #ffffff;
+      max-width: 400px;
+      margin: 20px;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      background-color: #ffffff;
     }
 
     .form-container label {
@@ -66,33 +84,6 @@
       background-color: #286090;
     }
 
-    #drop-zone {
-    border: 2px dashed #ccc;
-    padding: 25px;
-    text-align: center;
-    font-size: 20px;
-    font-weight: bold;
-    color: #ccc;
-    }
-
-    #drop-zone.hover {
-    background-color: #f0f0f0;
-    }
-
-    /* Additional styles for layout */
-    .container {
-    display: flex;
-    }
-
-    .form-container {
-    flex: 1;
-    }
-
-    #drop-zone {
-    flex: 1;
-    margin-right: 20px;
-    }
-
     .scrollable-table {
       max-height: 300px;
       overflow-y: auto;
@@ -123,70 +114,74 @@
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
 </head>
 <body>
-    <h1>Viptela SDWAN GNS3 Lab Autodeployment</h1>
-        <div id="drop-zone">Drag and drop files here to upload</div>
-        <div class="form-container">
-            <form>
-                <label for="server_ip">Server IP:</label>
-                <select id="server_ip" name="server_ip">
-                  <option value="custom">Custom</option><option value="100.101.213.21">boot-pod1-4-sdwan-server</option>
-                  <option value="100.92.8.44">er-test-lab-02</option>
-                </select>
-                <input type="text" id="server_ip_input" name="server_ip_input" style="display: block;">
+  <h1>Viptela SDWAN GNS3 Lab Autodeployment</h1>
+  <div class="container">
+    <div id="drop-zone">Drag and drop files here to upload</div>
+    <div class="form-container">
+      <form>
+        <label for="server_ip">Server IP:</label>
+        <select id="server_ip" name="server_ip">
+          <option value="custom">Custom</option>
+          <option value="100.101.213.21">boot-pod1-4-sdwan-server</option>
+          <option value="100.92.8.44">er-test-lab-02</option>
+        </select>
+        <input type="text" id="server_ip_input" name="server_ip_input" style="display: block;">
 
-                <label for="server_port">Server Port:</label>
-                <select id="server_port" name="server_port">
-                <option value="80">80</option>
-                <option value="3080">3080</option>
-                <option value="custom">Custom</option>
-                </select>
-                <input type="text" id="server_port_input" name="server_ip_input" style="display: none;">
+        <label for="server_port">Server Port:</label>
+        <select id="server_port" name="server_port">
+          <option value="80">80</option>
+          <option value="3080">3080</option>
+          <option value="custom">Custom</option>
+        </select>
+        <input type="text" id="server_port_input" name="server_ip_input" style="display: none;">
 
-                <label for="project_name">New GNS3 Project Name:</label>
-                <input type="text" id="project_name" name="project_name">
+        <label for="project_name">New GNS3 Project Name:</label>
+        <input type="text" id="project_name" name="project_name">
 
-                <label for="vmanage_api_ip">vManage API IP:</label>
-                <select id="vmanage_api_ip" name="use_tap">
-                <option value="172.16.2.2">Local</option>
-                <option value=server_ip>Remote</option>
-                </select>
+        <label for="vmanage_api_ip">vManage API IP:</label>
+        <select id="vmanage_api_ip" name="use_tap">
+          <option value="172.16.2.2">Local</option>
+          <option value=server_ip>Remote</option>
+        </select>
 
-                <label for="site_count">Site Count:</label>
-                <input type="text" id="site_count" name="site_count">
+        <label for="site_count">Site Count:</label>
+        <input type="text" id="site_count" name="site_count">
 
-                <label for="tap_name">Tap Interface Name:</label>
-                <input type="text" id="tap_name" name="tap_name">
+        <label for="tap_name">Tap Interface Name:</label>
+        <input type="text" id="tap_name" name="tap_name">
 
-                <label for="use_tap">Use Tap:</label>
-                <select id="use_tap" name="use_tap">
-                <option value="1">Yes</option>
-                <option value="0">No</option>
-                </select>
+        <label for="use_tap">Use Tap:</label>
+        <select id="use_tap" name="use_tap">
+          <option value="1">Yes</option>
+          <option value="0">No</option>
+        </select>
 
-                <input type="button" value="Submit" onclick="submitForm()">
-            </form>
-        </div>
+        <input type="button" value="Submit" onclick="submitForm()">
+      </form>
+    </div>
+  </div>
 
-        <h1>Deployment Log</h1>
-          <div class="scrollable-table">
-        <table>
-          <thead>
-            <tr>
-              <th>Timestamp</th>
-              <th>Server Name</th>
-              <th>Project Name</th>
-              <th>Deployment Type</th>
-              <th>Deployment Status</th>
-              <th>Deployment Step</th>
-              <th>Log Message</th>
-            </tr>
-          </thead>
-          <tbody id="deploymentTableBody">
-            <!-- Data will be populated dynamically using JavaScript -->
-          </tbody>
-        </table>
-      </div>
-    <script>
+  <h1>Deployment Log</h1>
+  <div class="scrollable-table">
+    <table>
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Server Name</th>
+          <th>Project Name</th>
+          <th>Deployment Type</th>
+          <th>Deployment Status</th>
+          <th>Deployment Step</th>
+          <th>Log Message</th>
+        </tr>
+      </thead>
+      <tbody id="deploymentTableBody">
+        <!-- Data will be populated dynamically using JavaScript -->
+      </tbody>
+    </table>
+  </div>
+
+  <script>
         document.getElementById("server_ip").addEventListener("change", function() {
             var selectedValue = this.value;
 
@@ -276,8 +271,7 @@
             var formData = new FormData();
 
             for (var i = 0; i < files.length; i++) {
-              var fileName = files[i].name.replace(/['"]+/g, '');
-              formData.append('file', files[i], fileName);
+              formData.append('file', files[i]);
             }
 
             $.ajax({
@@ -287,11 +281,11 @@
               processData: false,
               contentType: false,
               success: function(data) {
-                // Extract the file name from the response and use it as needed
-                var fileName = data.trim();
-                console.log('File uploaded successfully: ' + fileName);
+                console.log(data);
               }
             });
+          });
+        });
         $(document).ready(function() {
         refreshData();
 
@@ -328,6 +322,5 @@
         }
         });
     </script>
-
 </body>
 </html>
