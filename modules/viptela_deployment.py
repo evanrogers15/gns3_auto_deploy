@@ -101,10 +101,14 @@ def viptela_deploy():
     for image in required_qemu_images:
         response_code = gns3_get_image(gns3_server_data, 'qemu', image)
         if response_code != 201:
+            log_and_update_db(server_name, project_name, deployment_type, deployment_status, 'Image Validation',
+                              f"{image} Image Not on GNS3 Server")
             return 404
     for image in required_iou_images:
         response_code = gns3_get_image(gns3_server_data, 'iou', image)
         if response_code != 201:
+            log_and_update_db(server_name, project_name, deployment_type, deployment_status, 'Image Validation',
+                              f"{image} Image Not on GNS3 Server")
             return 404
     # endregion
     # region Create GNS3 Templates
