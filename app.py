@@ -3,6 +3,7 @@ import subprocess
 import psutil
 import threading
 import logging.handlers
+from werkzeug.utils import secure_filename
 
 from modules.arista_evpn_deploy import *
 from modules.gns3_query import *
@@ -93,14 +94,33 @@ def get_deployment():
     return jsonify(deployment_data)
 
 @app.route('/api/upload', methods=['POST'])
-def upload():
+def upload_file():
+    # Get the absolute path of the directory where the Flask app is located
+    app_root = os.path.dirname(os.path.abspath(__file__))
     # Create the images folder if it doesn't exist
-    if not os.path.exists('images'):
-        os.makedirs('images')
+    images_dir = os.path.join(app_root, 'images')
+    if not os.path.exists(images_dir):
+        os.makedirs(images_dir)
     files = request.files.getlist('file')
     for file in files:
-        # Save the file to the "images" folder
-        file.save(os.path.join('images', file.filename))
+        filename = secure_filename(file.filename)
+        # Get the extension of the file
+        _, extension = os.path.splitext(filename)
+        # Determine the appropriate directory based on the file extension
+        if extension.lower() in ['.qcow2', '.img', '.iso']:
+            subdir = 'qemu'
+        elif extension.lower() == '.iourc':
+            subdir = 'iou'
+        elif extension.lower() == '.bin':
+            subdir = 'ios'
+        else:
+            subdir = 'unknown'  # Create a separate directory for unknown file types if needed
+        # Create the subdirectory if it doesn't exist
+        sub_dir_path = os.path.join(images_dir, subdir)
+        if not os.path.exists(sub_dir_path):
+            os.makedirs(sub_dir_path)
+        # Save the file to the appropriate directory
+        file.save(os.path.join(sub_dir_path, filename))
     return 'Files uploaded successfully'
 
 @app.route('/api/upload/qemu', methods=['POST'])
@@ -133,19 +153,18 @@ def upload_iou():
 
 @app.route('/api/uploaded_files', methods=['GET'])
 def get_uploaded_files():
-    # Get the absolute path of the directory where the Flask app is located
-    #app_root = os.path.dirname(os.path.abspath(__file__))
-
     # Get the list of uploaded files in the images/qemu and images/iou directories
     qemu_dir = os.path.join('/app', 'images', 'qemu')
     iou_dir = os.path.join('/app', 'images', 'iou')
+    ios_dir = os.path.join('/app', 'images', 'ios')
     # Create the directories if they don't exist
     os.makedirs(qemu_dir, exist_ok=True)
     os.makedirs(iou_dir, exist_ok=True)
+    os.makedirs(ios_dir, exist_ok=True)
     qemu_files = [file for file in os.listdir(qemu_dir) if os.path.isfile(os.path.join(qemu_dir, file))]
     iou_files = [file for file in os.listdir(iou_dir) if os.path.isfile(os.path.join(iou_dir, file))]
-
-    return jsonify({'qemu_files': qemu_files, 'iou_files': iou_files})
+    ios_files = [file for file in os.listdir(ios_dir) if os.path.isfile(os.path.join(ios_dir, file))]
+    return jsonify({'qemu_files': qemu_files, 'iou_files': iou_files, 'ios_files': ios_files})
 
 
 @app.route('/api/tasks/start_viptela_deploy_old', methods=['PUT'])
