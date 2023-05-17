@@ -14,6 +14,8 @@ from modules.use_cases import *
 
 app = Flask(__name__)
 
+running_thread = None
+
 @app.route('/')
 def index():
     return render_template('create_sdwan.html')
@@ -79,10 +81,42 @@ def get_deployment():
     return jsonify(deployment_data)
 
 
-@app.route('/api/tasks/start_viptela_deploy', methods=['PUT'])
-def viptela_deploy_full():
+@app.route('/api/tasks/start_viptela_deploy_old', methods=['PUT'])
+def viptela_deploy_full_old():
     threading.Thread(target=viptela_deploy, args=()).start()
     return make_response(jsonify({'message': 'Deployment Started Successfully'}), 200)
+
+
+@app.route('/api/tasks/start_viptela_deploy', methods=['PUT'])
+def viptela_deploy_full():
+    global running_thread
+
+    # Check if a thread is already running
+    if running_thread is not None and running_thread.is_alive():
+        return make_response(jsonify({'message': 'Deployment is already in progress'}), 400)
+
+    # Start a new thread for deployment
+    running_thread = threading.Thread(target=viptela_deploy, args=())
+    running_thread.start()
+
+    return make_response(jsonify({'message': 'Deployment Started Successfully'}), 200)
+
+
+@app.route('/api/tasks/stop_viptela_deploy', methods=['PUT'])
+def stop_viptela_deploy():
+    global running_thread
+
+    # Check if a thread is running
+    if running_thread is not None and running_thread.is_alive():
+        # Perform any necessary actions to stop the deployment
+        # For example, you can set a flag in the thread to gracefully exit
+
+        # Wait for the thread to finish
+        running_thread.join()
+
+        return make_response(jsonify({'message': 'Deployment Stopped Successfully'}), 200)
+    else:
+        return make_response(jsonify({'message': 'No deployment is currently running'}), 400)
 
 @app.route('/api/projects', methods=['GET'])
 def get_project_list():
