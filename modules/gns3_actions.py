@@ -375,7 +375,6 @@ def gns3_get_image(gns3_server_data, image_type, filename):
         for image in response.json():
             if image['filename'] == filename:
                 return 201
-
     return 200
 
 
