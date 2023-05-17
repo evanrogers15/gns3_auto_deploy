@@ -16,6 +16,7 @@
 
     #drop-zone {
       flex: 1;
+      max-width: 400px;
       border: 2px dashed #ccc;
       padding: 25px;
       text-align: center;
@@ -110,6 +111,12 @@
       text-align: center;
       margin-top: 30px;
     }
+    #upload-status {
+      margin-top: 10px;
+      font-weight: bold;
+      color: green; /* Example color for success message */
+    }
+
   </style>
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
 </head>
@@ -117,6 +124,7 @@
   <h1>Viptela SDWAN GNS3 Lab Autodeployment</h1>
   <div class="container">
     <div id="drop-zone">Drag and drop files here to upload</div>
+    <div id="upload-status"></div>
     <div class="form-container">
       <form>
         <label for="server_ip">Server IP:</label>
@@ -275,14 +283,24 @@
             }
 
             $.ajax({
-              url: '/api/upload',
-              type: 'POST',
-              data: formData,
-              processData: false,
-              contentType: false,
-              success: function(data) {
-                console.log(data);
+            url: '/api/upload',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            xhr: function() {
+            var xhr = new window.XMLHttpRequest();
+            xhr.upload.addEventListener('progress', function(e) {
+              if (e.lengthComputable) {
+                var percent = Math.round((e.loaded / e.total) * 100);
+                $('#upload-status').text(percent + '% uploaded');
               }
+            }, false);
+            return xhr;
+            },
+            success: function(data) {
+            console.log(data);
+            }
             });
           });
         });
