@@ -95,6 +95,7 @@ def viptela_deploy():
 
     gns3_actions_remove_templates(gns3_server_data)
     gns3_set_project(gns3_server_data, new_project_id)
+    gns3_actions_upload_images(gns3_server_data)
     # endregion
     # region Create GNS3 Templates
     deployment_step = 'Creating Templates'
