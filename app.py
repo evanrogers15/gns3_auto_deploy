@@ -103,6 +103,28 @@ def upload():
         file.save(os.path.join('images', file.filename))
     return 'Files uploaded successfully'
 
+@app.route('/api/upload/qemu', methods=['POST'])
+def upload_qemu():
+    # Create the images folder if it doesn't exist
+    if not os.path.exists('images/qemu'):
+        os.makedirs('images/qemu')
+    files = request.files.getlist('file')
+    for file in files:
+        # Save the file to the "images" folder
+        file.save(os.path.join('images/qemu', file.filename))
+    return 'Files uploaded successfully'
+
+@app.route('/api/upload/iou', methods=['POST'])
+def upload_iou():
+    # Create the images folder if it doesn't exist
+    if not os.path.exists('images/iou'):
+        os.makedirs('images/iou')
+    files = request.files.getlist('file')
+    for file in files:
+        # Save the file to the "images" folder
+        file.save(os.path.join('images/iou', file.filename))
+    return 'Files uploaded successfully'
+
 
 @app.route('/api/tasks/start_viptela_deploy_old', methods=['PUT'])
 def viptela_deploy_full_old():

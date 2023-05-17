@@ -133,8 +133,10 @@
   <h1>Viptela SDWAN GNS3 Lab Autodeployment</h1>
   <div class="wrapper">
   <div class="container">
-    <div id="drop-zone">Drag and drop files here to upload</div>
-    <div id="upload-status"></div>
+    <div id="qemu-drop-zone" class="drop-zone">Drag and drop QEMU images here to upload</div>
+    <div id="qemu-upload-status"></div>
+    <div id="iou-drop-zone" class="drop-zone">Drag and drop IOU images here to upload</div>
+    <div id="iou-upload-status"></div>
   </div>
     <div class="form-container">
       <form>
@@ -271,51 +273,96 @@
         xhr.send(data);
         }
         $(document).ready(function() {
-          var dropZone = $('#drop-zone');
+        var qemuDropZone = $('#qemu-drop-zone');
+        var iouDropZone = $('#iou-drop-zone');
 
-          dropZone.on('dragover', function() {
-            dropZone.addClass('hover');
-            return false;
-          });
+        qemuDropZone.on('dragover', function() {
+        qemuDropZone.addClass('hover');
+        return false;
+        });
 
-          dropZone.on('dragleave', function() {
-            dropZone.removeClass('hover');
-            return false;
-          });
+        qemuDropZone.on('dragleave', function() {
+        qemuDropZone.removeClass('hover');
+        return false;
+        });
 
-          dropZone.on('drop', function(e) {
-            e.preventDefault();
-            dropZone.removeClass('hover');
+        qemuDropZone.on('drop', function(e) {
+        e.preventDefault();
+        qemuDropZone.removeClass('hover');
 
-            var files = e.originalEvent.dataTransfer.files;
-            var formData = new FormData();
+        var files = e.originalEvent.dataTransfer.files;
+        var formData = new FormData();
 
-            for (var i = 0; i < files.length; i++) {
-              formData.append('file', files[i]);
-            }
+        for (var i = 0; i < files.length; i++) {
+          formData.append('file', files[i]);
+        }
 
-            $.ajax({
-            url: '/api/upload',
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            xhr: function() {
+        $.ajax({
+          url: '/api/upload/qemu',
+          type: 'POST',
+          data: formData,
+          processData: false,
+          contentType: false,
+          xhr: function() {
             var xhr = new window.XMLHttpRequest();
             xhr.upload.addEventListener('progress', function(e) {
               if (e.lengthComputable) {
                 var percent = Math.round((e.loaded / e.total) * 100);
-                $('#upload-status').text(percent + '% uploaded');
+                $('#qemu-upload-status').text(percent + '% uploaded');
               }
             }, false);
             return xhr;
-            },
-            success: function(data) {
+          },
+          success: function(data) {
             console.log(data);
-            }
-            });
-          });
+          }
         });
+        });
+
+        iouDropZone.on('dragover', function() {
+        iouDropZone.addClass('hover');
+        return false;
+        });
+
+        iouDropZone.on('dragleave', function() {
+        iouDropZone.removeClass('hover');
+        return false;
+        });
+
+        iouDropZone.on('drop', function(e) {
+        e.preventDefault();
+        iouDropZone.removeClass('hover');
+
+        var files = e.originalEvent.dataTransfer.files;
+        var formData = new FormData();
+
+        for (var i = 0; i < files.length; i++) {
+          formData.append('file', files[i]);
+        }
+
+        $.ajax({
+          url: '/api/upload/iou',
+          type: 'POST',
+          data: formData,
+          processData: false,
+          contentType: false,
+          xhr: function() {
+            var xhr = new window.XMLHttpRequest();
+            xhr.upload.addEventListener('progress', function(e) {
+              if (e.lengthComputable) {
+                var percent = Math.round((e.loaded / e.total) * 100);
+                $('#iou-upload-status').text(percent + '% uploaded');
+              }
+            }, false);
+            return xhr;
+          },
+          success: function(data) {
+            console.log(data);
+          }
+        });
+        });
+        });
+
         $(document).ready(function() {
         refreshData();
 
