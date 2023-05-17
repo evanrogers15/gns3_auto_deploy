@@ -121,34 +121,6 @@ def upload_file():
         file.save(os.path.join(sub_dir_path, filename))
     return 'Files uploaded successfully'
 
-@app.route('/api/upload/qemu', methods=['POST'])
-def upload_qemu():
-    # Get the absolute path of the directory where the Flask app is located
-    app_root = os.path.dirname(os.path.abspath(__file__))
-    # Create the images folder if it doesn't exist
-    images_dir = os.path.join(app_root, 'images', 'qemu')
-    if not os.path.exists(images_dir):
-        os.makedirs(images_dir)
-    files = request.files.getlist('file')
-    for file in files:
-        # Save the file to the images/qemu folder
-        file.save(os.path.join(images_dir, file.filename))
-    return 'Files uploaded successfully'
-
-@app.route('/api/upload/iou', methods=['POST'])
-def upload_iou():
-    # Get the absolute path of the directory where the Flask app is located
-    app_root = os.path.dirname(os.path.abspath(__file__))
-    # Create the images folder if it doesn't exist
-    images_dir = os.path.join(app_root, 'images', 'iou')
-    if not os.path.exists(images_dir):
-        os.makedirs(images_dir)
-    files = request.files.getlist('file')
-    for file in files:
-        # Save the file to the images/iou folder
-        file.save(os.path.join(images_dir, file.filename))
-    return 'Files uploaded successfully'
-
 @app.route('/api/uploaded_files', methods=['GET'])
 def get_uploaded_files():
     # Get the list of uploaded files in the images/qemu and images/iou directories

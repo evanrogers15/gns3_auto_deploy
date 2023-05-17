@@ -23,6 +23,15 @@
       margin-right: 20px;
     }
 
+    .prerequisites-container {
+        max-width: 400px;
+        margin-right: 20px;
+    }
+
+    .prerequisites-container ul {
+        list-style-type: disc; /* Use bullet points */
+        margin-left: 20px; /* Add left margin to the list items */
+    }
     .form-container {
       width: 400px;
       margin: 20px;
@@ -99,7 +108,7 @@
     }
 
     .scrollable-table {
-      max-height: 300px;
+      max-height: 500px;
       overflow-y: auto;
     }
 
@@ -156,6 +165,14 @@
 <body>
   <h1>Viptela SDWAN GNS3 Lab Autodeployment</h1>
   <div class="wrapper">
+    <div class="prerequisites-container">
+    <h2>Prerequisites:</h2>
+    <ul>
+        <li>GNS3 Server Deployed with 2.2.38 or Later</li>
+        <li>If in GCP, the instance requires an N2 CPU</li>
+        <li>A network TAP interface deployed</li>
+    </ul>
+  </div>
   <div class="container">
     <div id="file-drop-zone" class="drop-zone">Drag and drop GNS3 images here to upload</div>
     <div id="file-upload-status"></div>
