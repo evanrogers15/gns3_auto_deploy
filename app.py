@@ -131,6 +131,19 @@ def upload_iou():
         file.save(os.path.join(images_dir, file.filename))
     return 'Files uploaded successfully'
 
+@app.route('/api/uploaded_files', methods=['GET'])
+def get_uploaded_files():
+    # Get the absolute path of the directory where the Flask app is located
+    app_root = os.path.dirname(os.path.abspath(__file__))
+
+    # Get the list of uploaded files in the images/qemu and images/iou directories
+    qemu_dir = os.path.join(app_root, 'images', 'qemu')
+    iou_dir = os.path.join(app_root, 'images', 'iou')
+
+    qemu_files = [file for file in os.listdir(qemu_dir) if os.path.isfile(os.path.join(qemu_dir, file))]
+    iou_files = [file for file in os.listdir(iou_dir) if os.path.isfile(os.path.join(iou_dir, file))]
+
+    return jsonify({'qemu_files': qemu_files, 'iou_files': iou_files})
 
 
 @app.route('/api/tasks/start_viptela_deploy_old', methods=['PUT'])

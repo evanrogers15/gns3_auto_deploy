@@ -125,12 +125,32 @@
     #qemu-upload-status {
       margin-top: 10px;
       font-weight: bold;
-      color: green; /* Example color for success message */
+      color: green;
     }
     #iou-upload-status {
       margin-top: 10px;
       font-weight: bold;
-      color: green; /* Example color for success message */
+      color: green;
+    }
+    .uploaded-files-container {
+      margin-top: 20px;
+    }
+
+    .uploaded-files-container h2 {
+      margin-bottom: 10px;
+    }
+
+    .uploaded-files-list {
+      margin-bottom: 20px;
+    }
+
+    .uploaded-files-list ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    .uploaded-files-list li {
+      margin-bottom: 5px;
     }
 
   </style>
@@ -144,6 +164,20 @@
     <div id="qemu-upload-status"></div>
     <div id="iou-drop-zone" class="drop-zone">Drag and drop IOU images here to upload</div>
     <div id="iou-upload-status"></div>
+      <div class="uploaded-files-container">
+      <h2>Uploaded Files</h2>
+      <div class="uploaded-files-list">
+        <h3>QEMU Files</h3>
+        <ul id="uploaded-files-list-qemu"></ul>
+      </div>
+      <div class="uploaded-files-list">
+        <h3>IOU Files</h3>
+        <ul id="uploaded-files-list-iou"></ul>
+      </div>
+    </div>
+    <h2>Uploaded Files:</h2>
+    <ul id="file-list"></ul>
+</div>
   </div>
     <div class="form-container">
       <form>
@@ -369,7 +403,34 @@
         });
         });
         });
+        function getUploadedFiles() {
+        $.ajax({
+          url: '/api/uploaded_files',
+          type: 'GET',
+          dataType: 'json',
+          success: function(data) {
+            // Display the uploaded files for QEMU
+            var qemuFilesList = $('#uploaded-files-list-qemu');
+            qemuFilesList.empty();
+            data.qemu_files.forEach(function(file) {
+              qemuFilesList.append('<li>' + file + '</li>');
+            });
 
+            // Display the uploaded files for IOU
+            var iouFilesList = $('#uploaded-files-list-iou');
+            iouFilesList.empty();
+            data.iou_files.forEach(function(file) {
+              iouFilesList.append('<li>' + file + '</li>');
+            });
+          },
+          error: function() {
+            console.log('Error occurred while fetching uploaded files.');
+          }
+        });
+        }
+
+        // Call the getUploadedFiles function initially to display the uploaded files
+        getUploadedFiles();
         $(document).ready(function() {
         refreshData();
 
