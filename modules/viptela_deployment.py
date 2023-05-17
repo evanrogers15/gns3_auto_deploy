@@ -71,7 +71,7 @@ def viptela_deploy():
         vedge_count = row[9]
         tap_name = row[10]
         vmanage_api_ip = row[11]
-    if tap_name == 0:
+    if tap_name == 'none':
         use_tap = 0
     else:
         use_tap = 1
