@@ -16,6 +16,18 @@ app = Flask(__name__)
 
 running_thread = None
 
+# Custom Thread class with terminate() method
+class StoppableThread(threading.Thread):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._stop_event = threading.Event()
+
+    def stop(self):
+        self._stop_event.set()
+
+    def terminated(self):
+        return self._stop_event.is_set()
+
 @app.route('/')
 def index():
     return render_template('create_sdwan.html')
@@ -108,11 +120,12 @@ def stop_viptela_deploy():
 
     # Check if a thread is running
     if running_thread is not None and running_thread.is_alive():
-        # Perform any necessary actions to stop the deployment
-        # For example, you can set a flag in the thread to gracefully exit
-
-        # Wait for the thread to finish
+        # Forcefully stop the thread by calling the terminate() method
+        running_thread.stop()
         running_thread.join()
+
+        # Reset the running_thread variable
+        running_thread = None
 
         return make_response(jsonify({'message': 'Deployment Stopped Successfully'}), 200)
     else:
