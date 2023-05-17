@@ -170,8 +170,8 @@
   <h1>Viptela SDWAN GNS3 Lab Autodeployment</h1>
   <div class="wrapper">
     <div class="prerequisites-container">
-    <h2>Prerequisites:</h2>
-    <h3>GNS3 Server:</h3>
+    <h2>Information</h2>
+    <h3>GNS3 Server Requirements:</h3>
       <ul>
         <li>GNS3 Server Deployed with 2.2.38 or Later</li>
         <li>If in GCP, the instance requires an N2 CPU <br>and nested virtualization needs to be enabled</li>
@@ -192,6 +192,16 @@
         <li>OpenVPN Deployed on GNS3 Server</li>
         <li>Tap Interface with IP address of 172.16.2.2</li>
     </ul>
+      <h3>Instructions:</h3>
+      <ul>
+        <li>Set GNS3 server address</li>
+        <li>Set different project name if desired</li>
+        <li>If you are unsure, you can use the default vManage API IP</li>
+        <li>Set Site Count between 1 and 50 (note more sites require more resources)</li>
+        <li>If using tap interface, set Tap Interface Name</li>
+        <li>Click Start Deployment</li>
+    </ul>
+
   </div>
   <div class="container">
     <div id="file-drop-zone" class="drop-zone">Drag and drop GNS3 images here to upload</div>
@@ -233,7 +243,7 @@
           <option value=server_ip>Remote (Uses GNS3 Server IP)</option>
         </select>
 
-        <label for="site_count">Site Count: <h5>Enter Number between 1 and 50: Note More Sites Require More Resources</h5></label>
+        <label for="site_count">Site Count: </label>
         <input type="text" id="site_count" name="site_count">
 
         <label for="tap_name">Tap Interface Name:</label>
