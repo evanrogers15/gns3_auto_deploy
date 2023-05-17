@@ -94,10 +94,13 @@ def get_deployment():
 
 @app.route('/api/upload', methods=['POST'])
 def upload():
+    # Create the images folder if it doesn't exist
+    if not os.path.exists('images'):
+        os.makedirs('images')
     files = request.files.getlist('file')
     for file in files:
         # Save the file to the "images" folder
-        file.save('images/' + file.filename)
+        file.save(os.path.join('images', file.filename))
     return 'Files uploaded successfully'
 
 
