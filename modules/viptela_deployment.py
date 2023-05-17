@@ -209,7 +209,6 @@ def viptela_deploy():
     for port in matching_nodes[0]:
         if port["short_name"] == tap_name:
             mgmt_tap_interface = port['port_number']
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"mgmt tap interface {mgmt_tap_interface}, tap_name {tap_name}")
     cloud_isp_node_id = isp_switch_nodes[0]['node_id']
     gns3_connect_nodes(gns3_server_data, new_project_id, nat_node_id, 0, 0, isp_router_node_id, 0, 0)
     gns3_connect_nodes(gns3_server_data, new_project_id, cloud_isp_node_id, 1, 0, vmanage_node_id, 1, 0)
