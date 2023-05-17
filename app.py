@@ -96,8 +96,8 @@ def get_deployment():
 def upload():
     files = request.files.getlist('file')
     for file in files:
-        # Do something with the uploaded file
-        file.save('./')
+        # Save the file to the "images" folder
+        file.save('images/' + file.filename)
     return 'Files uploaded successfully'
 
 
