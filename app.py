@@ -109,10 +109,8 @@ def upload_file():
         # Determine the appropriate directory based on the file extension
         if extension.lower() in ['.qcow2', '.img', '.iso']:
             subdir = 'qemu'
-        elif extension.lower() in ['.iourc', '.image']:
+        elif extension.lower() in ['.iourc', '.image', 'bin']:
             subdir = 'iou'
-        elif extension.lower() == '.bin':
-            subdir = 'ios'
         else:
             subdir = 'unknown'  # Create a separate directory for unknown file types if needed
         # Create the subdirectory if it doesn't exist
