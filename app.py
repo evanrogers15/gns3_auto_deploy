@@ -92,7 +92,7 @@ def get_deployment():
     deployment_data = [dict(row) for row in rows]
     return jsonify(deployment_data)
 
-@app.route('/upload', methods=['POST'])
+@app.route('/api/upload', methods=['POST'])
 def upload():
     files = request.files.getlist('file')
     for file in files:
