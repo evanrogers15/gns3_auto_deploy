@@ -372,8 +372,9 @@ def gns3_get_image(gns3_server_data, image_type, filename):
         url = f"http://{server_ip}:{server_port}/v2/compute/{image_type}/images"
         response = requests.get(url)
 
-        if filename in response.json():
-            return 201
+        for image in response.json():
+            if image['filename'] == filename:
+                return 201
 
     return 200
 
