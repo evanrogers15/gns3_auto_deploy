@@ -89,8 +89,6 @@ def viptela_deploy():
         conn.commit()
 
     gns3_actions_upload_images(gns3_server_data)
-    gns3_actions_remove_templates(gns3_server_data)
-    gns3_set_project(gns3_server_data, new_project_id)
     for image in required_qemu_images:
         response_code = gns3_get_image(gns3_server_data, 'qemu', image)
         if response_code != 201:
@@ -103,6 +101,8 @@ def viptela_deploy():
             log_and_update_db(server_name, project_name, deployment_type, 'Failed', 'Image Validation',
                               f"{image} image not on GNS3 Server")
             return 404
+    gns3_actions_remove_templates(gns3_server_data)
+    gns3_set_project(gns3_server_data, new_project_id)
     # endregion
     # region Create GNS3 Templates
     deployment_step = 'Creating Templates'
