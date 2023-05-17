@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>GNS3 SDWAN Viptela Lab Auto Deployment</title>
+    <title>GNS3 Lab Auto Deployment</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
     body {
@@ -210,22 +210,30 @@
 
         xhr.send(data);
 
-        // Delay the PUT request by 5 seconds
-        setTimeout(function () {
-        var putXhr = new XMLHttpRequest();
-        var putUrl = "/api/tasks/start_viptela_deploy";
-        putXhr.open("PUT", putUrl, true);
-        putXhr.setRequestHeader("Content-Type", "application/json");
+        xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+        if (xhr.status === 200) {
+          // Successful response
+          var putXhr = new XMLHttpRequest();
+          var putUrl = "/api/tasks/start_viptela_deploy";
+          putXhr.open("PUT", putUrl, true);
+          putXhr.setRequestHeader("Content-Type", "application/json");
 
-        putXhr.onreadystatechange = function () {
-          if (putXhr.readyState === 4 && putXhr.status === 200) {
-            alert(putXhr.responseText);
-          }
-        };
+          putXhr.onreadystatechange = function () {
+            if (putXhr.readyState === 4 && putXhr.status === 200) {
+              alert(putXhr.responseText);
+            }
+          };
 
-        putXhr.send();
-        }, 5000);
-        }
+      putXhr.send();
+    } else {
+      // Handle error response from xhr.send(data)
+      console.error("Error: " + xhr.status);
+    }
+  }
+};
+
+xhr.send(data);
 
         $(document).ready(function() {
         refreshData();

@@ -41,7 +41,7 @@ def viptela_deploy():
     deployment_type = 'viptela'
     deployment_status = 'running'
     deployment_step = '- Action - '
-    cloud_node_deploy_data = {"x": -154, "y": -554, "name": "MGMT-Cloud-TAP", "node_type": "cloud",
+    cloud_node_deploy_data = {"x": 25, "y": -554, "name": "MGMT-Cloud-TAP", "node_type": "cloud",
                               "compute_id": "local", "symbol": ":/symbols/cloud.svg"}
 
     # endregion
