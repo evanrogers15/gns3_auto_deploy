@@ -92,12 +92,17 @@ def get_deployment():
     deployment_data = [dict(row) for row in rows]
     return jsonify(deployment_data)
 
+
 @app.route('/api/upload', methods=['POST'])
 def upload():
     files = request.files.getlist('file')
     for file in files:
+        # Remove single quotes from the file name
+        file_name = file.filename.strip("'")
+
         # Save the file to the "images" folder
-        file.save('images/' + file.filename)
+        file.save('images/' + file_name)
+
     return 'Files uploaded successfully'
 
 

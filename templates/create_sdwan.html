@@ -276,7 +276,8 @@
             var formData = new FormData();
 
             for (var i = 0; i < files.length; i++) {
-              formData.append('file', files[i]);
+              var fileName = files[i].name.replace(/['"]+/g, '');
+              formData.append('file', files[i], fileName);
             }
 
             $.ajax({
@@ -286,11 +287,11 @@
               processData: false,
               contentType: false,
               success: function(data) {
-                console.log(data);
+                // Extract the file name from the response and use it as needed
+                var fileName = data.trim();
+                console.log('File uploaded successfully: ' + fileName);
               }
             });
-          });
-        });
         $(document).ready(function() {
         refreshData();
 
