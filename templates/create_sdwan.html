@@ -370,45 +370,46 @@
             console.log('Error occurred while fetching uploaded files.');
           }
         });
-        }
+      }
 
-        // Call the getUploadedFiles function initially to display the uploaded files
-        getUploadedFiles();
-        $(document).ready(function() {
+      // Call the getUploadedFiles function initially to display the uploaded files
+      getUploadedFiles();
+
+      $(document).ready(function() {
         refreshData();
 
-        setInterval(refreshData, 1000); // Refresh every 5 seconds
+        setInterval(refreshData, 5000); // Refresh every 5 seconds
 
         function refreshData() {
-        $.ajax({
-          url: '/api/deployment_status',
-          type: 'GET',
-          dataType: 'json',
-          success: function(data) {
-            // Reverse the order of entries
-            data.reverse();
+          $.ajax({
+            url: '/api/deployment_status',
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+              // Reverse the order of entries
+              data.reverse();
 
-            var tableRows = '';
-            $.each(data, function(index, deployment) {
-              tableRows += '<tr>';
-              tableRows += '<td>' + deployment.timestamp + '</td>';
-              tableRows += '<td>' + deployment.server_name + '</td>';
-              tableRows += '<td>' + deployment.project_name + '</td>';
-              tableRows += '<td>' + deployment.deployment_type + '</td>';
-              tableRows += '<td>' + deployment.deployment_status + '</td>';
-              tableRows += '<td>' + deployment.deployment_step + '</td>';
-              tableRows += '<td>' + deployment.log_message + '</td>';
-              tableRows += '</tr>';
-            });
+              var tableRows = '';
+              $.each(data, function(index, deployment) {
+                tableRows += '<tr>';
+                tableRows += '<td>' + deployment.timestamp + '</td>';
+                tableRows += '<td>' + deployment.server_name + '</td>';
+                tableRows += '<td>' + deployment.project_name + '</td>';
+                tableRows += '<td>' + deployment.deployment_type + '</td>';
+                tableRows += '<td>' + deployment.deployment_status + '</td>';
+                tableRows += '<td>' + deployment.deployment_step + '</td>';
+                tableRows += '<td>' + deployment.log_message + '</td>';
+                tableRows += '</tr>';
+              });
 
-            $('#deploymentTableBody').html(tableRows);
-          },
-          error: function() {
-            console.log('Error occurred while fetching data.');
-          }
-        });
+              $('#deploymentTableBody').html(tableRows);
+            },
+            error: function() {
+              console.log('Error occurred while fetching data.');
+            }
+          });
         }
-        });
+      });
     </script>
 </body>
 </html>
