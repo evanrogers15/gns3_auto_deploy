@@ -11,12 +11,12 @@
     }
 
     .form-container {
-      max-width: 400px;
-      margin: 20px auto;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-      background-color: #ffffff;
+    max-width: 400px;
+    margin: 20px auto;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
     }
 
     .form-container label {
@@ -66,6 +66,33 @@
       background-color: #286090;
     }
 
+    #drop-zone {
+    border: 2px dashed #ccc;
+    padding: 25px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    color: #ccc;
+    }
+
+    #drop-zone.hover {
+    background-color: #f0f0f0;
+    }
+
+    /* Additional styles for layout */
+    .container {
+    display: flex;
+    }
+
+    .form-container {
+    flex: 1;
+    }
+
+    #drop-zone {
+    flex: 1;
+    margin-right: 20px;
+    }
+
     .scrollable-table {
       max-height: 300px;
       overflow-y: auto;
@@ -96,7 +123,8 @@
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
 </head>
 <body>
-    <h1>Deploy Viptela SDWAN GNS3 Lab</h1>
+    <h1>Viptela SDWAN GNS3 Lab Autodeployment</h1>
+        <div id="drop-zone">Drag and drop files here to upload</div>
         <div class="form-container">
             <form>
                 <label for="server_ip">Server IP:</label>
@@ -227,7 +255,42 @@
 
         xhr.send(data);
         }
+        $(document).ready(function() {
+          var dropZone = $('#drop-zone');
 
+          dropZone.on('dragover', function() {
+            dropZone.addClass('hover');
+            return false;
+          });
+
+          dropZone.on('dragleave', function() {
+            dropZone.removeClass('hover');
+            return false;
+          });
+
+          dropZone.on('drop', function(e) {
+            e.preventDefault();
+            dropZone.removeClass('hover');
+
+            var files = e.originalEvent.dataTransfer.files;
+            var formData = new FormData();
+
+            for (var i = 0; i < files.length; i++) {
+              formData.append('file', files[i]);
+            }
+
+            $.ajax({
+              url: '/api/upload',
+              type: 'POST',
+              data: formData,
+              processData: false,
+              contentType: false,
+              success: function(data) {
+                console.log(data);
+              }
+            });
+          });
+        });
         $(document).ready(function() {
         refreshData();
 

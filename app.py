@@ -92,6 +92,14 @@ def get_deployment():
     deployment_data = [dict(row) for row in rows]
     return jsonify(deployment_data)
 
+@app.route('/upload', methods=['POST'])
+def upload():
+    files = request.files.getlist('file')
+    for file in files:
+        # Do something with the uploaded file
+        file.save('./')
+    return 'Files uploaded successfully'
+
 
 @app.route('/api/tasks/start_viptela_deploy_old', methods=['PUT'])
 def viptela_deploy_full_old():
