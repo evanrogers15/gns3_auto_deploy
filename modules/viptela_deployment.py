@@ -81,6 +81,8 @@ def viptela_deploy():
     c = conn.cursor()
     c.execute("DELETE FROM deployments")
     c.execute("SELECT COUNT(*) FROM deployments")
+    conn.commit()
+
     gns3_actions_upload_images(gns3_server_data)
     gns3_actions_remove_templates(gns3_server_data)
     gns3_set_project(gns3_server_data, new_project_id)
