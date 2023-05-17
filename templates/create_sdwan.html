@@ -183,6 +183,11 @@
         <li>viptela-edge-20.10.1-genericx86-64.qcow2</li>
         <li>L3-ADVENTERPRISEK9-M-15.5-2T.bin</li>
     </ul>
+    <h3>Monitoring Requirements:</h3>
+      <ul>
+        <li>OpenVPN Deployed on GNS3 Server</li>
+        <li>Tap Interface with IP address of 172.16.2.2</li>
+    </ul>
   </div>
   <div class="container">
     <div id="file-drop-zone" class="drop-zone">Drag and drop GNS3 images here to upload</div>
@@ -201,11 +206,7 @@
     <div class="form-container">
       <form>
         <label for="server_ip">GNS3 Server IP:</label>
-        <select id="server_ip" name="server_ip">
-          <option value="100.92.8.44">er-test-lab-02</option>
-          <option value="custom">Custom</option>
-        </select>
-        <input type="text" id="server_ip_input" name="server_ip_input" style="display: none;">
+        <input type="text" id="server_ip" name="server_ip">
 
         <label for="server_port">GNS3 Server Port:</label>
         <select id="server_port" name="server_port">
@@ -228,7 +229,7 @@
           <option value=server_ip>Remote (Uses GNS3 Server IP)</option>
         </select>
 
-        <label for="site_count">Site Count:</label>
+        <label for="site_count">Site Count:<br>(Enter Number between 1 and 50: Note More Sites Require More Resources)</label>
         <input type="text" id="site_count" name="site_count">
 
         <label for="tap_name">Tap Interface Name:</label>
