@@ -187,17 +187,6 @@
         var tap_name = document.getElementById("tap_name").value;
         var use_tap = document.getElementById("use_tap").value;
 
-        var xhr = new XMLHttpRequest();
-        var url = "/api/config";
-        xhr.open("POST", url, true);
-        xhr.setRequestHeader("Content-Type", "application/json");
-
-        xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-          alert(xhr.responseText);
-        }
-        };
-
         var data = JSON.stringify({
         server_ip: server_ip,
         server_port: server_port,
@@ -208,32 +197,36 @@
         use_tap: use_tap,
         });
 
-        xhr.send(data);
+        var xhr = new XMLHttpRequest();
+        var url = "/api/config";
+        xhr.open("POST", url, true);
+        xhr.setRequestHeader("Content-Type", "application/json");
 
         xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
-        if (xhr.status === 200) {
-          // Successful response
-          var putXhr = new XMLHttpRequest();
-          var putUrl = "/api/tasks/start_viptela_deploy";
-          putXhr.open("PUT", putUrl, true);
-          putXhr.setRequestHeader("Content-Type", "application/json");
+          if (xhr.status === 200) {
+            // Successful response
+            var putXhr = new XMLHttpRequest();
+            var putUrl = "/api/tasks/start_viptela_deploy";
+            putXhr.open("PUT", putUrl, true);
+            putXhr.setRequestHeader("Content-Type", "application/json");
 
-          putXhr.onreadystatechange = function () {
-            if (putXhr.readyState === 4 && putXhr.status === 200) {
-              alert(putXhr.responseText);
-            }
-          };
+            putXhr.onreadystatechange = function () {
+              if (putXhr.readyState === 4 && putXhr.status === 200) {
+                alert(putXhr.responseText);
+              }
+            };
 
-      putXhr.send();
-    } else {
-      // Handle error response from xhr.send(data)
-      console.error("Error: " + xhr.status);
-    }
-  }
-};
+            putXhr.send();
+          } else {
+            // Handle error response from xhr.send(data)
+            console.error("Error: " + xhr.status);
+          }
+        }
+        };
 
-xhr.send(data);
+        xhr.send(data);
+        }
 
         $(document).ready(function() {
         refreshData();
