@@ -139,7 +139,9 @@ def get_uploaded_files():
     # Get the list of uploaded files in the images/qemu and images/iou directories
     qemu_dir = os.path.join('/app', 'images', 'qemu')
     iou_dir = os.path.join('/app', 'images', 'iou')
-
+    # Create the directories if they don't exist
+    os.makedirs(qemu_dir, exist_ok=True)
+    os.makedirs(iou_dir, exist_ok=True)
     qemu_files = [file for file in os.listdir(qemu_dir) if os.path.isfile(os.path.join(qemu_dir, file))]
     iou_files = [file for file in os.listdir(iou_dir) if os.path.isfile(os.path.join(iou_dir, file))]
 
