@@ -193,7 +193,7 @@
         <input type="text" id="project_name_input" name="project_name_input" style="display: none;">
 
         <label for="vmanage_api_ip">vManage API IP:</label>
-        <select id="vmanage_api_ip" name="use_tap">
+        <select id="vmanage_api_ip" name="vmanage_api_ip">
           <option value="172.16.2.2">Local</option>
           <option value=server_ip>Remote (Uses GNS3 Server IP)</option>
         </select>
@@ -279,7 +279,6 @@
         var vmanage_api_ip = document.getElementById("vmanage_api_ip").value;
         var site_count = document.getElementById("site_count").value;
         var tap_name = document.getElementById("tap_name").value;
-        var use_tap = document.getElementById("use_tap").value;
 
         var data = JSON.stringify({
         server_ip: server_ip,
@@ -288,7 +287,6 @@
         vmanage_api_ip: vmanage_api_ip,
         site_count: site_count,
         tap_name: tap_name,
-        use_tap: use_tap,
         });
 
         var xhr = new XMLHttpRequest();
