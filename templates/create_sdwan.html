@@ -30,7 +30,7 @@
 
     .prerequisites-container ul {
         list-style-type: disc; /* Use bullet points */
-        margin-left: 20px; /* Add left margin to the list items */
+        margin-left: 10px; /* Add left margin to the list items */
     }
     .form-container {
       width: 400px;
@@ -167,10 +167,22 @@
   <div class="wrapper">
     <div class="prerequisites-container">
     <h2>Prerequisites:</h2>
-    <ul>
+    <h3>GNS3 Server:</h3>
+      <ul>
         <li>GNS3 Server Deployed with 2.2.38 or Later</li>
-        <li>If in GCP, the instance requires an N2 CPU</li>
-        <li>A network TAP interface deployed</li>
+        <li>If in GCP, the instance requires an N2 CPU <br>and nested virtualization needs to be enabled</li>
+        <li>Minimum Machine Type: n2-standard-16</li>
+        <li>Cisco IOU License Applied</li>
+        <li>Access to the GNS3 Web UI from this machine</li>
+    </ul>
+    <h3>Required GNS3 Images:</h3>
+      <ul>
+        <li>viptela-vmanage-li-20.10.1-genericx86-64.qcow2</li>
+        <li>empty30G.qcow2</li>
+        <li>viptela-smart-li-20.10.1-genericx86-64.qcow2</li>
+        <li>viptela-edge-20.10.1-genericx86-64.qcow2</li>
+        <li>viptela-edge-20.10.1-genericx86-64.qcow2</li>
+        <li>L3-ADVENTERPRISEK9-M-15.5-2T.bin</li>
     </ul>
   </div>
   <div class="container">
@@ -189,15 +201,13 @@
   </div>
     <div class="form-container">
       <form>
-        <label for="server_ip">Server IP:</label>
+        <label for="server_ip">GNS3 Server IP:</label>
         <select id="server_ip" name="server_ip">
           <option value="custom">Custom</option>
-          <option value="100.101.213.21">boot-pod1-4-sdwan-server</option>
-          <option value="100.92.8.44">er-test-lab-02</option>
         </select>
         <input type="text" id="server_ip_input" name="server_ip_input" style="display: block;">
 
-        <label for="server_port">Server Port:</label>
+        <label for="server_port">GNS3 Server Port:</label>
         <select id="server_port" name="server_port">
           <option value="80">80</option>
           <option value="3080">3080</option>
