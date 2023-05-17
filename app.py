@@ -109,7 +109,7 @@ def upload_file():
         # Determine the appropriate directory based on the file extension
         if extension.lower() in ['.qcow2', '.img', '.iso']:
             subdir = 'qemu'
-        elif extension.lower() == '.iourc':
+        elif extension.lower() in ['.iourc', '.image']:
             subdir = 'iou'
         elif extension.lower() == '.bin':
             subdir = 'ios'
