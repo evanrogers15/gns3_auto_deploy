@@ -105,25 +105,32 @@ def upload():
 
 @app.route('/api/upload/qemu', methods=['POST'])
 def upload_qemu():
+    # Get the absolute path of the directory where the Flask app is located
+    app_root = os.path.dirname(os.path.abspath(__file__))
     # Create the images folder if it doesn't exist
-    if not os.path.exists('images/qemu'):
-        os.makedirs('images/qemu')
+    images_dir = os.path.join(app_root, 'images', 'qemu')
+    if not os.path.exists(images_dir):
+        os.makedirs(images_dir)
     files = request.files.getlist('file')
     for file in files:
-        # Save the file to the "images" folder
-        file.save(os.path.join('images/qemu', file.filename))
+        # Save the file to the images/qemu folder
+        file.save(os.path.join(images_dir, file.filename))
     return 'Files uploaded successfully'
 
 @app.route('/api/upload/iou', methods=['POST'])
 def upload_iou():
+    # Get the absolute path of the directory where the Flask app is located
+    app_root = os.path.dirname(os.path.abspath(__file__))
     # Create the images folder if it doesn't exist
-    if not os.path.exists('images/iou'):
-        os.makedirs('images/iou')
+    images_dir = os.path.join(app_root, 'images', 'iou')
+    if not os.path.exists(images_dir):
+        os.makedirs(images_dir)
     files = request.files.getlist('file')
     for file in files:
-        # Save the file to the "images" folder
-        file.save(os.path.join('images/iou', file.filename))
+        # Save the file to the images/iou folder
+        file.save(os.path.join(images_dir, file.filename))
     return 'Files uploaded successfully'
+
 
 
 @app.route('/api/tasks/start_viptela_deploy_old', methods=['PUT'])
