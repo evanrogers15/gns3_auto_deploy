@@ -365,12 +365,17 @@ def gns3_get_drawings(gns3_server_data, project_id):
 
 def gns3_get_image(gns3_server_data, image_type, filename):
     for server_record in gns3_server_data:
-        server_ip, server_port, server_name, project_name, vmanage_api_ip, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
-            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['vManage API IP'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
-        url = f"http://{server_ip}:{server_port}/v2/compute/{image_type}/images/{filename}"
+        server_ip, server_port, server_name, project_name, vmanage_api_ip, deployment_type, deployment_status, deployment_step = \
+        server_record['GNS3 Server'], server_record['Server Port'], server_record['Server Name'], server_record[
+            'Project Name'], server_record['vManage API IP'], server_record['Deployment Type'], server_record[
+            'Deployment Status'], server_record['Deployment Step']
+        url = f"http://{server_ip}:{server_port}/v2/compute/{image_type}/images"
         response = requests.get(url)
 
-        return response.status_code
+        if filename in response.json():
+            return 201
+
+    return 200
 
 
 def gns3_get_nodes(gns3_server_data, project_id):
@@ -472,7 +477,7 @@ def gns3_upload_image(gns3_server_data, image_type, filename):
             'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['vManage API IP'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
         url = f'http://{server_ip}:{server_port}/v2/compute/{image_type}/images/{filename}'
         response = gns3_get_image(gns3_server_data, image_type, filename)
-        if response != 200:
+        if response == 200:
             headers = {"accept": "*/*"}
             log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f'Image - {filename} being uploaded to server. Please wait..')
             response = requests.post(url, headers=headers, data=open(file_path, "rb"))

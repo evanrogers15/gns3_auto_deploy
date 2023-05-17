@@ -186,25 +186,28 @@
         <input type="text" id="server_port_input" name="server_ip_input" style="display: none;">
 
         <label for="project_name">New GNS3 Project Name:</label>
-        <input type="text" id="project_name" name="project_name">
+        <select id="project_name" name="project_name">
+          <option value="viptela_sdwan_autodeploy">viptela_sdwan_autodeploy</option>
+          <option value="custom">Custom</option>
+        </select>
+        <input type="text" id="project_name_input" name="project_name" style="display: block;">
 
         <label for="vmanage_api_ip">vManage API IP:</label>
         <select id="vmanage_api_ip" name="use_tap">
           <option value="172.16.2.2">Local</option>
-          <option value=server_ip>Remote</option>
+          <option value=server_ip>Remote (Uses GNS3 Server IP)</option>
         </select>
 
         <label for="site_count">Site Count:</label>
         <input type="text" id="site_count" name="site_count">
 
         <label for="tap_name">Tap Interface Name:</label>
-        <input type="text" id="tap_name" name="tap_name">
-
-        <label for="use_tap">Use Tap:</label>
-        <select id="use_tap" name="use_tap">
-          <option value="1">Yes</option>
-          <option value="0">No</option>
+        <select id="tap_name" name="tap_name">
+        <option value="null">None</option>
+        <option value="custom">Custom</option>
         </select>
+        <input type="text" id="tap_name_input" name="tap_name_input" style="display: none;">
+
 
         <input type="button" value="Submit" onclick="submitForm()">
       </form>
@@ -248,6 +251,24 @@
             document.getElementById("server_port_input").style.display = "block";
             } else {
             document.getElementById("server_port_input").style.display = "none";
+            }
+        });
+        document.getElementById("project_name").addEventListener("change", function() {
+            var selectedValue = this.value;
+
+            if (selectedValue === "custom") {
+            document.getElementById("project_name_input").style.display = "block";
+            } else {
+            document.getElementById("project_name_input").style.display = "none";
+            }
+        });
+        document.getElementById("tap_name").addEventListener("change", function() {
+            var selectedValue = this.value;
+
+            if (selectedValue === "custom") {
+            document.getElementById("tap_name_input").style.display = "block";
+            } else {
+            document.getElementById("tap_name_input").style.display = "none";
             }
         });
 
