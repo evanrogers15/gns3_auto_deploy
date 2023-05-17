@@ -15,21 +15,16 @@
       justify-content: center;
     }
 
-    .container {
+    .middle-container {
       display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      max-width: 400px;
-      margin-right: 20px;
-    }
-     .instructions-container {
-      display: flex;
-      flex-direction: column;
+      flex-direction: row;
       justify-content: center;
-      flex: 1;
-      max-width: 400px;
-      font-weight: bold;
+    }
+     width: 400px;
+      margin: 20px;
+      padding: 20px;
       border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
       background-color: #ffffff;
     }
     .instructions-container ul {
@@ -40,10 +35,10 @@
     }
 
     .prerequisites-container {
-        max-width: 400px;
-        margin-right: 20px;
-        border-radius: 10px;
+        width: 400px;
+        margin: 20px;
         padding: 20px;
+        border-radius: 10px;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         background-color: #ffffff;
     }
@@ -218,8 +213,8 @@
     </ul>
 
   </div>
-  <div class="container">
-    <div class="instructions-container"
+  <div class="middle-container">
+    <div class="instructions-container">
     <h4>Instructions:</h4>
       <ul>
         <li>Upload GNS3 images if they don't exist on the server</li>

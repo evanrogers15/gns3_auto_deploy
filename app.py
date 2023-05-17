@@ -137,12 +137,6 @@ def get_uploaded_files():
     return jsonify({'qemu_files': qemu_files, 'iou_files': iou_files, 'ios_files': ios_files})
 
 
-@app.route('/api/tasks/start_viptela_deploy_old', methods=['PUT'])
-def viptela_deploy_full_old():
-    threading.Thread(target=viptela_deploy, args=()).start()
-    return make_response(jsonify({'message': 'Deployment Started Successfully'}), 200)
-
-
 @app.route('/api/tasks/start_viptela_deploy', methods=['PUT'])
 def viptela_deploy_full():
     global running_thread
@@ -156,24 +150,6 @@ def viptela_deploy_full():
     running_thread.start()
 
     return make_response(jsonify({'message': 'Deployment Started Successfully'}), 200)
-
-
-@app.route('/api/tasks/stop_viptela_deploy', methods=['PUT'])
-def stop_viptela_deploy():
-    global running_thread
-
-    # Check if a thread is running
-    if running_thread is not None and running_thread.is_alive():
-        # Forcefully stop the thread by calling the terminate() method
-        running_thread.stop()
-        running_thread.join()
-
-        # Reset the running_thread variable
-        running_thread = None
-
-        return make_response(jsonify({'message': 'Deployment Stopped Successfully'}), 200)
-    else:
-        return make_response(jsonify({'message': 'No deployment is currently running'}), 400)
 
 @app.route('/api/projects', methods=['GET'])
 def get_project_list():
