@@ -72,10 +72,10 @@ def viptela_deploy():
         tap_name = row[10]
         vmanage_api_ip = row[11]
     print(tap_name)
-    if tap_name:
-        use_tap = 1
-    else:
+    if tap_name == 0:
         use_tap = 0
+    else:
+        use_tap = 1
 
     gns3_server_data = [{"GNS3 Server": server_ip, "Server Name": server_name, "Server Port": server_port,
                     "vManage API IP": vmanage_api_ip, "Project Name": project_name, "Project ID": new_project_id,
