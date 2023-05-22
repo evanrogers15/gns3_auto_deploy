@@ -27,7 +27,7 @@ def use_case_1(server, port, project_id, state):
         change_node_state(server, port, project_id, test_client_1_id, 'on')
         change_node_state(server, port, project_id, test_client_2_id, 'on')
         time.sleep(3)
-        for i in range(1, len(link_ids)):
+        for i in range(2, len(link_ids)):
             link_id = link_ids[i]
             set_single_packet_filter(server, port, project_id, link_id, filter_type, filter_value)
         time.sleep(3)
@@ -38,13 +38,41 @@ def use_case_1(server, port, project_id, state):
     else:
         change_node_state(server, port, project_id, test_client_1_id, 'off')
         change_node_state(server, port, project_id, test_client_2_id, 'off')
-        for i in range(1, len(link_ids)):
+        for i in range(2, len(link_ids)):
             link_id = link_ids[i]
             remove_single_packet_filter(server, port, project_id, link_id)
         print("Use Case 1 Removed")
         return {'message': 'Scenario started successfully.'}, 200
-    
+
 def use_case_2(server, port, project_id, state):
+    site_list = {'vEdge_001_NewYork', 'vEdge_004_Houston', 'vEdge_008_SanDiego '}
+    for site in site_list:
+        remote_node_name_1 = 'Cloud_ISP_001'
+        router_node_name = site
+        filter_type = 'packet_loss'
+        filter_value = '5'
+        nodes = get_nodes(server, port, project_id)
+        router_node_id, router_console, router_aux = find_node_by_name(nodes, router_node_name)
+        remote_node_id_1, remote_node_console_1, remote_node_aux_1 = find_node_by_name(nodes, remote_node_name_1)
+        links = get_links(server, port, project_id, router_node_id)
+        link_ids = get_node_links(nodes, links, server, port, project_id, router_node_id, router_node_name, remote_node_id_1)
+        if state == 'on':
+            time.sleep(3)
+            for i in range(2, len(link_ids)):
+                link_id = link_ids[i]
+                set_single_packet_filter(server, port, project_id, link_id, filter_type, filter_value)
+            time.sleep(3)
+            print("Use Case 2 Applied")
+            return {'message': 'Scenario started successfully.'}, 200
+        else:
+            for i in range(2, len(link_ids)):
+                link_id = link_ids[i]
+                remove_single_packet_filter(server, port, project_id, link_id)
+            print("Use Case 2 Removed")
+            return {'message': 'Scenario started successfully.'}, 200
+
+
+def use_case_2_old(server, port, project_id, state):
     test_client_node_name_2 = 'Site-4-Network-Test-Client-2'
     remote_node_name_1 = 'ISP-1'
     remote_node_name_2 = 'ISP-2'
