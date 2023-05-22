@@ -12,7 +12,7 @@ processes = {}
 app = Flask(__name__)
 DB_PATH = 'gns3.db'
 
-@app.route('/')
+@app.route('/uc_index')
 def index():
     return render_template('uc_index.html')
 
