@@ -279,7 +279,7 @@ def uc_get_project_list():
     project_data = [{'id': project_list[i], 'name': project_name[i], 'status': project_status[i]} for i in
                     range(len(project_list))]
     conn.close()
-    return jsonify({'uc_projects': project_data})
+    return jsonify({'projects': project_data})
 
 @app.route('/api/uc_scenarios', methods=['GET', 'POST', 'PUT'])
 def uc_scenarios():
@@ -387,7 +387,7 @@ def get_uc_scenario_status():
             'status': row[7],
             'process_id': row[8]
         })
-    return jsonify({'uc_scenario_status': data})
+    return jsonify({'scenario_status': data})
 
 @app.route('/api/tasks/<int:scenario_id>', methods=['POST'])
 def uc_create_task(scenario_id):
