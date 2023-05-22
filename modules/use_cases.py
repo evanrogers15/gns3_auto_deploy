@@ -1,6 +1,7 @@
 from modules.gns3_query import get_links, get_nodes, get_node_links, find_node_by_name
 from modules.gns3_actions_old import set_single_packet_filter, remove_single_packet_filter, set_suspend, change_node_state, reset_single_suspend
 from modules.telnet import run_telnet_command
+from modules.gns3_actions import *
 import time
 
 def use_case_1(server, port, project_id, state):
@@ -46,6 +47,8 @@ def use_case_1(server, port, project_id, state):
 
 def use_case_2(server, port, project_id, state):
     site_list = ['vEdge_001_NewYork', 'vEdge_004_Houston', 'vEdge_008_SanDiego']
+    matching_nodes = gns3_find_nodes_by_field(gns3_server_data, project_id, 'name', 'name', 'vEdge')
+    print(matching_nodes)
     for site in site_list:
         remote_node_name_1 = 'Cloud_ISP_001'
         router_node_name = site
