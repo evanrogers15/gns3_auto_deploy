@@ -59,7 +59,7 @@
 <script>
     function saveConfig(data) {
       console.log(JSON.stringify(data));
-      return fetch(`/api/config`, {
+      return fetch(`/api/uc_config`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
@@ -79,7 +79,7 @@
       .catch(error => console.error(error));
     }
     function displayServer() {
-      return fetch(`/api/config`)
+      return fetch(`/api/uc_config`)
           .then(response => response.json())
           .then(data => {
             const server_ip = "192.168.122.1";
@@ -98,7 +98,7 @@
     function getProjects() {
       const server = "192.168.122.1";
       const port = "3080";
-      fetch(`/api/projects`)
+      fetch(`/api/uc_projects`)
         .then(response => response.json())
         .then(data => {
           const tableBody = document.querySelector("#projectTable tbody");
@@ -130,7 +130,7 @@
       const port = "3080";
       const projectId = document.getElementById("projectId").value; // get project ID
       saveConfig({'server_ip': server, 'server_port': port, 'project_id': projectId}); // add saveConfig call
-      const scenariosUrl = `/api/scenarios`;
+      const scenariosUrl = `/api/uc_scenarios`;
       fetch(scenariosUrl)
         .then(response => response.json())
         .then(data => {
@@ -208,7 +208,7 @@ function updateScenarioStatusTable() {
     3: 'Stopping',
     4: 'Error'
   };
-  fetch('/api/scenario_status')
+  fetch('/api/uc_scenario_status')
     .then(response => response.json())
     .then(data => {
       const tableBody = document.querySelector('#scenario-status tbody');
