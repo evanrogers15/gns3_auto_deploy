@@ -22,16 +22,14 @@ def use_case_1(server, port, project_id, state):
     remote_node_id_1, remote_node_console_1, remote_node_aux_1 = find_node_by_name(nodes, remote_node_name_1)
     remote_node_id_2, remote_node_console_2, remote_node_aux_2 = find_node_by_name(nodes, remote_node_name_2)
     links = get_links(server, port, project_id, router_node_id)
-    link_id_1 = get_node_links(nodes, links, server, port, project_id, router_node_id, router_node_name, remote_node_id_1)
-    print(link_id_1)
-    link_id_2 = get_node_links(nodes, links, server, port, project_id, router_node_id, router_node_name, remote_node_id_2)
-    print(link_id_2)
+    link_ids = get_node_links(nodes, links, server, port, project_id, router_node_id, router_node_name, remote_node_id_1)
     if state == 'on':
         change_node_state(server, port, project_id, test_client_1_id, 'on')
         change_node_state(server, port, project_id, test_client_2_id, 'on')
         time.sleep(3)
-        set_single_packet_filter(server, port, project_id, link_id_1, filter_type, filter_value)
-        set_single_packet_filter(server, port, project_id, link_id_2, filter_type, filter_value)
+        for i in range(1, len(link_ids)):
+            link_id = link_ids[i]
+            set_single_packet_filter(server, port, project_id, link_id, filter_type, filter_value)
         time.sleep(3)
         run_telnet_command(server, port, project_id, test_client_1_id, test_client_1_console, state, client_command_1)
         run_telnet_command(server, port, project_id, test_client_2_id, test_client_2_console, state, client_command_2)
@@ -40,8 +38,9 @@ def use_case_1(server, port, project_id, state):
     else:
         change_node_state(server, port, project_id, test_client_1_id, 'off')
         change_node_state(server, port, project_id, test_client_2_id, 'off')
-        remove_single_packet_filter(server, port, project_id, link_id_1)
-        remove_single_packet_filter(server, port, project_id, link_id_2)
+        for i in range(1, len(link_ids)):
+            link_id = link_ids[i]
+            remove_single_packet_filter(server, port, project_id, link_id)
         print("Use Case 1 Removed")
         return {'message': 'Scenario started successfully.'}, 200
     
