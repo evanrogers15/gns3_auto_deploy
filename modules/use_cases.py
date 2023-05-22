@@ -62,15 +62,12 @@ def use_case_2(server, port, project_id, state):
                 link_id = link_ids[i]
                 set_single_packet_filter(server, port, project_id, link_id, filter_type, filter_value)
             time.sleep(3)
-            print("Use Case 2 Applied")
-            return {'message': 'Scenario started successfully.'}, 200
+            print(f"Use Case 2 Applied to Site {site}")
         else:
             for i in range(2, len(link_ids)):
                 link_id = link_ids[i]
                 remove_single_packet_filter(server, port, project_id, link_id)
-            print("Use Case 2 Removed")
-            return {'message': 'Scenario started successfully.'}, 200
-
+            print(f"Use Case 2 Removed from Site {site}")
 
 def use_case_2_old(server, port, project_id, state):
     test_client_node_name_2 = 'Site-4-Network-Test-Client-2'
