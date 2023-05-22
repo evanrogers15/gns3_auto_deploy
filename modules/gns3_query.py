@@ -145,7 +145,7 @@ def get_node_links(nodes, links, server, port, project_id, node_id, node_name, r
         for node in link["nodes"]:
             node_labels.append(node["label"]["text"])
         link_id = link['link_id']
-        print(link_id)
+        print(node_labels)
         link_url = f"http://{server}:{port}/v2/projects/{project_id}/links/{link_id}"
         response = requests.get(link_url)
         link_data = response.json()
