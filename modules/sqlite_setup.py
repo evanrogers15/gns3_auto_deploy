@@ -52,6 +52,19 @@ CREATE TABLE IF NOT EXISTS deployments (
     log_message TEXT
 );
 ''')
+# Create the uc_config table
+conn.execute('''
+CREATE TABLE IF NOT EXISTS uc_config (
+    id INTEGER PRIMARY KEY,
+    server_name TEXT,
+    server_ip TEXT,
+    server_port INTEGER,
+    project_list TEXT,
+    project_id INTEGER,
+    project_name TEXT,
+    project_status TEXT
+);
+''')
 # Create the uc_projects table
 conn.execute('''
 CREATE TABLE IF NOT EXISTS uc_projects (
