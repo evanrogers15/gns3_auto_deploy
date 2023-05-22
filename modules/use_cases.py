@@ -45,7 +45,7 @@ def use_case_1(server, port, project_id, state):
         return {'message': 'Scenario started successfully.'}, 200
 
 def use_case_2(server, port, project_id, state):
-    site_list = ['vEdge_001_NewYork', 'vEdge_004_Houston', 'vEdge_008_SanDiego ']
+    site_list = ['vEdge_001_NewYork', 'vEdge_004_Houston', 'vEdge_008_SanDiego']
     for site in site_list:
         remote_node_name_1 = 'Cloud_ISP_001'
         router_node_name = site
@@ -68,6 +68,7 @@ def use_case_2(server, port, project_id, state):
                 link_id = link_ids[i]
                 remove_single_packet_filter(server, port, project_id, link_id)
             print(f"Use Case 2 Removed from Site {site}")
+    return {'message': 'Success.'}, 200
 
 def use_case_2_old(server, port, project_id, state):
     test_client_node_name_2 = 'Site-4-Network-Test-Client-2'
