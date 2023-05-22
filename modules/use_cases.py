@@ -58,11 +58,9 @@ def use_case_2(server, port, project_id, state):
         links = get_links(server, port, project_id, router_node_id)
         link_ids = get_node_links(nodes, links, server, port, project_id, router_node_id, router_node_name, remote_node_id_1)
         if state == 'on':
-            time.sleep(3)
             for i in range(2, len(link_ids)):
                 link_id = link_ids[i]
                 set_single_packet_filter(server, port, project_id, link_id, filter_type, filter_value)
-            time.sleep(3)
             print(f"Use Case 2 Applied to Site {site}")
         else:
             for i in range(2, len(link_ids)):
