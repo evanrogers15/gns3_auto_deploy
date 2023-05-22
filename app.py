@@ -179,16 +179,13 @@ def get_project_list():
 def index_uc_index():
     return render_template('uc_index.html')
 
-
 @app.route('/index_multi')
 def index_multi():
     return render_template('uc_index_multi.html')
 
-
 @app.route('/uc_scenarios')
 def uc_scenariosPage():
     return render_template('uc_scenarios.html')
-
 
 @app.route('/api/uc_config', methods=['POST'])
 def update_uc_config():
@@ -248,7 +245,6 @@ def update_uc_config():
     conn.close()
     return jsonify({'success': True})
 
-
 @app.route('/api/uc_config', methods=['GET'])
 def get_uc_config():
     conn = sqlite3.connect(DB_PATH)
@@ -259,7 +255,6 @@ def get_uc_config():
     conn.close()
     uc_config_data = [dict(row) for row in rows]
     return jsonify(uc_config_data)
-
 
 @app.route('/api/uc_projects', methods=['GET'])
 def uc_get_project_list():
@@ -285,7 +280,6 @@ def uc_get_project_list():
                     range(len(project_list))]
     conn.close()
     return jsonify({'uc_projects': project_data})
-
 
 @app.route('/api/uc_scenarios', methods=['GET', 'POST', 'PUT'])
 def uc_scenarios():
@@ -356,7 +350,6 @@ def uc_scenarios():
         conn.close()
         return jsonify({'scenario': scenario})
 
-
 @app.route('/api/uc_scenarios/<int:scenario_id>', methods=['GET'])
 def uc_get_scenario(scenario_id):
     conn = sqlite3.connect(DB_PATH)
@@ -372,7 +365,6 @@ def uc_get_scenario(scenario_id):
         'description': row[2]
     }
     return jsonify({'scenario': scenario})
-
 
 @app.route('/api/uc_scenario_status', methods=['GET'])
 def get_uc_scenario_status():
@@ -396,7 +388,6 @@ def get_uc_scenario_status():
             'process_id': row[8]
         })
     return jsonify({'uc_scenario_status': data})
-
 
 @app.route('/api/tasks/<int:scenario_id>', methods=['POST'])
 def uc_create_task(scenario_id):
@@ -555,7 +546,6 @@ def uc_create_task(scenario_id):
     }
     return jsonify({'scenario': scenario}), 201
 
-
 @app.route('/api/tasks/<int:scenario_id>', methods=['DELETE'])
 def uc_delete_task(scenario_id):
     req_data = request.get_json()
@@ -629,7 +619,6 @@ def uc_delete_task(scenario_id):
     conn.close()
     return jsonify({'scenario': "stopped"}), 201
 
-
 @app.route('/api/create-function-file/<int:scenario_id>', methods=['POST'])
 def uc_create_function_file_endpoint(scenario_id):
     try:
@@ -694,7 +683,6 @@ def uc_create_function_file_endpoint(scenario_id):
     except AttributeError:
         return jsonify({'error': f'Function {function_name} not found in module {module_name}.'})
 
-
 @app.route('/api/run_script', methods=['POST'])
 def uc_run_script():
     # Get the script path, arguments, project ID, and scenario ID from the request
@@ -712,7 +700,6 @@ def uc_run_script():
         return jsonify({'pid': pid, 'project_id': project_id, 'scenario_id': scenario_id}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
 
 @app.route('/api/stop_script', methods=['POST'])
 def uc_stop_script():
@@ -751,7 +738,6 @@ def uc_stop_script():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-
 @app.route('/api/stop_process', methods=['POST'])
 def uc_stop_process():
     # Get the process ID from the request body
@@ -774,7 +760,6 @@ def uc_stop_process():
     except psutil.AccessDenied:
         return jsonify({'error': 'Access denied. Could not stop process.'}), 403
 
-
 @app.route('/api/process_info', methods=['POST'])
 def uc_process_info():
     # Get the process ID from the request
@@ -792,7 +777,6 @@ def uc_process_info():
     else:
         return jsonify({'error': f'Process with PID {pid} not found.'})
 
-
 @app.route('/api/reset-tables', methods=['POST'])
 def reset_tables():
     conn = sqlite3.connect(DB_PATH)
@@ -805,7 +789,6 @@ def reset_tables():
     conn.close()
     return jsonify({'success': True})
 
-
 @app.route('/api/reset-lab-clients', methods=['POST'])
 def reset_lab_clients():
     server_ip = request.json['server_ip']
@@ -814,12 +797,9 @@ def reset_lab_clients():
     reset_lab_client_states(server_ip, server_port, project_id)
     return jsonify({'success': True})
 
-
 @app.errorhandler(404)
 def not_found(error):
     return make_response(jsonify({'error': 'Not found'}), 404)
-
-
 # endregion
 
 if __name__ == '__main__':
