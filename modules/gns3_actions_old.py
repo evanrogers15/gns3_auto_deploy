@@ -11,6 +11,8 @@ import logging
 import logging.handlers
 import sqlite3
 
+from modules.gns3_query import get_nodes, find_nodes_by_name
+
 
 def export_project(server, port, project_id): 
     url = f"http://{server}:{port}/v2/projects/{project_id}/export"

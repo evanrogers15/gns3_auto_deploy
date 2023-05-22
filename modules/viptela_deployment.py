@@ -299,12 +299,38 @@ def viptela_deploy():
     deployment_step = 'Starting Nodes'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting All Nodes")
     gns3_start_all_nodes(gns3_server_data, new_project_id)
-    wait_time = 5  # minutes
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Waiting {wait_time} mins for devices to come up, to resume at {util_resume_time(wait_time)}")
-    time.sleep(wait_time * 60)
+    # endregion
+    # region Deploy Site Clients in Lab
+    deployment_step = 'Deploy Site Clients'
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Deploying clients into each site.")
+    network_test_tool_template_id = gns3_get_template_id(gns3_server_data, 'Network_Test_Tool')
+    client_filename = 'client_interfaces'
+    client_node_file_path = 'etc/network/interfaces'
+    generate_client_interfaces_file(client_filename)
+    vedge_deploy_data, client_deploy_data, site_drawing_deploy_data = generate_vedge_deploy_data(vedge_count)
+    client_every = 1
+    v = 1
+    vedge_nodes = gns3_find_nodes_by_name(gns3_server_data, new_project_id, "vEdge")
+    if vedge_nodes:
+        for vedge_node in vedge_nodes:
+            temp_file_name = "client_interfaces"
+            node_id = vedge_node[0]
+            if v % client_every == 0:
+                network_test_node_id = gns3_create_node(gns3_server_data, new_project_id, network_test_tool_template_id,
+                                                        client_deploy_data[f"network_test_client_{v:03}_deploy_data"])
+                gns3_update_nodes(gns3_server_data, new_project_id, network_test_node_id,
+                                  client_deploy_data[f"network_test_client_{v:03}_deploy_data"])
+                gns3_upload_file_to_node(gns3_server_data, new_project_id, network_test_node_id, client_node_file_path,
+                                         temp_file_name)
+                gns3_connect_nodes(gns3_server_data, new_project_id, node_id, 3, 0, network_test_node_id, 0, 0)
+            v += 1
     # endregion
     # region Viptela vManage Setup Part 1
     deployment_step = 'vManage Setup Part 1'
+    wait_time = 5  # minutes
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Waiting {wait_time} mins for devices to come up, to resume at {util_resume_time(wait_time)}")
+    time.sleep(wait_time * 60)
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, "Starting vManage device setup part 1")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     for server_ip in server_ips:
@@ -929,33 +955,6 @@ def viptela_deploy():
     vmanage_push_certs(gns3_server_data, vmanage_headers)
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vEdge Certificate setup and deployment into Viptela Environment")
     # endregion
-    # region Deploy Site Clients in Lab
-    deployment_step = 'Deploy Site Clients'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
-                      f"Deploying clients into each site.")
-    network_test_tool_template_id = gns3_get_template_id(gns3_server_data, 'Network_Test_Tool')
-    client_filename = 'client_interfaces'
-    client_node_file_path = 'etc/network/interfaces'
-    generate_client_interfaces_file(client_filename)
-    vedge_deploy_data, client_deploy_data, site_drawing_deploy_data = generate_vedge_deploy_data(vedge_count)
-    client_every = 1
-    v = 1
-    vedge_nodes = gns3_find_nodes_by_name(gns3_server_data, new_project_id, "vEdge")
-    if vedge_nodes:
-        for vedge_node in vedge_nodes:
-            temp_file_name = "client_interfaces"
-            node_id = vedge_node[0]
-            if v % client_every == 0:
-                network_test_node_id = gns3_create_node(gns3_server_data, new_project_id, network_test_tool_template_id,
-                                                        client_deploy_data[f"network_test_client_{v:03}_deploy_data"])
-                gns3_update_nodes(gns3_server_data, new_project_id, network_test_node_id,
-                                  client_deploy_data[f"network_test_client_{v:03}_deploy_data"])
-                gns3_upload_file_to_node(gns3_server_data, new_project_id, network_test_node_id, client_node_file_path,
-                                         temp_file_name)
-                gns3_connect_nodes(gns3_server_data, new_project_id, node_id, 3, 0, network_test_node_id, 0, 0)
-                gns3_start_node(gns3_server_data, new_project_id, network_test_node_id)
-            v += 1
-    # endregion
     # region Push vEdge Certs to Control Devices
     deployment_step = 'Push vEdge Certs'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Waiting 5 mins to send final API call to vManage to push vEdge certificates to control devices, to resume at {util_resume_time(5)}")
@@ -972,6 +971,11 @@ def viptela_deploy():
     vmanage_push_certs(gns3_server_data, vmanage_headers)
     # endregion
     # region Validation
+    client_nodes = gns3_find_nodes_by_name(gns3_server_data, new_project_id, "Client")
+    if client_nodes:
+        for client_node in client_nodes:
+            node_id, console_port, aux = client_node
+            gns3_start_node(gns3_server_data, new_project_id, node_id)
     wait_time = 10  # minutes
     deployment_step = 'Validation'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Waiting {wait_time} minutes to validate deployment, to resume at {util_resume_time(wait_time)}")

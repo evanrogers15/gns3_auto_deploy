@@ -1,4 +1,5 @@
 import sqlite3
+
 # Define the database file path
 DB_PATH = 'gns3.db'
 
@@ -11,48 +12,18 @@ conn = sqlite3.connect(DB_PATH)
 
 # Create the config table
 conn.execute('''
-CREATE TABLE IF NOT EXISTS config (
+CREATE TABLE IF NOT EXISTS uc_config (
     id INTEGER PRIMARY KEY,
     server_name TEXT,
     server_ip TEXT,
     server_port INTEGER,
     project_list TEXT,
-    project_names TEXT,
-    project_status TEXT,
-    project_name TEXT,
-    project_id TEXT,
-    site_count INTEGER,
-    tap_name TEXT,
-    vmanage_api_ip TEXT
-);
-''')
-# Create the projects table
-conn.execute('''
-CREATE TABLE IF NOT EXISTS projects (
-    id INTEGER PRIMARY KEY,
-    server_name TEXT,
-    server_ip TEXT,
-    server_port INTEGER,
     project_id INTEGER,
     project_name TEXT,
     project_status TEXT
 );
 ''')
-# Create the deployments table
-conn.execute('''
-CREATE TABLE IF NOT EXISTS deployments (
-    id INTEGER PRIMARY KEY,
-    timestamp TEXT, 
-    server_name TEXT,
-    server_ip TEXT,
-    project_name TEXT,
-    deployment_type TEXT,
-    deployment_status TEXT,
-    deployment_step TEXT,
-    log_message TEXT
-);
-''')
-# Create the uc_projects table
+#Create the projects table
 conn.execute('''
 CREATE TABLE IF NOT EXISTS uc_projects (
     id INTEGER PRIMARY KEY,
@@ -64,7 +35,7 @@ CREATE TABLE IF NOT EXISTS uc_projects (
     project_status TEXT
 );
 ''')
-# Create the uc_scenarios table
+# Create the scenarios table
 conn.execute('''
 CREATE TABLE IF NOT EXISTS uc_scenarios (
     id INTEGER PRIMARY KEY,
@@ -86,7 +57,7 @@ CREATE TABLE IF NOT EXISTS uc_scenario_status (
 );
 ''')
 
-# Create the trigger on the uc_config table
+# Create the trigger on the config table
 conn.execute('''
 CREATE TRIGGER IF NOT EXISTS config_limit AFTER INSERT ON uc_config
 BEGIN

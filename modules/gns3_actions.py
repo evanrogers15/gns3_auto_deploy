@@ -107,16 +107,6 @@ def gns3_create_project_static(server_ip, server_port, project_name):
     project_id = node_response["project_id"]
     return project_id
 
-def gns3_create_project_test():
-    for server_record in gns3_server_data:
-        server_ip, server_port, server_name, project_name, vmanage_api_ip, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
-            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['vManage API IP'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
-        template_data = {"name": project_name}
-        node_url = f"http://{server_ip}:{server_port}/v2/projects"
-        node_response = make_request("POST", node_url, data=template_data)
-        project_id = node_response["project_id"]
-        return project_id
-
 def gns3_create_drawing(gns3_server_data, project_id, node_data):
     for server_record in gns3_server_data:
         server_ip, server_port, server_name, project_name, vmanage_api_ip, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
@@ -330,6 +320,14 @@ def gns3_get_project_id(gns3_server_data):
             if project['name'] == project_name:
                 return project['project_id']
         return None
+def gns3_get_project_id_static(server_ip, server_port, project_name):
+    url = f"http://{server_ip}:{server_port}/v2/projects"
+    response = requests.get(url)
+    projects = json.loads(response.text)
+    for project in projects:
+        if project['name'] == project_name:
+            return project['project_id']
+    return None
 
 
 def gns3_get_template_id(gns3_server_data, template_name):
