@@ -145,6 +145,7 @@ def get_node_links(nodes, links, server, port, project_id, node_id, node_name, r
         for node in link["nodes"]:
             node_labels.append(node["label"]["text"])
         link_id = link['link_id']
+        print(link_id)
         link_url = f"http://{server}:{port}/v2/projects/{project_id}/links/{link_id}"
         response = requests.get(link_url)
         link_data = response.json()
@@ -155,6 +156,7 @@ def get_node_links(nodes, links, server, port, project_id, node_id, node_name, r
                 if remote_node_id:
                     if any(n['node_id'] == remote_node_id for n in link_data['nodes']):
                         link_numbers.append(link_id)
+                        return link_id
                 else:
                     remote_node_id = [n['node_id'] for n in link_data['nodes'] if n['node_id'] != node_id][0]
                 for node in nodes:
@@ -166,9 +168,4 @@ def get_node_links(nodes, links, server, port, project_id, node_id, node_name, r
     if not link_numbers:
         return None
 
-    return link_numbers
-
-
-
-
-
+    return link_numbers[0]
