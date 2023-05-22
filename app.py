@@ -16,18 +16,6 @@ app = Flask(__name__)
 
 running_thread = None
 
-# Custom Thread class with terminate() method
-class StoppableThread(threading.Thread):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._stop_event = threading.Event()
-
-    def stop(self):
-        self._stop_event.set()
-
-    def terminated(self):
-        return self._stop_event.is_set()
-
 @app.route('/')
 def index():
     return render_template('create_sdwan.html')
@@ -51,14 +39,14 @@ def update_config():
     tap_name = req_data.get('tap_name')
     projects = get_projects(server_ip, server_port)
     server_name = get_computes_name(server_ip, server_port)
-    project_id = gns3_get_project_id_static(server_ip, server_port, new_project_name)
-    #if new_project_name not in [project['name'] for project in projects]:
-    #    project_id = gns3_create_project_static(server_ip, server_port, new_project_name)
-    #else:
-    #    matching_projects = [project for project in projects if project['name'] == new_project_name]
-    #    project_id = matching_projects[0]['project_id']
-    #    gns3_delete_project_static(server_ip, server_port, new_project_name, project_id)
-    #   project_id = gns3_create_project_static(server_ip, server_port, new_project_name)
+    # project_id = gns3_get_project_id_static(server_ip, server_port, new_project_name)
+    if new_project_name not in [project['name'] for project in projects]:
+        project_id = gns3_create_project_static(server_ip, server_port, new_project_name)
+    else:
+        matching_projects = [project for project in projects if project['name'] == new_project_name]
+        project_id = matching_projects[0]['project_id']
+        gns3_delete_project_static(server_ip, server_port, new_project_name, project_id)
+        project_id = gns3_create_project_static(server_ip, server_port, new_project_name)
     projects = get_projects(server_ip, server_port)
     project_names = [project['name'] for project in projects]
     project_ids = [project['project_id'] for project in projects]
@@ -139,15 +127,7 @@ def get_uploaded_files():
 
 @app.route('/api/tasks/start_viptela_deploy', methods=['PUT'])
 def viptela_deploy_full():
-    global running_thread
-    # Check if a thread is already running
-    if running_thread is not None and running_thread.is_alive():
-        return make_response(jsonify({'message': 'Deployment is already in progress'}), 400)
-
-    # Start a new thread for deployment
     running_thread = threading.Thread(target=viptela_deploy, args=())
-    running_thread.start()
-
     return make_response(jsonify({'message': 'Deployment Started Successfully'}), 200)
 
 @app.route('/api/projects', methods=['GET'])
@@ -178,7 +158,7 @@ def get_project_list():
 def index_uc_index():
     return render_template('uc_index.html')
 
-@app.route('/index_multi')
+@app.route('/use-case-control')
 def index_multi():
     return render_template('uc_index_multi.html')
 
