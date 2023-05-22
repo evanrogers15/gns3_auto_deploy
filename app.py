@@ -290,7 +290,7 @@ def uc_scenarios():
         rows = c.fetchall()
         uc_scenarios = [{'id': row[0], 'title': row[1], 'description': row[2]} for row in rows]
         conn.close()
-        return jsonify({'uc_scenarios': uc_scenarios})
+        return jsonify({'scenarios': uc_scenarios})
     elif request.method == 'POST':
         # Get the payload
         scenario_name = request.json.get('scenario_name')
