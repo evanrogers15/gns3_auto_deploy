@@ -154,13 +154,13 @@ def get_project_list():
     return jsonify({'projects': project_data})
 
 # region UC
-@app.route('/uc_index')
+@app.route('/uc-local')
 def index_uc_index():
-    return render_template('uc_index.html')
+    return render_template('uc_local.html')
 
-@app.route('/use-case-control')
+@app.route('/uc-remote')
 def index_multi():
-    return render_template('uc_index_multi.html')
+    return render_template('uc_remote.html')
 
 @app.route('/uc_scenarios')
 def uc_scenariosPage():
