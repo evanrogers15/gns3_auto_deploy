@@ -14,7 +14,7 @@ def use_case_1(server, port, project_id, state):
     IP_ADDRESS = '172.16.110.51'
     server_command = 'nohup iperf3 -s &'
     client_command_1 = 'nohup sh -c "ip_address={}; while true; do rand=\$(shuf -i 50-100 -n 1)m; echo \$rand; iperf3 -c \$ip_address -u -b \$rand -t 30; done" > /dev/null 2>&1 &'.format(IP_ADDRESS)
-    client_command_2 = 'nohup iperf3 -s'
+    client_command_2 = 'iperf3 -s'
     nodes = get_nodes(server, port, project_id)
     test_client_1_id, test_client_1_console, test_client_1_aux = find_node_by_name(nodes, test_client_node_name_1)
     test_client_2_id, test_client_2_console, test_client_2_aux = find_node_by_name(nodes, test_client_node_name_2)

@@ -166,5 +166,4 @@ def get_node_links(nodes, links, server, port, project_id, node_id, node_name, r
                         break
     if not link_numbers:
         return None
-    print(link_numbers)
     return link_numbers
