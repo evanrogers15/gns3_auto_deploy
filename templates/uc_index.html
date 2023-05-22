@@ -70,7 +70,7 @@
     }
     function setServer() {
       const server = "192.168.122.1";
-      const port = "3080";
+      const port = "80";
       saveConfig({'server_ip': server, 'server_port': port})
         .then(() => {
           displayServer();
@@ -87,7 +87,7 @@
               if (server) {
                 const server_name = server.server_name;
                 const serverDisplay = document.getElementById("serverDisplay");
-                serverDisplay.innerText = `Server: ${server_name}:3080`;
+                serverDisplay.innerText = `Server: ${server_name}:80`;
                 return server_name;
               } else {
                 console.error(`Server with IP ${server_ip} not found in configuration.`);
@@ -97,7 +97,7 @@
     }
     function getProjects() {
       const server = "192.168.122.1";
-      const port = "3080";
+      const port = "80";
       fetch(`/api/uc_projects`)
         .then(response => response.json())
         .then(data => {
@@ -127,7 +127,7 @@
     }    
     function getScenarios() {
       const server = "192.168.122.1";
-      const port = "3080";
+      const port = "80";
       const projectId = document.getElementById("projectId").value; // get project ID
       saveConfig({'server_ip': server, 'server_port': port, 'project_id': projectId}); // add saveConfig call
       const scenariosUrl = `/api/uc_scenarios`;
