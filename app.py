@@ -174,31 +174,6 @@ def get_project_list():
     conn.close()
     return jsonify({'projects': project_data})
 
-
-@app.route('/api/reset-tables', methods=['POST'])
-def reset_tables():
-    conn = sqlite3.connect(db_path)
-    c = conn.cursor()
-    # Delete all rows from the config and projects tables
-    c.execute('DELETE FROM config')
-    c.execute('DELETE FROM projects')
-    c.execute('DELETE FROM scenario_status')
-    conn.commit()
-    conn.close()
-    return jsonify({'success': True})
-
-@app.route('/api/reset-lab-clients', methods=['POST'])
-def reset_lab_clients():
-    server_ip = request.json['server_ip']
-    server_port = request.json['server_port']
-    project_id = request.json['project_id']
-    reset_lab_client_states(server_ip, server_port, project_id)
-    return jsonify({'success': True})
-
-@app.errorhandler(404)
-def not_found(error):
-    return make_response(jsonify({'error': 'Not found'}), 404)
-
 # region UC
 @app.route('/uc_index')
 def index_uc_index():
@@ -287,7 +262,7 @@ def get_uc_config():
 
 
 @app.route('/api/uc_projects', methods=['GET'])
-def get_project_list():
+def uc_get_project_list():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("SELECT server_ip, server_port FROM uc_config")
@@ -383,7 +358,7 @@ def uc_scenarios():
 
 
 @app.route('/api/uc_scenarios/<int:scenario_id>', methods=['GET'])
-def get_scenario(scenario_id):
+def uc_get_scenario(scenario_id):
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("SELECT * FROM uc_scenarios WHERE id=?", (scenario_id,))
@@ -424,7 +399,7 @@ def get_uc_scenario_status():
 
 
 @app.route('/api/tasks/<int:scenario_id>', methods=['POST'])
-def create_task(scenario_id):
+def uc_create_task(scenario_id):
     req_data = request.get_json()
     server_ip = req_data.get('server_ip')
     port = req_data.get('port')
@@ -582,7 +557,7 @@ def create_task(scenario_id):
 
 
 @app.route('/api/tasks/<int:scenario_id>', methods=['DELETE'])
-def delete_task(scenario_id):
+def uc_delete_task(scenario_id):
     req_data = request.get_json()
     server_ip = req_data.get('server_ip')
     port = req_data.get('port')
@@ -656,7 +631,7 @@ def delete_task(scenario_id):
 
 
 @app.route('/api/create-function-file/<int:scenario_id>', methods=['POST'])
-def create_function_file_endpoint(scenario_id):
+def uc_create_function_file_endpoint(scenario_id):
     try:
         # Get the payload
         module_name = request.json['module_name']
@@ -721,7 +696,7 @@ def create_function_file_endpoint(scenario_id):
 
 
 @app.route('/api/run_script', methods=['POST'])
-def run_script():
+def uc_run_script():
     # Get the script path, arguments, project ID, and scenario ID from the request
     data = request.get_json()
     script_path = data.get('script_path')
@@ -740,7 +715,7 @@ def run_script():
 
 
 @app.route('/api/stop_script', methods=['POST'])
-def stop_script():
+def uc_stop_script():
     # Get the project ID and scenario ID from the request body
     project_id = str(request.json.get('project_id'))
     scenario_id = str(request.json.get('scenario_id'))
@@ -778,7 +753,7 @@ def stop_script():
 
 
 @app.route('/api/stop_process', methods=['POST'])
-def stop_process():
+def uc_stop_process():
     # Get the process ID from the request body
     process_id = request.json.get('process_id')
 
@@ -801,7 +776,7 @@ def stop_process():
 
 
 @app.route('/api/process_info', methods=['POST'])
-def process_info():
+def uc_process_info():
     # Get the process ID from the request
     data = request.get_json()
     pid = data.get('pid')
@@ -844,9 +819,6 @@ def reset_lab_clients():
 def not_found(error):
     return make_response(jsonify({'error': 'Not found'}), 404)
 
-
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=8080)
 
 # endregion
 
