@@ -3,6 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <title>GNS3 Use Case Control Panel</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f6f6f6;
+    color: #333333;
+  }
+  </style>
 </head>
 <body onload="setServer();">
   <h1>GNS3 Use Case Control Panel</h1>
@@ -275,5 +283,3 @@ function updateScenarioStatusTable() {
   // Call the updateScenarioStatusTable() function every 10 seconds to refresh the table
   setInterval(updateScenarioStatusTable, 10000);
   </script>
-</body>
-</html>
