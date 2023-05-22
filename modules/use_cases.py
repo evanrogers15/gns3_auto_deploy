@@ -24,7 +24,8 @@ def use_case_1(server, port, project_id, state):
     links = get_links(server, port, project_id, router_node_id)
     link_id_1 = get_node_links(nodes, links, server, port, project_id, router_node_id, router_node_name, remote_node_id_1)
     print(link_id_1)
-    link_id_2 = get_node_links(nodes, links, server, port, project_id, router_node_id, router_node_name, remote_node_id_2)
+    link_id_2 = get_node_links(nodes, links, server, port, project_id, router_node_id, router_node_name, remote_node_id_2, link_id_1)
+    print(link_id_2)
     if state == 'on':
         change_node_state(server, port, project_id, test_client_1_id, 'on')
         change_node_state(server, port, project_id, test_client_2_id, 'on')
