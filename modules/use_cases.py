@@ -7,7 +7,7 @@ def use_case_1(server, port, project_id, state):
     test_client_node_name_1 = 'Client_001_NewYork'
     test_client_node_name_2 = 'Client_010_SanJose'
     remote_node_name_1 = 'Cloud_ISP_001'
-    remote_node_name_2 = 'Cloud_ISP_002'
+    remote_node_name_2 = 'Cloud_ISP_001'
     router_node_name = 'vEdge_001_NewYork'
     filter_type = 'packet_loss'
     filter_value = '5'
