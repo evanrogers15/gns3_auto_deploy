@@ -137,8 +137,7 @@ def get_node_links_interactive(nodes, links, server, port, project_id, node_id, 
     else:
         return link_numbers[selected_link_id - 1], False
 
-
-def get_node_links(nodes, links, server, port, project_id, node_id, node_name, remote_node_id=None, previous_id=None):
+def get_node_links(nodes, links, server, port, project_id, node_id, node_name, remote_node_id=None):
     link_numbers = []
     seen_node_ids = set()
     for link in links:
@@ -153,17 +152,11 @@ def get_node_links(nodes, links, server, port, project_id, node_id, node_name, r
             endpoint_node_id = endpoint['node_id']
             if endpoint_node_id == node_id:
                 endpoint_port_number = endpoint['port_number']
-                if any(n['node_id'] == remote_node_id for n in link_data['nodes']):
-                    if previous_id and previous_id == remote_node_id:
-                        continue
-                    link_numbers.append(link_id)
-                    return link_id
+                if remote_node_id:
+                    if any(n['node_id'] == remote_node_id for n in link_data['nodes']):
+                        link_numbers.append(link_id)
                 else:
-                    remote_node_ids = [n['node_id'] for n in link_data['nodes'] if n['node_id'] != node_id]
-                    if previous_id in remote_node_ids:
-                        remote_node_ids.remove(previous_id)
-                    if remote_node_ids:
-                        remote_node_id = remote_node_ids[0]
+                    remote_node_id = [n['node_id'] for n in link_data['nodes'] if n['node_id'] != node_id][0]
                 for node in nodes:
                     if node['node_id'] == remote_node_id and node['node_id'] not in seen_node_ids:
                         index = nodes.index(node)
@@ -173,4 +166,9 @@ def get_node_links(nodes, links, server, port, project_id, node_id, node_name, r
     if not link_numbers:
         return None
 
-    return link_numbers[0]
+    return link_numbers
+
+
+
+
+
