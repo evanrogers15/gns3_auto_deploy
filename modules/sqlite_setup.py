@@ -90,7 +90,7 @@ CREATE TABLE IF NOT EXISTS uc_scenario_status (
 conn.execute('''
 CREATE TRIGGER IF NOT EXISTS config_limit AFTER INSERT ON uc_config
 BEGIN
-    DELETE FROM uc_config WHERE id NOT IN (SELECT id FROM config ORDER BY id DESC LIMIT 10);
+    DELETE FROM uc_config WHERE id NOT IN (SELECT id FROM uc_config ORDER BY id DESC LIMIT 10);
 END;
 ''')
 
