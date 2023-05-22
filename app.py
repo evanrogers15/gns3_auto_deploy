@@ -201,18 +201,13 @@ def not_found(error):
 
 # region UC
 @app.route('/uc_index')
-def index():
+def index_uc_index():
     return render_template('uc_index.html')
 
 
 @app.route('/index_multi')
 def index_multi():
     return render_template('uc_index_multi.html')
-
-
-@app.route('/admin')
-def adminPage():
-    return render_template('admin.html')
 
 
 @app.route('/uc_scenarios')
