@@ -466,17 +466,12 @@ def uc_delete_task(scenario_id):
             if success:
                 status = 0
     elif scenario_id == 2:
-        use_case_1(server_ip, port, project_id, 'off')
-        # Call the /api/stop_script endpoint to stop the script
-        data = {
-            'project_id': project_id,
-            'scenario_id': scenario_id
-        }
-        response = requests.post('http://localhost:8080/api/stop_script', json=data)
-        if response.status_code != 200:
-            return jsonify({'error': 'Could not stop script.'}), 500
-        else:
-            status = 0
+        use_case_function_name = f"use_case_{scenario_id}"
+        use_case_function = globals().get(use_case_function_name)
+        if use_case_function is not None:
+            success = use_case_function(server_ip, port, project_id, 'off')
+            if success:
+                status = 0
     elif scenario_id == 3:
         use_case_3(server_ip, port, project_id, 'off')
         use_case_4_sim_user(server_ip, port, project_id, 'off')
