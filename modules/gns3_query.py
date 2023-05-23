@@ -1,6 +1,5 @@
 import requests
 import json
-from modules.gns3_actions import log_and_update_db
 
 def get_computes_name(server, port):
     url = f"http://{server}:{port}/v2/computes"
@@ -255,13 +254,13 @@ def gns3_query_get_drawings(server_ip, server_port, project_id):
     url = f"http://{server_ip}:{server_port}/v2/projects/{project_id}/drawings"
     response = requests.get(url)
     if not response.ok:
-        log_and_update_db(server_ip, f"Error retrieving links: {response.status_code}")
+        print(f"Error retrieving links: {response.status_code}")
         exit()
     try:
         nodes = response.json()
     except ValueError as e:
-        log_and_update_db(server_ip, f"Error parsing JSON: {e}")
-        log_and_update_db(server_ip, f"Response content: {response.content}")
+        print(f"Error parsing JSON: {e}")
+        print(f"Response content: {response.content}")
         exit()
     return nodes
 
@@ -277,13 +276,13 @@ def gns3_query_get_node_files(server_ip, server_port, project_id, node_id, file_
     url = f"http://{server_ip}:{server_port}/v2/projects/{project_id}/nodes/{node_id}/files/{file_path}"
     response = requests.get(url)
     if not response.ok:
-        log_and_update_db(server_ip, f"Error retrieving links: {response.status_code}")
+        print(f"Error retrieving links: {response.status_code}")
         exit()
     try:
         nodes = response.json()
     except ValueError as e:
-        log_and_update_db(server_ip, f"Error parsing JSON: {e}")
-        log_and_update_db(server_ip, f"Response content: {response.content}")
+        print(f"Error parsing JSON: {e}")
+        print(f"Response content: {response.content}")
         exit()
     return nodes
 
