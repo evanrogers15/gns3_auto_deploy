@@ -132,7 +132,7 @@ def viptela_deploy_full():
     return make_response(jsonify({'message': 'Deployment Started Successfully'}), 200)
 
 @app.route('/api/tasks/oa_start_viptela_deploy', methods=['PUT'])
-def viptela_deploy_full():
+def oa_viptela_deploy_full():
     threading.Thread(target=oa_viptela_deploy, args=())
     return make_response(jsonify({'message': 'Deployment Started Successfully'}), 200)
 
