@@ -21,6 +21,10 @@ running_thread = None
 def index():
     return render_template('create_sdwan.html')
 
+@app.route('/oa')
+def index():
+    return render_template('oa_create_sdwan.html')
+
 @app.route('/admin')
 def adminPage():
     return render_template('admin.html')
