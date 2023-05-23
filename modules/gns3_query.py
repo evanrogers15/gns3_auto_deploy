@@ -166,8 +166,6 @@ def get_node_links(nodes, links, server, port, project_id, node_id, node_name, r
                             link_numbers.append(link_id)
                             seen_node_ids.add(node['node_id'])
                             break
-                else:
-                    return None
     if not link_numbers:
         return None
     return link_numbers
