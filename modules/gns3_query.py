@@ -83,7 +83,7 @@ def gns3_query_find_node_by_name(nodes, node_name=None):
             return node_id, console, aux
     return None, None, None
 
-def gns3_query_find_nodes_by_name(server_ip, server_port, project_id, search_string=None):
+def gns31_query_find_nodes_by_name(server_ip, server_port, project_id, search_string=None):
     nodes = gns3_query_get_nodes(server_ip, server_port, project_id)
     if search_string:
         matching_nodes = [node for node in nodes if search_string in node['name']]
@@ -229,7 +229,7 @@ def gns3_query_get_node_files(server_ip, server_port, project_id, node_id, file_
         exit()
     return nodes
 
-def gns31_query_find_nodes_by_name(server_ip, server_port, project_id, search_string=None):
+def gns3_query_find_nodes_by_name(server_ip, server_port, project_id, search_string=None):
     node_data = gns3_query_get_nodes(server_ip, server_port, project_id)
     if search_string:
         matching_nodes = [node for node in node_data if search_string in node['name']]
