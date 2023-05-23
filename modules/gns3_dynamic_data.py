@@ -203,7 +203,7 @@ def generate_vedge_deploy_data(vedge_count):
         for i in range(1, vedge_count + 1):
             temp_name = f"vEdge_{i:03}"
             name = f"vEdge_{i:03}_{city_data[temp_name]['city']}"
-            client_name = f"Client_{i:03}_{city_data[temp_name]['city']}"
+            client_name = f"Site_{i:03}_Client"
             if i == 1:
                 x = x_o
                 client_x = x
@@ -266,7 +266,7 @@ def generate_vedge_deploy_data(vedge_count):
         for i in range(1, vedge_count + 1):
             temp_name = f"vEdge_{i:03}"
             name = f"vEdge_{i:03}_{city_data[temp_name]['city']}"
-            client_name = f"Client_{i:03}_{city_data[temp_name]['city']}"
+            client_name = f"Site_{i:03}_Client"
             if i == 1:
                 x = x_o
                 client_x = x
@@ -327,7 +327,7 @@ def generate_vedge_deploy_data(vedge_count):
         for i in range(1, vedge_count + 1):
             temp_name = f"vEdge_{i:03}"
             name = f"vEdge_{i:03}_{city_data[temp_name]['city']}"
-            client_name = f"Client_{i:03}_{city_data[temp_name]['city']}"
+            client_name = f"Site_{i:03}_Client"
             if i == 1:
                 x = x_o
                 client_x = x

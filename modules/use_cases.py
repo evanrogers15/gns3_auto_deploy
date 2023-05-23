@@ -5,40 +5,40 @@ from modules.gns3_actions import *
 import time
 
 def use_case_1(server, port, project_id, state):
-    test_client_node_name_1 = 'Client_001_NewYork'
-    test_client_node_name_2 = 'Client_010_SanJose'
+    test_clients = ['Site_001_Client', 'Site_002_Client', 'Site_003_Client', 'Site_004_Client', 'Site_005_Client']
     remote_node_name_1 = 'Cloud_ISP_001'
     remote_node_name_2 = 'Cloud_ISP_001'
     router_node_name = 'vEdge_001_NewYork'
     filter_type = 'packet_loss'
     filter_value = '5'
-    IP_ADDRESS = '172.16.110.51'
     server_command = 'nohup iperf3 -s &'
-    client_command_1 = 'nohup sh -c "ip_address={}; while true; do rand=\$(shuf -i 50-100 -n 1)m; echo \$rand; iperf3 -c \$ip_address -u -b \$rand -t 30; done" > /dev/null 2>&1 &'.format(IP_ADDRESS)
-    client_command_2 = 'iperf3 -s'
+    client_command_2 = 'python3 /home/scripts/iperf3_server.py'
     nodes = get_nodes(server, port, project_id)
-    test_client_1_id, test_client_1_console, test_client_1_aux = find_node_by_name(nodes, test_client_node_name_1)
-    test_client_2_id, test_client_2_console, test_client_2_aux = find_node_by_name(nodes, test_client_node_name_2)
     router_node_id, router_console, router_aux = find_node_by_name(nodes, router_node_name)
-    remote_node_id_1, remote_node_console_1, remote_node_aux_1 = find_node_by_name(nodes, remote_node_name_1)
-    remote_node_id_2, remote_node_console_2, remote_node_aux_2 = find_node_by_name(nodes, remote_node_name_2)
     links = get_links(server, port, project_id, router_node_id)
+    remote_node_id_1, remote_node_console_1, remote_node_aux_1 = find_node_by_name(nodes, remote_node_name_1)
     link_ids = get_node_links(nodes, links, server, port, project_id, router_node_id, router_node_name, remote_node_id_1)
     if state == 'on':
-        change_node_state(server, port, project_id, test_client_1_id, 'on')
-        change_node_state(server, port, project_id, test_client_2_id, 'on')
-        time.sleep(3)
+        for index, client in enumerate(test_clients):
+            server_ip = f"172.16.1{index+1:02}.51"
+            client_command_1 = f'nohup sh -c "while true; do rand=\$(shuf -i 20-60 -n 1)m; echo \$rand; iperf3 -c \{server_ip} -p 520{index+1} -u -b \$rand -t 30; done" > /dev/null 2>&1 &'.format(IP_ADDRESS)
+            client_node_id, client_console, client_aux = find_node_by_name(nodes, client)
+            change_node_state(server, port, project_id, client_node_id, 'on')
+            time.sleep(2)
+            if index == len(test_clients) - 1:
+                run_telnet_command(server, port, project_id, client_node_id, client_console, state, client_command_2)
+            else:
+                run_telnet_command(server, port, project_id, client_node_id, client_console, state, client_command_1)
         for i in range(2, len(link_ids)):
             link_id = link_ids[i]
             set_single_packet_filter(server, port, project_id, link_id, filter_type, filter_value)
         time.sleep(3)
-        run_telnet_command(server, port, project_id, test_client_1_id, test_client_1_console, state, client_command_1)
-        run_telnet_command(server, port, project_id, test_client_2_id, test_client_2_console, state, client_command_2)
         print("Use Case 1 Applied")
         return {'message': 'Scenario started successfully.'}, 200
     else:
-        change_node_state(server, port, project_id, test_client_1_id, 'off')
-        change_node_state(server, port, project_id, test_client_2_id, 'off')
+        for index, client in enumerate(test_clients):
+            client_node_id, client_node_console, client_node_aux = find_node_by_name(nodes, client)
+            change_node_state(server, port, project_id, client_node_id, 'off')
         for i in range(2, len(link_ids)):
             link_id = link_ids[i]
             remove_single_packet_filter(server, port, project_id, link_id)

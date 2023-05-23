@@ -255,7 +255,7 @@
           <option value="3080">3080</option>
           <option value="custom">Custom</option>
         </select>
-        <input type="text" id="server_port_input" name="server_ip_input" style="display: none;">
+        <input type="text" id="server_port_input" style="display: none;">
 
         <label for="project_name">New GNS3 Project Name:</label>
         <select id="project_name" name="project_name">
@@ -312,14 +312,18 @@
             }
         });
         document.getElementById("server_port").addEventListener("change", function() {
-            var selectedValue = this.value;
+          var selectedValue = this.value;
 
-            if (selectedValue === "custom") {
+          if (selectedValue === "custom") {
             document.getElementById("server_port_input").style.display = "block";
-            } else {
+          } else {
             document.getElementById("server_port_input").style.display = "none";
-            }
+          }
         });
+        var serverPort = document.getElementById("server_port").value;
+        if (serverPort === "custom") {
+          serverPort = document.getElementById("server_port_input").value;
+        }
         document.getElementById("project_name").addEventListener("change", function() {
             var selectedValue = this.value;
 
