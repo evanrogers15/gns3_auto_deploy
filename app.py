@@ -133,11 +133,13 @@ def get_uploaded_files():
 @app.route('/api/tasks/start_viptela_deploy', methods=['PUT'])
 def viptela_deploy_full():
     threading.Thread(target=viptela_deploy, args=())
+    thread.start()
     return make_response(jsonify({'message': 'Deployment Started Successfully'}), 200)
 
 @app.route('/api/tasks/oa_start_viptela_deploy', methods=['PUT'])
 def oa_viptela_deploy_full():
     threading.Thread(target=oa_viptela_deploy, args=())
+    thread.start()
     return make_response(jsonify({'message': 'Deployment Started Successfully'}), 200)
 
 @app.route('/api/projects', methods=['GET'])
