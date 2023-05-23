@@ -58,43 +58,6 @@ def gns3_query_get_links(server, port, project_id, node_id):
         exit()
     return links
 
-def gns3_query_find_node_by_name(nodes, node_name=None):
-    if node_name:
-        for node in nodes:
-            if node['name'] == node_name:
-                node_id = node['node_id']
-                console = node['console']
-                aux = node['properties'].get('aux')
-                return node_id, console, aux
-        print(f"Node '{node_name}' not found.")
-    else:
-        nuttcp_nodes = [node for node in nodes if 'NutTCP-Client' in node['name']]
-        if not nuttcp_nodes:
-            print("No nodes named with 'NutTCP' found.")
-        else:
-            print("Available nodes:")
-            for i, node in enumerate(nuttcp_nodes):
-                print(f"{i+1}. {node['name']}")
-            selected_num = int(input("Enter the number of the node to select: "))
-            selected_node = nuttcp_nodes[selected_num - 1]
-            node_id = selected_node['node_id']
-            console = selected_node['console']
-            aux = selected_node['properties'].get('aux')
-            return node_id, console, aux
-    return None, None, None
-
-def gns31_query_find_nodes_by_name(server_ip, server_port, project_id, search_string=None):
-    nodes = gns3_query_get_nodes(server_ip, server_port, project_id)
-    if search_string:
-        matching_nodes = [node for node in nodes if search_string in node['name']]
-        if not matching_nodes:
-            print(f"No nodes with '{search_string}' in their name were found.")
-        else:
-            return [(node['node_id'], node['console'], node['properties'].get('aux')) for node in matching_nodes]
-    else:
-        print("Please provide a search string to filter nodes by name.")
-        return []
-
 def gns3_query_get_node_links(nodes, links, server, port, project_id, node_id, node_name, remote_node_id=None, adapter_port=None):
     link_numbers = []
     seen_node_ids = set()
