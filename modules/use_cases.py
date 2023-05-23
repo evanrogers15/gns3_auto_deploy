@@ -18,9 +18,10 @@ def use_case_1(server, port, project_id, state):
     links = get_links(server, port, project_id, router_node_id)
     remote_node_id_1, remote_node_console_1, remote_node_aux_1 = find_node_by_name(nodes, remote_node_name_1)
     link_ids = get_node_links(nodes, links, server, port, project_id, router_node_id, router_node_name, remote_node_id_1)
+    client_count = len(test_clients)
     if state == 'on':
         for index, client in enumerate(test_clients):
-            server_ip = f"172.16.1{index+1:02}.51"
+            server_ip = f"172.16.1{client_count:02}.51"
             client_command_1 = f'nohup sh -c "while true; do rand=\$(shuf -i 20-60 -n 1)m; echo \$rand; iperf3 -c {server_ip} -p 520{index+1} -u -b \$rand -t 30; done" > /dev/null 2>&1 &'
             client_node_id, client_console, client_aux = find_node_by_name(nodes, client)
             change_node_state(server, port, project_id, client_node_id, 'on')
