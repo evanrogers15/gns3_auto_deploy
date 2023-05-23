@@ -24,7 +24,7 @@ mgmt_switchport_count = 45
 mgmt_main_switchport_count = 30
 # endregion
 
-gns3_server_data = [
+gns3_server_data_old = [
  {
      "GNS3 Server": "10.210.242.13",
      "Server Name": "er-test-01",
@@ -221,20 +221,20 @@ drawing_deploy_data = {
 
 deploy_data_z = {"z": -1}
 
-city_data = {
+oa_city_data = {
 "vEdge_001": {"city": "NewYork", "latitude": 40.712776, "longitude": -74.005974},
 "vEdge_002": {"city": "Cairns", "latitude": -16.920334, "longitude": 145.770889},
 "vEdge_003": {"city": "London", "latitude": 51.507351, "longitude": -0.127758},
 "vEdge_004": {"city": "Stockholm", "latitude": 59.329323, "longitude": 18.068581},
 "vEdge_005": {"city": "Pune", "latitude": 18.520430, "longitude": 73.856743},
 "vEdge_006": {"city": "Hamburg", "latitude": 53.551086, "longitude": 9.993682},
-"vEdge_007": {"city": "Rio de Janeiro", "latitude": -22.9068, "longitude": -43.1729},
+"vEdge_007": {"city": "RiodeJaneiro", "latitude": -22.9068, "longitude": -43.1729},
 "vEdge_008": {"city": "Rome", "latitude": 41.902782, "longitude": 12.496366},
 "vEdge_009": {"city": "Copenhagen", "latitude": 55.676097, "longitude": 12.568337},
 "vEdge_010": {"city": "SaoPaulo", "latitude": -23.5505, "longitude": -46.6333},
 }
 
-city_data_old = {
+city_data = {
         "vEdge_001": {"city": "NewYork", "latitude": 40.712776, "longitude": -74.005974},
         "vEdge_002": {"city": "LosAngeles", "latitude": 34.052235, "longitude": -118.243683},
         "vEdge_003": {"city": "Chicago", "latitude": 41.878113, "longitude": -87.629799},

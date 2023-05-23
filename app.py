@@ -8,6 +8,7 @@ from werkzeug.utils import secure_filename
 from modules.arista_evpn_deploy import *
 from modules.gns3_query import *
 from modules.viptela_deployment import *
+from modules.oa_viptela_deployment import *
 from modules.gns3_actions_old import *
 from modules.gns3_variables import *
 from modules.use_cases import *
@@ -127,7 +128,12 @@ def get_uploaded_files():
 
 @app.route('/api/tasks/start_viptela_deploy', methods=['PUT'])
 def viptela_deploy_full():
-    running_thread = threading.Thread(target=viptela_deploy, args=())
+    threading.Thread(target=viptela_deploy, args=())
+    return make_response(jsonify({'message': 'Deployment Started Successfully'}), 200)
+
+@app.route('/api/tasks/oa_start_viptela_deploy', methods=['PUT'])
+def viptela_deploy_full():
+    threading.Thread(target=oa_viptela_deploy, args=())
     return make_response(jsonify({'message': 'Deployment Started Successfully'}), 200)
 
 @app.route('/api/projects', methods=['GET'])

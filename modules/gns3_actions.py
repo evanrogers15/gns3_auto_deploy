@@ -308,8 +308,8 @@ def gns3_find_nodes_by_field(gns3_server_data, project_id, search_field, return_
     else:
         return []
 
-def gns3_find_nodes_by_field_new(server_ip, server_port, project_id, search_field, return_field, search_string):
-    nodes = gns3_get_nodes(project_id=f"{project_id}", server_ip=f"{server_ip}", server_port=f"{server_port}")
+def gns3_find_nodes_by_field_new(gns3_server_data, project_id, search_field, return_field, search_string):
+    nodes = gns3_get_nodes(gns3_server_data, project_id)
     if search_string:
         matching_nodes = [node for node in nodes if search_string in node[search_field]]
         if not matching_nodes:
@@ -385,13 +385,11 @@ def gns3_get_image(gns3_server_data, image_type, filename):
     return 200
 
 
-def gns3_get_nodes(gns3_server_data=None, project_id=None, server_ip=None, server_port=None):
-    if gns3_server_data:
-        for server_record in gns3_server_data:
-            server_ip, server_port, server_name, project_name, vmanage_api_ip, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
-                'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['vManage API IP'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
+def gns3_get_nodes(gns3_server_data, project_id):
+    for server_record in gns3_server_data:
+        server_ip, server_port, server_name, project_name, vmanage_api_ip, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
+            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['vManage API IP'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
         url = f"http://{server_ip}:{server_port}/v2/projects/{project_id}/nodes"
-        print(url)
         response = requests.get(url)
         if not response.ok:
             log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Error retrieving links: {response.status_code}")
