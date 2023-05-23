@@ -137,13 +137,15 @@ def get_node_links_interactive(nodes, links, server, port, project_id, node_id, 
     else:
         return link_numbers[selected_link_id - 1], False
 
-def get_node_links(nodes, links, server, port, project_id, node_id, node_name, remote_node_id=None):
+def get_node_links(nodes, links, server, port, project_id, node_id, node_name, remote_node_id=None, label=None):
     link_numbers = []
     seen_node_ids = set()
     for link in links:
         node_labels = []
         for node in link["nodes"]:
             node_labels.append(node["label"]["text"])
+        if label and label not in node_labels:
+            continue
         link_id = link['link_id']
         link_url = f"http://{server}:{port}/v2/projects/{project_id}/links/{link_id}"
         response = requests.get(link_url)
@@ -155,7 +157,6 @@ def get_node_links(nodes, links, server, port, project_id, node_id, node_name, r
                 if remote_node_id:
                     if any(n['node_id'] == remote_node_id for n in link_data['nodes']):
                         link_numbers.append(link_id)
-
                 else:
                     remote_node_id = [n['node_id'] for n in link_data['nodes'] if n['node_id'] != node_id][0]
                 for node in nodes:

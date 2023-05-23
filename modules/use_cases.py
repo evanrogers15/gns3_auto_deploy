@@ -57,7 +57,7 @@ def use_case_2(server, port, project_id, state):
         router_node_id, router_console, router_aux = find_node_by_name(nodes, router_node_name)
         remote_node_id_1, remote_node_console_1, remote_node_aux_1 = find_node_by_name(nodes, remote_node_name_1)
         links = get_links(server, port, project_id, router_node_id)
-        link_ids = get_node_links(nodes, links, server, port, project_id, router_node_id, router_node_name, remote_node_id_1)
+        link_ids = get_node_links(nodes, links, server, port, project_id, router_node_id, router_node_name, remote_node_id_1, '2/0')
         if state == 'on':
             for i in range(2, len(link_ids)):
                 link_id = link_ids[i]
