@@ -309,7 +309,7 @@ def gns3_find_nodes_by_field(gns3_server_data, project_id, search_field, return_
         return []
 
 def gns3_find_nodes_by_field_new(server_ip, server_port, project_id, search_field, return_field, search_string):
-    nodes = gns3_get_nodes(None, project_id, server_ip, server_port)
+    nodes = gns3_get_nodes(project_id=f"{project_id}", server_ip=f"{server_ip}", server_port=f"{server_port}")
     if search_string:
         matching_nodes = [node for node in nodes if search_string in node[search_field]]
         if not matching_nodes:
