@@ -132,14 +132,30 @@ def get_uploaded_files():
 
 @app.route('/api/tasks/start_viptela_deploy', methods=['PUT'])
 def viptela_deploy_full():
-    threading.Thread(target=viptela_deploy, args=())
-    thread.start()
+    global running_thread
+    time.sleep(20)
+    # Check if a thread is already running
+    if running_thread is not None and running_thread.is_alive():
+        return make_response(jsonify({'message': 'Deployment is already in progress'}), 400)
+
+    # Start a new thread for deployment
+    running_thread = threading.Thread(target=viptela_deploy, args=())
+    running_thread.start()
+
     return make_response(jsonify({'message': 'Deployment Started Successfully'}), 200)
 
 @app.route('/api/tasks/oa_start_viptela_deploy', methods=['PUT'])
 def oa_viptela_deploy_full():
-    threading.Thread(target=oa_viptela_deploy, args=())
-    thread.start()
+    global running_thread
+    time.sleep(20)
+    # Check if a thread is already running
+    if running_thread is not None and running_thread.is_alive():
+        return make_response(jsonify({'message': 'Deployment is already in progress'}), 400)
+
+    # Start a new thread for deployment
+    running_thread = threading.Thread(target=oa_viptela_deploy, args=())
+    running_thread.start()
+
     return make_response(jsonify({'message': 'Deployment Started Successfully'}), 200)
 
 @app.route('/api/projects', methods=['GET'])
