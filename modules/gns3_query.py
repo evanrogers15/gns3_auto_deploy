@@ -151,7 +151,7 @@ def get_node_links(nodes, links, server, port, project_id, node_id, node_name, r
                 endpoint_port_number = endpoint['port_number']
                 endpoint_adapter_number = endpoint['adapter_number']
                 adapter_temp = f"{endpoint_adapter_number}/{endpoint_port_number}"
-                if adapter_temp:
+                if adapter_port:
                     if adapter_temp == adapter_port:
                         if remote_node_id:
                             if any(n['node_id'] == remote_node_id for n in link_data['nodes']):
