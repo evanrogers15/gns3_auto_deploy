@@ -1,4 +1,4 @@
-from modules.gns3_query import gns3_query_get_links, gns3_query_get_nodes, gns3_query_get_node_links, gns3_query_find_node_by_name
+from modules.gns3_query import gns3_query_get_links, gns3_query_get_nodes, gns3_query_get_node_links
 from modules.gns3_actions_old import set_single_packet_filter, remove_single_packet_filter, set_suspend, change_node_state, reset_single_suspend
 from modules.telnet import run_telnet_command
 from modules.gns3_actions import *

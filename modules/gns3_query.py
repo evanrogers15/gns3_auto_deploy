@@ -58,6 +58,31 @@ def gns3_query_get_links(server, port, project_id, node_id):
         exit()
     return links
 
+def gns3_query_find_node_by_name(nodes, node_name=None):
+    if node_name:
+        for node in nodes:
+            if node['name'] == node_name:
+                node_id = node['node_id']
+                console = node['console']
+                aux = node['properties'].get('aux')
+                return node_id, console, aux
+        print(f"Node '{node_name}' not found.")
+    else:
+        nuttcp_nodes = [node for node in nodes if 'NutTCP-Client' in node['name']]
+        if not nuttcp_nodes:
+            print("No nodes named with 'NutTCP' found.")
+        else:
+            print("Available nodes:")
+            for i, node in enumerate(nuttcp_nodes):
+                print(f"{i+1}. {node['name']}")
+            selected_num = int(input("Enter the number of the node to select: "))
+            selected_node = nuttcp_nodes[selected_num - 1]
+            node_id = selected_node['node_id']
+            console = selected_node['console']
+            aux = selected_node['properties'].get('aux')
+            return node_id, console, aux
+    return None, None, None
+
 def gns3_query_get_node_links(nodes, links, server, port, project_id, node_id, node_name, remote_node_id=None, adapter_port=None):
     link_numbers = []
     seen_node_ids = set()
