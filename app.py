@@ -22,7 +22,7 @@ def index():
     return render_template('create_sdwan.html')
 
 @app.route('/oa')
-def index():
+def oa_sdwan_deploy():
     return render_template('oa_create_sdwan.html')
 
 @app.route('/admin')
