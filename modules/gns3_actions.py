@@ -91,16 +91,6 @@ def util_current_time():
 # endregion
 
 # region Functions: GNS3 API Functions
-def gns3_create_project_old(gns3_server_data):
-    for server_record in gns3_server_data:
-        server_ip, server_port, server_name, project_name, vmanage_api_ip, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
-            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['vManage API IP'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
-        template_data = {"name": project_name}
-        node_url = f"http://{server_ip}:{server_port}/v2/projects"
-        node_response = make_request("POST", node_url, data=template_data)
-        project_id = node_response["project_id"]
-        return project_id
-
 def gns3_create_project(server_ip, server_port, project_name):
     template_data = {"name": project_name}
     node_url = f"http://{server_ip}:{server_port}/v2/projects"

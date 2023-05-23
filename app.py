@@ -42,8 +42,8 @@ def update_config():
     vmanage_api_ip = req_data.get('vmanage_api_ip')
     site_count = req_data.get('site_count')
     tap_name = req_data.get('tap_name')
-    projects = get_projects(server_ip, server_port)
-    server_name = get_computes_name(server_ip, server_port)
+    projects = gns3_query_get_projects(server_ip, server_port)
+    server_name = gns3_query_get_computes_name(server_ip, server_port)
     if new_project_name not in [project['name'] for project in projects]:
         project_id = gns3_create_project(server_ip, server_port, new_project_name)
     else:
@@ -51,7 +51,7 @@ def update_config():
         project_id = matching_projects[0]['project_id']
         gns3_delete_project_static(server_ip, server_port, new_project_name, project_id)
         project_id = gns3_create_project(server_ip, server_port, new_project_name)
-    projects = get_projects(server_ip, server_port)
+    projects = gns3_query_get_projects(server_ip, server_port)
     project_names = [project['name'] for project in projects]
     project_ids = [project['project_id'] for project in projects]
     project_status = [project['status'] for project in projects]
@@ -200,8 +200,8 @@ def update_uc_config():
     if not server_ip:
         return jsonify({'error': 'Server IP is missing.'}), 400
     server_port = req_data.get('server_port')
-    uc_projects = get_projects(server_ip, server_port)
-    server_name = get_computes_name(server_ip, server_port)
+    uc_projects = gns3_query_get_projects(server_ip, server_port)
+    server_name = gns3_query_get_computes_name(server_ip, server_port)
     project_ids = [project['project_id'] for project in uc_projects]
     project_names = [project['name'] for project in uc_projects]
     project_status = [project['status'] for project in uc_projects]

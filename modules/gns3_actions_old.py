@@ -11,7 +11,7 @@ import logging
 import logging.handlers
 import sqlite3
 
-from modules.gns3_query import get_nodes, find_nodes_by_name
+from modules.gns3_query import gns3_query_get_nodes, gns3_query_find_nodes_by_name
 
 
 def export_project(server, port, project_id): 
@@ -207,8 +207,8 @@ def reset_all_link_states(server, port, project_id):
 def reset_lab_client_states(server, port, project_id):
     reset_all_link_states(server, port, project_id)
     reset_all_packet_filters(server, port, project_id)
-    nodes = get_nodes(server, port, project_id)
-    client_nodes = find_nodes_by_name(nodes, 'Network-Test-Client')
+    nodes = gns3_query_get_nodes(server, port, project_id)
+    client_nodes = gns3_query_find_nodes_by_name(nodes, 'Network-Test-Client')
     for client_node in client_nodes:
         client_node_id = client_node[0]
         change_node_state(server, port, project_id, client_node_id, 'off')
