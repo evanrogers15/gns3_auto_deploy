@@ -391,6 +391,7 @@ def gns3_get_nodes(gns3_server_data=None, project_id=None, server_ip=None, serve
             server_ip, server_port, server_name, project_name, vmanage_api_ip, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
                 'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['vManage API IP'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
         url = f"http://{server_ip}:{server_port}/v2/projects/{project_id}/nodes"
+        print(url)
         response = requests.get(url)
         if not response.ok:
             log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Error retrieving links: {response.status_code}")
