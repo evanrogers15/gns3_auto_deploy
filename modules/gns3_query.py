@@ -137,7 +137,7 @@ def get_node_links_interactive(nodes, links, server, port, project_id, node_id, 
     else:
         return link_numbers[selected_link_id - 1], False
 
-def get_node_links(nodes, links, server, port, project_id, node_id, node_name, remote_node_id=None, label=None):
+def get_node_links(nodes, links, server, port, project_id, node_id, node_name, remote_node_id=None, adapter_port=None):
     link_numbers = []
     seen_node_ids = set()
     for link in links:
@@ -153,18 +153,21 @@ def get_node_links(nodes, links, server, port, project_id, node_id, node_name, r
             if endpoint_node_id == node_id:
                 endpoint_port_number = endpoint['port_number']
                 endpoint_adapter_number = endpoint['adapter_number']
-                print(f"{endpoint_adapter_number}/{endpoint_port_number}")
-                if remote_node_id:
-                    if any(n['node_id'] == remote_node_id for n in link_data['nodes']):
-                        link_numbers.append(link_id)
+                adapter_temp = f"{endpoint_adapter_number}/{endpoint_port_number}"
+                if adapter_temp == adapter_port:
+                    if remote_node_id:
+                        if any(n['node_id'] == remote_node_id for n in link_data['nodes']):
+                            link_numbers.append(link_id)
+                    else:
+                        remote_node_id = [n['node_id'] for n in link_data['nodes'] if n['node_id'] != node_id][0]
+                    for node in nodes:
+                        if node['node_id'] == remote_node_id and node['node_id'] not in seen_node_ids:
+                            index = nodes.index(node)
+                            link_numbers.append(link_id)
+                            seen_node_ids.add(node['node_id'])
+                            break
                 else:
-                    remote_node_id = [n['node_id'] for n in link_data['nodes'] if n['node_id'] != node_id][0]
-                for node in nodes:
-                    if node['node_id'] == remote_node_id and node['node_id'] not in seen_node_ids:
-                        index = nodes.index(node)
-                        link_numbers.append(link_id)
-                        seen_node_ids.add(node['node_id'])
-                        break
+                    return None
     if not link_numbers:
         return None
     return link_numbers
