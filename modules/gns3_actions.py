@@ -308,17 +308,6 @@ def gns3_find_nodes_by_field(gns3_server_data, project_id, search_field, return_
     else:
         return []
 
-def gns3_find_nodes_by_field_new(gns3_server_data, project_id, search_field, return_field, search_string):
-    nodes = gns3_get_nodes(gns3_server_data, project_id)
-    if search_string:
-        matching_nodes = [node for node in nodes if search_string in node[search_field]]
-        if not matching_nodes:
-            return []
-        else:
-            return [(node[return_field]) for node in matching_nodes]
-    else:
-        return []
-
 def gns3_get_project_id(gns3_server_data):
     for server_record in gns3_server_data:
         server_ip, server_port, server_name, project_name, vmanage_api_ip, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[

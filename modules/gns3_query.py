@@ -1,4 +1,6 @@
 import requests
+import json
+from modules.gns3_actions import log_and_update_db
 
 def get_computes_name(server, port):
     url = f"http://{server}:{port}/v2/computes"
@@ -179,3 +181,105 @@ def get_node_links(nodes, links, server, port, project_id, node_id, node_name, r
     if not link_numbers:
         return None
     return link_numbers
+
+def gns3_query_get_location_data(server_ip, server_port, project_id, item_type):
+    url = f"http://{server_ip}:{server_port}/v2/projects/{project_id}/{item_type}"
+    response = requests.get(url)
+    data = json.loads(response.text)
+    nodes = []
+    if item_type == 'nodes':
+        for node in data:
+            name = node['name']
+            x = node['x']
+            y = node['y']
+            z = node['z']
+            nodes.append({'name': name, 'x': x, 'y': y, 'z': z})
+    elif item_type == 'drawings':
+        for node in data:
+            svg = node['svg']
+            x = node['x']
+            y = node['y']
+            z = node['z']
+            nodes.append({'svg': svg, 'x': x, 'y': y, 'z': z})
+    location_data = nodes
+    drawing_data = {}
+    for i, item_data in enumerate(location_data):
+        drawing_key = f"drawing_{i + 1:02}"
+        drawing_data[drawing_key] = item_data
+    return nodes
+
+def gns3_query_find_nodes_by_field(server_ip, server_port, project_id, search_field, return_field, search_string):
+    nodes = get_nodes(server_ip, server_port, project_id)
+    if search_string:
+        matching_nodes = [node for node in nodes if search_string in node[search_field]]
+        if not matching_nodes:
+            return []
+        else:
+            return [(node[return_field]) for node in matching_nodes]
+    else:
+        return []
+
+def gns3_query_get_project_id(server_ip, server_port, project_name):
+    url = f"http://{server_ip}:{server_port}/v2/projects"
+    response = requests.get(url)
+    projects = json.loads(response.text)
+    for project in projects:
+        if project['name'] == project_name:
+            return project['project_id']
+    return None
+
+def gns3_query_get_template_id(server_ip, server_port, template_name):
+    url = f"http://{server_ip}:{server_port}/v2/templates"
+    response = requests.get(url)
+    templates = json.loads(response.text)
+    for template in templates:
+        if template['name'] == template_name:
+            return template['template_id']
+    return None
+
+def gns3_query_get_drawings(server_ip, server_port, project_id):
+    url = f"http://{server_ip}:{server_port}/v2/projects/{project_id}/drawings"
+    response = requests.get(url)
+    if not response.ok:
+        log_and_update_db(server_ip, f"Error retrieving links: {response.status_code}")
+        exit()
+    try:
+        nodes = response.json()
+    except ValueError as e:
+        log_and_update_db(server_ip, f"Error parsing JSON: {e}")
+        log_and_update_db(server_ip, f"Response content: {response.content}")
+        exit()
+    return nodes
+
+def gns3_query_get_image(server_ip, server_port, image_type, filename):
+    url = f"http://{server_ip}:{server_port}/v2/compute/{image_type}/images"
+    response = requests.get(url)
+    for image in response.json():
+        if image['filename'] == filename:
+            return 201
+    return 200
+
+def gns3_query_get_node_files(server_ip, server_port, project_id, node_id, file_path):
+    url = f"http://{server_ip}:{server_port}/v2/projects/{project_id}/nodes/{node_id}/files/{file_path}"
+    response = requests.get(url)
+    if not response.ok:
+        log_and_update_db(server_ip, f"Error retrieving links: {response.status_code}")
+        exit()
+    try:
+        nodes = response.json()
+    except ValueError as e:
+        log_and_update_db(server_ip, f"Error parsing JSON: {e}")
+        log_and_update_db(server_ip, f"Response content: {response.content}")
+        exit()
+    return nodes
+
+def gns3_query_find_nodes_by_name(server_ip, server_port, project_id, search_string=None):
+    node_data = get_nodes(server_ip, server_port, project_id)
+    if search_string:
+        matching_nodes = [node for node in node_data if search_string in node['name']]
+        if not matching_nodes:
+            return []
+        else:
+            return [(node['node_id'], node['console'], node['properties'].get('aux')) for node in matching_nodes]
+    else:
+        return []

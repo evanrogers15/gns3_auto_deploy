@@ -7,11 +7,9 @@ import time
 def use_case_1(server, port, project_id, state):
     test_clients = ['Site_001_Client', 'Site_002_Client', 'Site_003_Client', 'Site_004_Client', 'Site_005_Client']
     remote_node_name_1 = 'Cloud_ISP_001'
-    remote_node_name_2 = 'Cloud_ISP_001'
     router_node_name = 'vEdge_001_NewYork'
     filter_type = 'packet_loss'
     filter_value = '5'
-    server_command = 'nohup iperf3 -s &'
     client_command_2 = 'python3 /home/scripts/iperf3_server.py'
     nodes = get_nodes(server, port, project_id)
     router_node_id, router_console, router_aux = find_node_by_name(nodes, router_node_name)

@@ -108,10 +108,10 @@ END;
 ''')
 
 conn.execute('''INSERT INTO uc_scenarios (scenario_name, scenario_description)
-                VALUES ('Use Case #1', 'Start / Stop Manually: This use case will cause a client in Site-4 to simulate real traffic across the SDWAN while flooding the upstream vEdge with discards to a server in Site-1 while also causing 10% packet loss to the links between vEdge-Site-4 and the ISP routers.')''')
+                VALUES ('Use Case #1', 'Start / Stop Manually: Causes a 5% degradation to the "biz-internet" uplink on the Site-1 vEdge as well as starting variable traffic from all site clients.')''')
 
 conn.execute('''INSERT INTO uc_scenarios (scenario_name, scenario_description)
-                VALUES ('Use Case #2', 'Offloads Use Case #1 to the local machine, starts the client generating normal traffic then schedules degradation that will occur every day at 5PM for 1 hour until Use Case is stopped.')''')
+                VALUES ('Use Case #2', 'Start / Stop Manually: Causes a 5% degradation to all "biz-internet" uplinks inside of the deployment as well as starting variable traffic from all site clients. ')''')
 
 conn.execute('''INSERT INTO uc_scenarios (scenario_name, scenario_description)
                 VALUES ('Use Case #3', 'Start / Stop Manually: Use Case that will simulate real user traffic from site 2 and alternate flapping WAN links for Site 2 every 60 seconds that will cause AppNeta to alert on exccesive route changes.')''')
