@@ -45,6 +45,20 @@ def get_nodes(server, port, project_id):
         exit()
     return nodes
 
+def gns3_query_get_nodes(server, port, project_id):
+    url = f"http://{server}:{port}/v2/projects/{project_id}/nodes"
+    response = requests.get(url)
+    if not response.ok:
+        print(f"Error retrieving links: {response.status_code}")
+        exit()
+    try:
+        nodes = response.json()
+    except ValueError as e:
+        print(f"Error parsing JSON: {e}")
+        print(f"Response content: {response.content}")
+        exit()
+    return nodes
+
 def get_links(server, port, project_id, node_id):
     url = f"http://{server}:{port}/v2/projects/{project_id}/nodes/{node_id}/links"
     response = requests.get(url)

@@ -44,14 +44,13 @@ def update_config():
     tap_name = req_data.get('tap_name')
     projects = get_projects(server_ip, server_port)
     server_name = get_computes_name(server_ip, server_port)
-    # project_id = gns3_get_project_id_static(server_ip, server_port, new_project_name)
     if new_project_name not in [project['name'] for project in projects]:
-        project_id = gns3_create_project_static(server_ip, server_port, new_project_name)
+        project_id = gns3_create_project(server_ip, server_port, new_project_name)
     else:
         matching_projects = [project for project in projects if project['name'] == new_project_name]
         project_id = matching_projects[0]['project_id']
         gns3_delete_project_static(server_ip, server_port, new_project_name, project_id)
-        project_id = gns3_create_project_static(server_ip, server_port, new_project_name)
+        project_id = gns3_create_project(server_ip, server_port, new_project_name)
     projects = get_projects(server_ip, server_port)
     project_names = [project['name'] for project in projects]
     project_ids = [project['project_id'] for project in projects]

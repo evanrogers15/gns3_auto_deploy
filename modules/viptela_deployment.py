@@ -91,13 +91,13 @@ def viptela_deploy():
 
     gns3_actions_upload_images(gns3_server_data)
     for image in required_qemu_images:
-        response_code = gns3_get_image(gns3_server_data, 'qemu', image)
+        response_code = gns3_query_get_image(server_ip, server_port, 'qemu', image)
         if response_code != 201:
             log_and_update_db(server_name, project_name, deployment_type, 'Failed', 'Image Validation',
                               f"{image} image not on GNS3 Server")
             return 404
     for image in required_iou_images:
-        response_code = gns3_get_image(gns3_server_data, 'iou', image)
+        response_code = gns3_query_get_image(server_ip, server_port, 'iou', image)
         if response_code != 201:
             log_and_update_db(server_name, project_name, deployment_type, 'Failed', 'Image Validation',
                               f"{image} image not on GNS3 Server")
@@ -119,8 +119,8 @@ def viptela_deploy():
     regular_ethernet_hub_template_id = gns3_create_template(gns3_server_data, temp_hub_data)
     temp_hub_data = generate_temp_hub_data(mgmt_switchport_count, mgmt_hub_template_name)
     hub_template_id = gns3_create_template(gns3_server_data, temp_hub_data)
-    nat_node_template_id = gns3_get_template_id(gns3_server_data, "NAT")
-    cloud_node_template_id = gns3_get_template_id(gns3_server_data, "Cloud")
+    nat_node_template_id = gns3_query_get_template_id(server_ip, server_port, "NAT")
+    cloud_node_template_id = gns3_query_get_template_id(server_ip, server_port, "Cloud")
     # endregion
     #  region Setup Dynamic Networking
     vedge_deploy_data, client_deploy_data, site_drawing_deploy_data = generate_vedge_deploy_data(vedge_count)
@@ -205,7 +205,7 @@ def viptela_deploy():
     # region Connect GNS3 Lab Nodes
     deployment_step = 'Connect GNS3 Nodes'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting GNS3 Nodes Connect")
-    matching_nodes = gns3_find_nodes_by_field(gns3_server_data, new_project_id, 'name', 'ports', 'MGMT-Cloud-TAP')
+    matching_nodes = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'name', 'ports', 'MGMT-Cloud-TAP')
     mgmt_tap_interface = 0
     for port in matching_nodes[0]:
         if port["short_name"] == tap_name:
@@ -305,7 +305,7 @@ def viptela_deploy():
     deployment_step = 'Deploy Site Clients'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
                       f"Deploying clients into each site.")
-    network_test_tool_template_id = gns3_get_template_id(gns3_server_data, 'Network_Test_Tool')
+    network_test_tool_template_id = gns3_query_get_template_id(server_ip, server_port, 'Network_Test_Tool')
     client_filename = 'client_interfaces'
     client_node_file_path = 'etc/network/interfaces'
     generate_client_interfaces_file(client_filename)
@@ -381,7 +381,7 @@ def viptela_deploy():
         if matching_nodes:
             for matching_node in matching_nodes:
                 node_id, console_port, aux = matching_node
-                node_name = gns3_find_nodes_by_field(gns3_server_data, new_project_id, 'node_id', 'name', node_id)
+                node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id', 'name', node_id)
                 log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Logging in to console for node {node_name[0]}")
                 tn = telnetlib.Telnet(server_ip, console_port)
                 while True:
@@ -453,7 +453,7 @@ def viptela_deploy():
         if matching_nodes:
             for matching_node in matching_nodes:
                 node_id, console_port, aux = matching_node
-                node_name = gns3_find_nodes_by_field(gns3_server_data, new_project_id, 'node_id', 'name', node_id)
+                node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id', 'name', node_id)
                 log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Logging in to console for node {temp_node_name}")
                 tn = telnetlib.Telnet(server_ip, console_port)
                 while True:
@@ -608,7 +608,7 @@ def viptela_deploy():
             if matching_nodes:
                 for matching_node in matching_nodes:
                     node_id, console_port, aux = matching_node
-                    node_name = gns3_find_nodes_by_field(gns3_server_data, new_project_id, 'node_id', 'name', node_id)
+                    node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id', 'name', node_id)
                     for vedge_lan_object in vedge_lan_objects:
                         if vedge_lan_object['vedge'] == temp_node_name:
                             lan_dhcp_pool = vedge_lan_object['lan_dhcp_pool']
@@ -826,7 +826,7 @@ def viptela_deploy():
                 log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Logging in to console for node {temp_node_name}")
                 for vedge_node in vedge_nodes:
                     vedge_id, vedge_console, vedge_aux = vedge_node
-                    node_name = gns3_find_nodes_by_field(gns3_server_data, new_project_id, 'node_id', 'name', vedge_id)
+                    node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id', 'name', vedge_id)
                     scp_command = f"request execute vpn 512 scp /home/admin/SDWAN.pem admin@172.16.2.{ve}:/home/admin"
                     scp_2_command = f"request execute vpn 512 scp /home/admin/vedge.crt admin@172.16.2.{ve}:/home/admin"
                     ssh_command = f"request execute vpn 512 ssh admin@172.16.2.{ve}"
@@ -992,7 +992,7 @@ def viptela_deploy():
         i = 1
         if matching_nodes:
             node_id, console_port, aux = matching_nodes[0]
-            node_name = gns3_find_nodes_by_field(gns3_server_data, new_project_id, 'node_id', 'name', node_id)
+            node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id', 'name', node_id)
             log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting deployment validation on node {node_name[0]}")
             tn = telnetlib.Telnet(server_ip, console_port)
             tn.write(b"\r\n")
@@ -1003,7 +1003,7 @@ def viptela_deploy():
                 output = tn.read_until(b"loss", timeout=5).decode('ascii')
                 if "100% packet" in output:
                     client_node_name = \
-                    gns3_find_nodes_by_field(gns3_server_data, new_project_id, 'node_id', 'name', client_nodes[i][0])[0]
+                    gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id', 'name', client_nodes[i][0])[0]
                     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Packet Loss to Site {client_ip}")
                 else:
                     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,f"Successfully connected to Site {client_ip}")

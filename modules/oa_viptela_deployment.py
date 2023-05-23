@@ -15,6 +15,7 @@ from modules.gns3_actions import *
 from modules.viptela_actions import *
 from modules.gns3_variables import *
 from modules.gns3_dynamic_data import *
+from modules.gns3_query import *
 
 
 def oa_viptela_deploy():
@@ -43,7 +44,8 @@ def oa_viptela_deploy():
     deployment_step = '- Action - '
     cloud_node_deploy_data = {"x": 25, "y": -554, "name": "MGMT-Cloud-TAP", "node_type": "cloud",
                               "compute_id": "local", "symbol": ":/symbols/cloud.svg"}
-    required_qemu_images = {"viptela-vmanage-li-20.10.1-genericx86-64.qcow2", "empty30G.qcow2", "viptela-smart-li-20.10.1-genericx86-64.qcow2", "viptela-edge-20.10.1-genericx86-64.qcow2"}
+    required_qemu_images = {"viptela-vmanage-li-20.10.1-genericx86-64.qcow2", "empty30G.qcow2",
+                            "viptela-smart-li-20.10.1-genericx86-64.qcow2", "viptela-edge-20.10.1-genericx86-64.qcow2"}
     required_iou_images = {"L3-ADVENTERPRISEK9-M-15.5-2T.bin"}
     required_image_response = 201
     # endregion
@@ -72,9 +74,10 @@ def oa_viptela_deploy():
         use_tap = 1
 
     gns3_server_data = [{"GNS3 Server": server_ip, "Server Name": server_name, "Server Port": server_port,
-                    "vManage API IP": vmanage_api_ip, "Project Name": project_name, "Project ID": new_project_id,
-                    "Tap Name": tap_name,
-                    "Site Count": vedge_count, "Use Tap": use_tap, "Deployment Type": deployment_type, "Deployment Status": deployment_status, "Deployment Step": deployment_step}]
+                         "vManage API IP": vmanage_api_ip, "Project Name": project_name, "Project ID": new_project_id,
+                         "Tap Name": tap_name,
+                         "Site Count": vedge_count, "Use Tap": use_tap, "Deployment Type": deployment_type,
+                         "Deployment Status": deployment_status, "Deployment Step": deployment_step}]
     isp_switch_count = (vedge_count // 40) + 1
     mgmt_switch_count = (vedge_count // 30) + 1
     conn = sqlite3.connect(db_path)
@@ -85,18 +88,19 @@ def oa_viptela_deploy():
     if count == 0:
         # Perform initial insertion to populate the table
         c.execute(
-            "INSERT INTO deployments (server_name, server_ip, project_name) VALUES (?, ?, ?)", (server_ip, server_name, project_name))
+            "INSERT INTO deployments (server_name, server_ip, project_name) VALUES (?, ?, ?)",
+            (server_ip, server_name, project_name))
         conn.commit()
 
     gns3_actions_upload_images(gns3_server_data)
     for image in required_qemu_images:
-        response_code = gns3_get_image(gns3_server_data, 'qemu', image)
+        response_code = gns3_query_get_image(server_ip, server_port, 'qemu', image)
         if response_code != 201:
             log_and_update_db(server_name, project_name, deployment_type, 'Failed', 'Image Validation',
                               f"{image} image not on GNS3 Server")
             return 404
     for image in required_iou_images:
-        response_code = gns3_get_image(gns3_server_data, 'iou', image)
+        response_code = gns3_query_get_image(server_ip, server_port, 'iou', image)
         if response_code != 201:
             log_and_update_db(server_name, project_name, deployment_type, 'Failed', 'Image Validation',
                               f"{image} image not on GNS3 Server")
@@ -106,7 +110,8 @@ def oa_viptela_deploy():
     # endregion
     # region Create GNS3 Templates
     deployment_step = 'Creating Templates'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, "Starting Template Creation")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      "Starting Template Creation")
     vmanage_template_id = gns3_create_template(gns3_server_data, viptela_vmanage_template_data)
     vbond_template_id = gns3_create_template(gns3_server_data, viptela_vbond_template_data)
     vsmart_template_id = gns3_create_template(gns3_server_data, viptela_vsmart_template_data)
@@ -118,8 +123,8 @@ def oa_viptela_deploy():
     regular_ethernet_hub_template_id = gns3_create_template(gns3_server_data, temp_hub_data)
     temp_hub_data = generate_temp_hub_data(mgmt_switchport_count, mgmt_hub_template_name)
     hub_template_id = gns3_create_template(gns3_server_data, temp_hub_data)
-    nat_node_template_id = gns3_get_template_id(gns3_server_data, "NAT")
-    cloud_node_template_id = gns3_get_template_id(gns3_server_data, "Cloud")
+    nat_node_template_id = gns3_query_get_template_id(server_ip, server_port, "NAT")
+    cloud_node_template_id = gns3_query_get_template_id(server_ip, server_port, "Cloud")
     # endregion
     #  region Setup Dynamic Networking
     vedge_deploy_data, client_deploy_data, site_drawing_deploy_data = generate_vedge_deploy_data(vedge_count)
@@ -128,8 +133,9 @@ def oa_viptela_deploy():
     # endregion
     # region Deploy GNS3 Nodes
     deployment_step = 'Deploy GNS3 Nodes'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting Node Deployment")
-    
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Starting Node Deployment")
+
     vmanage_node_id = gns3_create_node(gns3_server_data, new_project_id, vmanage_template_id, vmanage_deploy_data)
     vsmart_node_id = gns3_create_node(gns3_server_data, new_project_id, vsmart_template_id, vsmart_deploy_data)
     vbond_node_id = gns3_create_node(gns3_server_data, new_project_id, vbond_template_id, vbond_deploy_data)
@@ -141,33 +147,36 @@ def oa_viptela_deploy():
     cloud_node_id = gns3_create_cloud_node(gns3_server_data, new_project_id, cloud_node_deploy_data)
     for i in range(1, isp_switch_count + 1):
         node_name = f"ISP_{i:03}"
-        matching_nodes = gns3_find_nodes_by_name(gns3_server_data, new_project_id, node_name)
+        matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, node_name)
         if not matching_nodes:
             node_id, node_name = gns3_create_node_multi_return(gns3_server_data, new_project_id,
                                                                openvswitch_template_id,
                                                                isp_deploy_data[f"isp_{i:03}_deploy_data"])
             isp_switch_nodes.append({'node_name': node_name, 'node_id': node_id})
         else:
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Node {node_name} already exists in project {project_name}")
+            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                              f"Node {node_name} already exists in project {project_name}")
     for i in range(1, mgmt_switch_count + 1):
         node_name = f"MGMT_switch_{i:03}"
-        matching_nodes = gns3_find_nodes_by_name(gns3_server_data, new_project_id, node_name)
+        matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, node_name)
         if not matching_nodes:
             node_id, node_name = gns3_create_node_multi_return(gns3_server_data, new_project_id, hub_template_id,
                                                                mgmt_switch_deploy_data[
                                                                    f"mgmt_switch_{i:03}_deploy_data"])
             mgmt_switch_nodes.append({'node_name': node_name, 'node_id': node_id})
         else:
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Node {node_name} already exists in project {project_name}")
+            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                              f"Node {node_name} already exists in project {project_name}")
     for i in range(1, vedge_count + 1):
         node_name = f"vEdge_{i:03}"
-        matching_nodes = gns3_find_nodes_by_name(gns3_server_data, new_project_id, node_name)
+        matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, node_name)
         if not matching_nodes:
             node_id, node_name = gns3_create_node_multi_return(gns3_server_data, new_project_id, vedge_template_id,
                                                                vedge_deploy_data[f"vedge_{i:03}_deploy_data"])
             vedge_info.append({'node_name': node_name, 'node_id': node_id})
         else:
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Node {node_name} already exists in project {project_name}")
+            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                              f"Node {node_name} already exists in project {project_name}")
     gns3_update_nodes(gns3_server_data, new_project_id, vmanage_node_id, vmanage_deploy_data)
     gns3_update_nodes(gns3_server_data, new_project_id, vsmart_node_id, vsmart_deploy_data)
     gns3_update_nodes(gns3_server_data, new_project_id, vbond_node_id, vbond_deploy_data)
@@ -181,7 +190,8 @@ def oa_viptela_deploy():
             node_id = matching_node['node_id']
             gns3_update_nodes(gns3_server_data, new_project_id, node_id, isp_deploy_data[f"isp_{i:03}_deploy_data"])
         else:
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"No nodes found in project {project_name} for isp_switch_{i}")
+            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                              f"No nodes found in project {project_name} for isp_switch_{i}")
 
     for i in range(1, mgmt_switch_count + 1):
         matching_node = mgmt_switch_nodes[i - 1]
@@ -191,7 +201,8 @@ def oa_viptela_deploy():
                               mgmt_switch_deploy_data[f"mgmt_switch_{i:03}_deploy_data"])
             gns3_update_nodes(gns3_server_data, new_project_id, node_id, deploy_data_z)
         else:
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"No nodes found in project {project_name} for MGMT_switch_{i}")
+            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                              f"No nodes found in project {project_name} for MGMT_switch_{i}")
 
     for i in range(1, vedge_count + 1):
         matching_node = vedge_info[i - 1]
@@ -199,12 +210,15 @@ def oa_viptela_deploy():
             node_id = matching_node['node_id']
             gns3_update_nodes(gns3_server_data, new_project_id, node_id, vedge_deploy_data[f"vedge_{i:03}_deploy_data"])
         else:
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"No nodes found in project {project_name} for vEdge {i}")
+            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                              f"No nodes found in project {project_name} for vEdge {i}")
     # endregion
     # region Connect GNS3 Lab Nodes
     deployment_step = 'Connect GNS3 Nodes'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting GNS3 Nodes Connect")
-    matching_nodes = gns3_find_nodes_by_field(gns3_server_data, new_project_id, 'name', 'ports', 'MGMT-Cloud-TAP')
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Starting GNS3 Nodes Connect")
+    matching_nodes = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'name', 'ports',
+                                                    'MGMT-Cloud-TAP')
     mgmt_tap_interface = 0
     for port in matching_nodes[0]:
         if port["short_name"] == tap_name:
@@ -262,8 +276,9 @@ def oa_viptela_deploy():
     # endregion
     # region Deploy GNS3 Node Config Files
     deployment_step = 'Node Configs'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting Node Config Creation")
-    matching_nodes = gns3_find_nodes_by_name(gns3_server_data, new_project_id, "Cloud_ISP")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Starting Node Config Creation")
+    matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "Cloud_ISP")
     starting_subnet = 6
     router_ip = 0
     switch_index = 0
@@ -288,7 +303,7 @@ def oa_viptela_deploy():
             gns3_upload_file_to_node(gns3_server_data, new_project_id, node_id, "etc/network/interfaces",
                                      temp_file_name)
             vedge_index += 44
-    matching_nodes = gns3_find_nodes_by_name(gns3_server_data, new_project_id, "ISP-Router")
+    matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "ISP-Router")
     if matching_nodes:
         for matching_node in matching_nodes:
             temp_file_name = "ISP-Router"
@@ -297,21 +312,22 @@ def oa_viptela_deploy():
     # endregion
     # region Start All GNS3 Nodes
     deployment_step = 'Starting Nodes'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting All Nodes")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Starting All Nodes")
     gns3_start_all_nodes(gns3_server_data, new_project_id)
     # endregion
     # region Deploy Site Clients in Lab
     deployment_step = 'Deploy Site Clients'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
                       f"Deploying clients into each site.")
-    network_test_tool_template_id = gns3_get_template_id(gns3_server_data, 'Network_Test_Tool')
+    network_test_tool_template_id = gns3_query_get_template_id(server_ip, server_port, 'Network_Test_Tool')
     client_filename = 'client_interfaces'
     client_node_file_path = 'etc/network/interfaces'
     generate_client_interfaces_file(client_filename)
     vedge_deploy_data, client_deploy_data, site_drawing_deploy_data = generate_vedge_deploy_data(vedge_count)
     client_every = 1
     v = 1
-    vedge_nodes = gns3_find_nodes_by_name(gns3_server_data, new_project_id, "vEdge")
+    vedge_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "vEdge")
     if vedge_nodes:
         for vedge_node in vedge_nodes:
             temp_file_name = "client_interfaces"
@@ -329,17 +345,20 @@ def oa_viptela_deploy():
     # region Viptela vManage Setup Part 1
     deployment_step = 'vManage Setup Part 1'
     wait_time = 5  # minutes
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Waiting {wait_time} mins for devices to come up, to resume at {util_resume_time(wait_time)}")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Waiting {wait_time} mins for devices to come up, to resume at {util_resume_time(wait_time)}")
     time.sleep(wait_time * 60)
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, "Starting vManage device setup part 1")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      "Starting vManage device setup part 1")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     for server_ip in server_ips:
         temp_node_name = f'vManage'
-        matching_nodes = gns3_find_nodes_by_name(gns3_server_data, new_project_id, temp_node_name)
+        matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
         if matching_nodes:
             for matching_node in matching_nodes:
                 node_id, console_port, aux = matching_node
-                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Logging in to console for node {temp_node_name}")
+                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                  f"Logging in to console for node {temp_node_name}")
                 tn = telnetlib.Telnet(server_ip, console_port)
                 while True:
                     tn.write(b"\r\n")
@@ -350,7 +369,8 @@ def oa_viptela_deploy():
                     output = tn.read_until(b"Password:", timeout=5).decode('ascii')
                     if 'Welcome' in output:
                         break
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"{temp_node_name} not available yet, trying again in 30 seconds")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                      f"{temp_node_name} not available yet, trying again in 30 seconds")
                     time.sleep(30)
                 tn.write(viptela_password.encode("ascii") + b"\n")
                 tn.read_until(b"password:")
@@ -365,23 +385,27 @@ def oa_viptela_deploy():
                 tn.write(b'y\n')
                 tn.read_until(b"umount")
                 tn.close()
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vManage Device Setup Part 1")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Completed vManage Device Setup Part 1")
     # endregion
     # region Viptela vSmart Setup
     deployment_step = 'vSmart Setup'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vSmart Device Setup")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Starting vSmart Device Setup")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     abs_path = os.path.abspath(__file__)
     configs_path = os.path.join(os.path.dirname(abs_path), 'configs/viptela')
     file_name = os.path.join(configs_path, 'vsmart_template')
     for server_ip in server_ips:
         temp_node_name = f'vSmart'
-        matching_nodes = gns3_find_nodes_by_name(gns3_server_data, new_project_id, temp_node_name)
+        matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
         if matching_nodes:
             for matching_node in matching_nodes:
                 node_id, console_port, aux = matching_node
-                node_name = gns3_find_nodes_by_field(gns3_server_data, new_project_id, 'node_id', 'name', node_id)
-                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Logging in to console for node {node_name[0]}")
+                node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id', 'name',
+                                                           node_id)
+                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                  f"Logging in to console for node {node_name[0]}")
                 tn = telnetlib.Telnet(server_ip, console_port)
                 while True:
                     tn.write(b"\r\n")
@@ -406,13 +430,15 @@ def oa_viptela_deploy():
                         tn.write(viptela_password.encode("ascii") + b"\n")
                         tn.write(b"\r\n")
                         break
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"{temp_node_name} not available yet, trying again in 30 seconds")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                      f"{temp_node_name} not available yet, trying again in 30 seconds")
                     time.sleep(30)
                 tn.write(b"\r\n")
                 tn.read_until(b"#")
                 with open(file_name, 'r') as f:
                     lines = f.readlines()
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Sending configuration commands to {node_name[0]}")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                      f"Sending configuration commands to {node_name[0]}")
                     for line in lines:
                         formatted_line = line.format(
                             hostname=temp_node_name,
@@ -437,23 +463,27 @@ def oa_viptela_deploy():
                 tn.write(b"exit\r")
                 tn.read_until(b"exit")
                 tn.close()
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vSmart Device Setup")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Completed vSmart Device Setup")
     # endregion
     # region Viptela vBond Setup
     deployment_step = 'vBond Setup'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vBond Device Setup")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Starting vBond Device Setup")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     abs_path = os.path.abspath(__file__)
     configs_path = os.path.join(os.path.dirname(abs_path), 'configs/viptela')
     file_name = os.path.join(configs_path, 'vbond_template')
     for server_ip in server_ips:
         temp_node_name = f'vBond'
-        matching_nodes = gns3_find_nodes_by_name(gns3_server_data, new_project_id, temp_node_name)
+        matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
         if matching_nodes:
             for matching_node in matching_nodes:
                 node_id, console_port, aux = matching_node
-                node_name = gns3_find_nodes_by_field(gns3_server_data, new_project_id, 'node_id', 'name', node_id)
-                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Logging in to console for node {temp_node_name}")
+                node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id', 'name',
+                                                           node_id)
+                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                  f"Logging in to console for node {temp_node_name}")
                 tn = telnetlib.Telnet(server_ip, console_port)
                 while True:
                     tn.write(b"\r\n")
@@ -478,13 +508,15 @@ def oa_viptela_deploy():
                         tn.write(viptela_password.encode("ascii") + b"\n")
                         tn.write(b"\r\n")
                         break
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"{temp_node_name} not available yet, trying again in 30 seconds")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                      f"{temp_node_name} not available yet, trying again in 30 seconds")
                     time.sleep(30)
                 tn.write(b"\r\n")
                 tn.read_until(b"#")
                 with open(file_name, 'r') as f:
                     lines = f.readlines()
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Sending configuration commands to {temp_node_name}")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                      f"Sending configuration commands to {temp_node_name}")
                     for line in lines:
                         formatted_line = line.format(
                             hostname=temp_node_name,
@@ -508,11 +540,13 @@ def oa_viptela_deploy():
                 #        sys.exit()
                 tn.write(b"exit\r")
                 tn.read_until(b"exit")
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vBond Device Setup")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Completed vBond Device Setup")
     # endregion
     # region Viptela vManage Setup Part 2
     deployment_step = 'vManage Setup Part 2'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vManage setup part 2")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Starting vManage setup part 2")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     abs_path = os.path.abspath(__file__)
     configs_path = os.path.join(os.path.dirname(abs_path), 'configs/viptela')
@@ -520,11 +554,12 @@ def oa_viptela_deploy():
     vdevices = [6, 10]
     for server_ip in server_ips:
         temp_node_name = f'vManage'
-        matching_nodes = gns3_find_nodes_by_name(gns3_server_data, new_project_id, temp_node_name)
+        matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
         if matching_nodes:
             for matching_node in matching_nodes:
                 node_id, console_port, aux = matching_node
-                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Logging in to console for node {temp_node_name}")
+                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                  f"Logging in to console for node {temp_node_name}")
                 tn = telnetlib.Telnet(server_ip, console_port)
                 while True:
                     tn.write(b"\r\n")
@@ -541,13 +576,15 @@ def oa_viptela_deploy():
                     output = tn.read_until(b"#", timeout=1).decode('ascii')
                     if 'vmanage#' in output:
                         break
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"{temp_node_name} not available yet, trying again in 30 seconds")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                      f"{temp_node_name} not available yet, trying again in 30 seconds")
                     time.sleep(30)
                 tn.write(b"\r\n")
                 tn.read_until(b"#")
                 with open(file_name, 'r') as f:
                     lines = f.readlines()
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Sending configuration commands to {temp_node_name}")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                      f"Sending configuration commands to {temp_node_name}")
                     for line in lines:
                         formatted_line = line.format(
                             hostname=temp_node_name,
@@ -589,11 +626,13 @@ def oa_viptela_deploy():
                     tn.read_until(b'#')
                 tn.write(b'exit\r\n')
                 tn.close()
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, "Completed vManage Device Setup Part 2")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      "Completed vManage Device Setup Part 2")
     # endregion
     # region Viptela vEdge Device Setup
     deployment_step = 'vEdge Device Setup'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vEdge Device Setup for {vedge_count} vEdges")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Starting vEdge Device Setup for {vedge_count} vEdges")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     abs_path = os.path.abspath(__file__)
     configs_path = os.path.join(os.path.dirname(abs_path), 'configs/viptela')
@@ -603,11 +642,12 @@ def oa_viptela_deploy():
     for server_ip in server_ips:
         for i in range(1, vedge_count + 1):
             temp_node_name = f'vEdge_{i:003}'
-            matching_nodes = gns3_find_nodes_by_name(gns3_server_data, new_project_id, temp_node_name)
+            matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
             if matching_nodes:
                 for matching_node in matching_nodes:
                     node_id, console_port, aux = matching_node
-                    node_name = gns3_find_nodes_by_field(gns3_server_data, new_project_id, 'node_id', 'name', node_id)
+                    node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id',
+                                                               'name', node_id)
                     for vedge_lan_object in vedge_lan_objects:
                         if vedge_lan_object['vedge'] == temp_node_name:
                             lan_dhcp_pool = vedge_lan_object['lan_dhcp_pool']
@@ -628,7 +668,8 @@ def oa_viptela_deploy():
                             vpn_0_ge0_1_ip_address = dictionary_1['vedge_address']
                             vpn_0_ge0_1_ip_gateway = dictionary_1['router_address']
                     vedge_hostname = f"{temp_node_name}_{oa_city_data[temp_node_name]['city']}"
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vEdge Device Setup for {node_name[0]} - vEdge {i} of {vedge_count}")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                      f"Starting vEdge Device Setup for {node_name[0]} - vEdge {i} of {vedge_count}")
                     tn = telnetlib.Telnet(server_ip, console_port)
                     while True:
                         tn.write(b"\r\n")
@@ -653,13 +694,16 @@ def oa_viptela_deploy():
                             tn.write(viptela_password.encode("ascii") + b"\n")
                             tn.write(b"\r\n")
                             break
-                        log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"{temp_node_name} not available yet, trying again in 30 seconds")
+                        log_and_update_db(server_name, project_name, deployment_type, deployment_status,
+                                          deployment_step,
+                                          f"{temp_node_name} not available yet, trying again in 30 seconds")
                         time.sleep(30)
                     tn.write(b"\r\n")
                     tn.read_until(b"#")
                     with open(file_name, 'r') as f:
                         lines = f.readlines()
-                        log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Sending configuration commands to {node_name[0]}")
+                        log_and_update_db(server_name, project_name, deployment_type, deployment_status,
+                                          deployment_step, f"Sending configuration commands to {node_name[0]}")
                         for line in lines:
                             formatted_line = line.format(
                                 vedge_hostname=vedge_hostname,
@@ -688,28 +732,33 @@ def oa_viptela_deploy():
                     tn.write(b"exit\r")
                     tn.read_until(b"exit")
                     tn.close()
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vEdge Device Setup for {temp_node_name}, Remaining - {vedge_count - i}")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                      f"Completed vEdge Device Setup for {temp_node_name}, Remaining - {vedge_count - i}")
                     if i % 44 == 0 and i != 0:
                         isp_index += 1
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vEdge Device Setup for {vedge_count} vEdge devices")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Completed vEdge Device Setup for {vedge_count} vEdge devices")
     # endregion
     # region Viptela vManage API Setup
     deployment_step = ' vManage API Setup'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vManage API Setup")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Starting vManage API Setup")
     auth = Authentication()
     while True:
         try:
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Checking if vManage API is available..")
+            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                              f"Checking if vManage API is available..")
             response = auth.get_jsessionid(gns3_server_data)
             break
         except:
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f'vManage API is yet not available, checking again in 1 minute at {util_resume_time(1)}')
+            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                              f'vManage API is yet not available, checking again in 1 minute at {util_resume_time(1)}')
             time.sleep(60)
     vmanage_headers = vmanage_create_auth(gns3_server_data)
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     for server_ip in server_ips:
         temp_node_name = f'vManage'
-        matching_nodes = gns3_find_nodes_by_name(gns3_server_data, new_project_id, temp_node_name)
+        matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
         if matching_nodes:
             for matching_node in matching_nodes:
                 node_id, console_port, aux = matching_node
@@ -734,7 +783,8 @@ def oa_viptela_deploy():
                         tn.read_until(b"#")
                         tn.write(b'vshell\r\n')
                         break
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"{temp_node_name} not available yet, trying again in 30 seconds")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                      f"{temp_node_name} not available yet, trying again in 30 seconds")
                     time.sleep(30)
                 tn.write(b"\r\n")
                 tn.read_until(b'$')
@@ -807,31 +857,36 @@ def oa_viptela_deploy():
                 tn.write(b'exit\r\n')
                 tn.read_until(b'#')
                 tn.close()
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vManage API Setup")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Completed vManage API Setup")
     # endregion
     # region Viptela vEdge Final Setup
     deployment_step = 'vEdge Final Setup'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vEdge Certificate setup and deployment into Viptela Environment")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Starting vEdge Certificate setup and deployment into Viptela Environment")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     ve = 101
     v = 1
     for server_ip in server_ips:
         temp_node_name = f'vManage'
-        matching_nodes = gns3_find_nodes_by_name(gns3_server_data, new_project_id, temp_node_name)
-        vedge_nodes = gns3_find_nodes_by_name(gns3_server_data, new_project_id, "vEdge")
+        matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
+        vedge_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "vEdge")
         if matching_nodes:
             for matching_node in matching_nodes:
                 node_id, console_port, aux = matching_node
-                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Logging in to console for node {temp_node_name}")
+                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                  f"Logging in to console for node {temp_node_name}")
                 for vedge_node in vedge_nodes:
                     vedge_id, vedge_console, vedge_aux = vedge_node
-                    node_name = gns3_find_nodes_by_field(gns3_server_data, new_project_id, 'node_id', 'name', vedge_id)
+                    node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id',
+                                                               'name', vedge_id)
                     scp_command = f"request execute vpn 512 scp /home/admin/SDWAN.pem admin@172.16.2.{ve}:/home/admin"
                     scp_2_command = f"request execute vpn 512 scp /home/admin/vedge.crt admin@172.16.2.{ve}:/home/admin"
                     ssh_command = f"request execute vpn 512 ssh admin@172.16.2.{ve}"
                     ssh_2_command = f"request execute vpn 512 ssh admin@172.16.2.10"
                     tn = telnetlib.Telnet(server_ip, console_port)
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vEdge Certificate Setup for {node_name[0]} - vEdge {v} of {vedge_count}")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                      f"Starting vEdge Certificate Setup for {node_name[0]} - vEdge {v} of {vedge_count}")
                     while True:
                         tn.write(b"\r\n")
                         output = tn.read_until(b"login:", timeout=2).decode('ascii')
@@ -852,7 +907,9 @@ def oa_viptela_deploy():
                             tn.read_until(b"#")
                             tn.write(b'vshell\r\n')
                             break
-                        log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"{temp_node_name} not available yet, trying again in 30 seconds")
+                        log_and_update_db(server_name, project_name, deployment_type, deployment_status,
+                                          deployment_step,
+                                          f"{temp_node_name} not available yet, trying again in 30 seconds")
                         time.sleep(30)
                     tn.write(b"\r\n")
                     tn.read_until(b'$')
@@ -924,7 +981,9 @@ def oa_viptela_deploy():
                         serial_number = re.search(serial_regex, cert_output).group(1)
                         if chassis_number and serial_number:
                             break
-                        log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"{node_name[0]} tried to install certificate too quickly, trying again in 10 seconds ")
+                        log_and_update_db(server_name, project_name, deployment_type, deployment_status,
+                                          deployment_step,
+                                          f"{node_name[0]} tried to install certificate too quickly, trying again in 10 seconds ")
                         time.sleep(10)
                     tn.write(b'exit\r\n')
                     tn.read_until(b'#')
@@ -940,7 +999,8 @@ def oa_viptela_deploy():
                     tn.write(vedge_install_command.encode('ascii') + b"\n")
                     tn.read_until(b'#')
                     ve += 1
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vEdge Certificate Setup for {node_name[0]}, Remaining - {vedge_count - v}")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                      f"Completed vEdge Certificate Setup for {node_name[0]}, Remaining - {vedge_count - v}")
                     tn.close()
                     v += 1
     while True:
@@ -949,15 +1009,18 @@ def oa_viptela_deploy():
             response = auth.get_jsessionid(gns3_server_data)
             break
         except:
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f'vManage API is yet not available')
+            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                              f'vManage API is yet not available')
             time.sleep(60)
     vmanage_headers = vmanage_create_auth(gns3_server_data)
     vmanage_push_certs(gns3_server_data, vmanage_headers)
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vEdge Certificate setup and deployment into Viptela Environment")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Completed vEdge Certificate setup and deployment into Viptela Environment")
     # endregion
     # region Push vEdge Certs to Control Devices
     deployment_step = 'Push vEdge Certs'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Waiting 5 mins to send final API call to vManage to push vEdge certificates to control devices, to resume at {util_resume_time(5)}")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Waiting 5 mins to send final API call to vManage to push vEdge certificates to control devices, to resume at {util_resume_time(5)}")
     time.sleep(300)
     while True:
         try:
@@ -965,34 +1028,38 @@ def oa_viptela_deploy():
             response = auth.get_jsessionid(gns3_server_data)
             break
         except:
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f'vManage API is yet not available')
+            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                              f'vManage API is yet not available')
             time.sleep(60)
     vmanage_headers = vmanage_create_auth(gns3_server_data)
     vmanage_push_certs(gns3_server_data, vmanage_headers)
     # endregion
     # region Validation
-    client_nodes = gns3_find_nodes_by_name(gns3_server_data, new_project_id, "Client")
+    client_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "Client")
     if client_nodes:
         for client_node in client_nodes:
             node_id, console_port, aux = client_node
             gns3_start_node(gns3_server_data, new_project_id, node_id)
     wait_time = 10  # minutes
     deployment_step = 'Validation'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Waiting {wait_time} minutes to validate deployment, to resume at {util_resume_time(wait_time)}")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Waiting {wait_time} minutes to validate deployment, to resume at {util_resume_time(wait_time)}")
     time.sleep(wait_time * 60)
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     for server_ip in server_ips:
         temp_node_name = f'Client_001'
         vedge_nodes = f'vEdge_'
-        matching_nodes = gns3_find_nodes_by_name(gns3_server_data, new_project_id, temp_node_name)
-        client_nodes = gns3_find_nodes_by_name(gns3_server_data, new_project_id, vedge_nodes)
+        matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
+        client_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, vedge_nodes)
         client_ip = 101
         successful_site = 0
         i = 1
         if matching_nodes:
             node_id, console_port, aux = matching_nodes[0]
-            node_name = gns3_find_nodes_by_field(gns3_server_data, new_project_id, 'node_id', 'name', node_id)
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting deployment validation on node {node_name[0]}")
+            node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id', 'name',
+                                                       node_id)
+            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                              f"Starting deployment validation on node {node_name[0]}")
             tn = telnetlib.Telnet(server_ip, console_port)
             tn.write(b"\r\n")
             tn.read_until(b"#")
@@ -1002,20 +1069,26 @@ def oa_viptela_deploy():
                 output = tn.read_until(b"loss", timeout=5).decode('ascii')
                 if "100% packet" in output:
                     client_node_name = \
-                    gns3_find_nodes_by_field(gns3_server_data, new_project_id, 'node_id', 'name', client_nodes[i][0])[0]
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Packet Loss to Site {client_ip}")
+                        gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id', 'name',
+                                                       client_nodes[i][0])[0]
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                      f"Packet Loss to Site {client_ip}")
                 else:
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,f"Successfully connected to Site {client_ip}")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                      f"Successfully connected to Site {client_ip}")
                     successful_site += 1
                 client_ip += 1
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Successful connection to {successful_site} of {len(client_nodes)} Sites")
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed deployment validation for project {project_name}")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Successful connection to {successful_site} of {len(client_nodes)} Sites")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Completed deployment validation for project {project_name}")
     # endregion
 
     end_time = time.time()
     total_time = (end_time - start_time) / 60
     deployment_step = 'Complete'
     deployment_status = 'Complete'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Total time for GNS3 Lab Deployment with {vedge_count} vEdge Devices: {total_time:.2f} minutes")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Total time for GNS3 Lab Deployment with {vedge_count} vEdge Devices: {total_time:.2f} minutes")
     # endregion
 
