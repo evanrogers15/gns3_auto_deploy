@@ -58,7 +58,7 @@ def use_case_2(server, port, project_id, state):
             set_single_packet_filter(server, port, project_id, link_id, filter_type, filter_value)
         for index, client in enumerate(client_nodes):
             server_ip = f"172.16.1{client_count:02}.51"
-            client_command_1 = f'nohup sh -c "while true; do rand=\$(shuf -i 20-60 -n 1)m; echo \$rand; iperf3 -c {server_ip} -p 520{index + 1} -u -b \$rand -t 30; done" > /dev/null 2>&1 &'
+            client_command_1 = f'nohup sh -c "while true; do rand=\$(shuf -i 5-20 -n 1)m; echo \$rand; iperf3 -c {server_ip} -p 520{index + 1} -u -b \$rand -t 30; done" > /dev/null 2>&1 &'
             client_node_id, client_console, client_aux = gns3_query_find_node_by_name(nodes, client)
             change_node_state(server, port, project_id, client_node_id, 'on')
             if index == len(client_nodes) - 1:

@@ -89,11 +89,11 @@ appneta_mp_template_data = {"compute_id": "local", "cpus": 2, "port_name_format"
                             "hda_disk_image": "pathview-amd64-13.12.6.53966.qcow2", "name": "Appneta-vk35",
                             "ram": 4096, "template_type": "qemu"}
 openvswitch_template_data = {"compute_id": "local", "adapters": 16, "category": "switch",
-                             "image": "gns3/openvswitch:latest", "name": "Open vSwitch",
+                             "image": "gns3/ovs-snmp:latest", "name": "Open vSwitch",
                              "symbol": ":/symbols/classic/multilayer_switch.svg", "template_type": "docker",
                              "usage": "By default all interfaces are connected to the br0"}
 openvswitch_cloud_template_data = {"compute_id": "local", "adapters": switchport_count, "category": "switch",
-                                   "image": "gns3/openvswitch:latest", "name": open_vswitch_cloud_template_name,
+                                   "image": "gns3/ovs-snmp:latest", "name": open_vswitch_cloud_template_name,
                                    "symbol": ":/symbols/cloud.svg", "template_type": "docker",
                                    "usage": "By default all interfaces are connected to the br0"}
 network_test_tool_template_data = {"compute_id": "local", "adapters": 2, "category": "guest",
