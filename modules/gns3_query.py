@@ -122,6 +122,7 @@ def gns3_query_get_node_links(nodes, links, server, port, project_id, node_id, n
                             link_numbers.append(link_id)
                             seen_node_ids.add(node['node_id'])
                             break
+    print(link_numbers)
     if not link_numbers:
         return None
     return link_numbers
