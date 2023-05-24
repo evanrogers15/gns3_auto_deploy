@@ -178,28 +178,22 @@ def gns3_delete_nodes(gns3_server_data, project_id, delete_node_name):
         else:
             log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"No nodes with '{delete_node_name}' in their name were found in project {project_name} on GNS3 Server {server_ip}")
 
-def gns3_delete_all_nodes(gns3_server_data, project_id):
-    for server_record in gns3_server_data:
-        server_ip, server_port, server_name, project_name, vmanage_api_ip, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
-            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['vManage API IP'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
-        nodes = gns3_query_get_nodes(server_ip, server_port, project_id)
-        for node in nodes:
-            node_id = node['node_id']
-            delete_url = f"http://{server_ip}:{server_port}/v2/projects/{project_id}/nodes/{node_id}"
-            response = make_request("DELETE", delete_url)
-            node_name = node["name"]
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deleted node {node_name} on GNS3 Server {server_ip}")
+def gns3_delete_all_nodes(server_ip, server_port, project_id):
+    nodes = gns3_query_get_nodes(server_ip, server_port, project_id)
+    for node in nodes:
+        node_id = node['node_id']
+        delete_url = f"http://{server_ip}:{server_port}/v2/projects/{project_id}/nodes/{node_id}"
+        response = make_request("DELETE", delete_url)
+        node_name = node["name"]
+    log_and_update_db(deployment_status='Running', deployment_step='Setup', log_message=f"Deleted node all nodes on GNS3 Server {server_ip}")
 
-def gns3_delete_all_drawings(gns3_server_data, project_id):
-    for server_record in gns3_server_data:
-        server_ip, server_port, server_name, project_name, vmanage_api_ip, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
-            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['vManage API IP'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
-        drawings = gns3_query_get_drawings(server_ip, server_port, project_id)
-        for drawing in drawings:
-            drawing_id = drawing['drawing_id']
-            delete_url = f"http://{server_ip}:{server_port}/v2/projects/{project_id}/drawings/{drawing_id}"
-            response = make_request("DELETE", delete_url)
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deleted drawing {drawing_id} on GNS3 Server {server_ip}")
+def gns3_delete_all_drawings(server_ip, server_port, project_id):
+    drawings = gns3_query_get_drawings(server_ip, server_port, project_id)
+    for drawing in drawings:
+        drawing_id = drawing['drawing_id']
+        delete_url = f"http://{server_ip}:{server_port}/v2/projects/{project_id}/drawings/{drawing_id}"
+        response = make_request("DELETE", delete_url)
+    log_and_update_db(deployment_status='Running', deployment_step='Setup', log_message=f"Deleted all drawings on GNS3 Server {server_ip}")
 
 def gns3_delete_template(gns3_server_data, template_name):
     for server_record in gns3_server_data:

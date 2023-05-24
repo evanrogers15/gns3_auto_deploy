@@ -25,6 +25,10 @@ def index():
 def oa_sdwan_deploy():
     return render_template('oa_create_sdwan.html')
 
+@app.route('/demo')
+def oa_sdwan_deploy():
+    return render_template('demo_create_sdwan.html')
+
 @app.route('/admin')
 def adminPage():
     return render_template('admin.html')
@@ -51,6 +55,46 @@ def update_config():
         project_id = matching_projects[0]['project_id']
         gns3_delete_project_static(server_ip, server_port, new_project_name, project_id)
         project_id = gns3_create_project(server_ip, server_port, new_project_name)
+    projects = gns3_query_get_projects(server_ip, server_port)
+    project_names = [project['name'] for project in projects]
+    project_ids = [project['project_id'] for project in projects]
+    project_status = [project['status'] for project in projects]
+    conn = sqlite3.connect(db_path)
+    c = conn.cursor()
+    c.execute("DELETE FROM config")
+    c.execute("INSERT INTO config (server_ip, server_port, server_name, project_list, project_names, project_status, project_name, project_id, vmanage_api_ip, site_count, tap_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (server_ip, server_port, server_name, json.dumps(project_ids), json.dumps(project_names), json.dumps(project_status), new_project_name, project_id, vmanage_api_ip, site_count, tap_name))
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True})
+
+@app.route('/api/demo_config', methods=['POST'])
+def update_confign():
+    req_data = request.get_json()
+    if not req_data:
+        return jsonify({'error': 'Request data is empty or None.'}), 400
+    server_ip = req_data.get('server_ip')
+    if not server_ip:
+        return jsonify({'error': 'Server IP is missing.'}), 400
+    server_port = req_data.get('server_port')
+    new_project_name = req_data.get('project_name')
+    vmanage_api_ip = req_data.get('vmanage_api_ip')
+    site_count = req_data.get('site_count')
+    tap_name = req_data.get('tap_name')
+    use_existing = req_data.get('use_existing')
+    projects = gns3_query_get_projects(server_ip, server_port)
+    server_name = gns3_query_get_computes_name(server_ip, server_port)
+    if use_existing == 0:
+        if new_project_name not in [project['name'] for project in projects]:
+            project_id = gns3_create_project(server_ip, server_port, new_project_name)
+        else:
+            matching_projects = [project for project in projects if project['name'] == new_project_name]
+            project_id = matching_projects[0]['project_id']
+            gns3_delete_project_static(server_ip, server_port, new_project_name, project_id)
+            project_id = gns3_create_project(server_ip, server_port, new_project_name)
+    else:
+        project_id = gns3_query_get_project_id(server_ip, server_port, new_project_name)
+        gns3_delete_all_nodes(server_ip, server_port, project_id)
+        gns3_delete_all_drawings(server_ip, server_port, project_id)
     projects = gns3_query_get_projects(server_ip, server_port)
     project_names = [project['name'] for project in projects]
     project_ids = [project['project_id'] for project in projects]
