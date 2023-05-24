@@ -191,7 +191,7 @@
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
 </head>
 <body>
-  <h1>Viptela SDWAN GNS3 Lab Autodeployment</h1>
+  <h1>Open Access Viptela SDWAN GNS3 Lab Auto Deployment</h1>
   <div class="wrapper">
     <div class="prerequisites-container">
     <h3>Information</h3>
@@ -202,6 +202,7 @@
         <li>Minimum Machine Type: n2-standard-16</li>
         <li>Cisco IOU License Applied</li>
         <li>Access to the GNS3 Web UI from this machine</li>
+        <li>Tap Interface with IP address of 172.16.2.2</li>
     </ul>
     <h4>Required GNS3 Images:</h4>
       <ul>
@@ -214,7 +215,6 @@
     <h4>Monitoring Requirements:</h4>
       <ul>
         <li>OpenVPN Deployed on GNS3 Server</li>
-        <li>Tap Interface with IP address of 172.16.2.2</li>
     </ul>
 
   </div>
@@ -222,10 +222,9 @@
     <div class="instructions-container">
     <h3>Instructions:</h3>
       <ul>
-        <li>Upload GNS3 images if they don't exist on the server</li>
-        <li>Set GNS3 server address</li>
+        <li>Drag and drop the required GNS3 images if they aren't already on the server</li>
+        <li>Set GNS3 server IP address, if Deployment container is running on the GNS3 host select Local</li>
         <li>Set different project name if desired</li>
-        <li>If you are unsure, you can use the default vManage API IP</li>
         <li>Set Site Count between 1 and 50 (note more sites require more resources)</li>
         <li>Set Tap Interface Name (Example: tap0)</li>
         <li>Click Start Deployment</li>
@@ -247,7 +246,12 @@
     <div class="form-container">
       <form>
         <label for="server_ip">GNS3 Server IP:</label>
-        <input type="text" id="server_ip" name="server_ip">
+        <select id="server_ip" name="server_ip">
+          <option value="192.168.122.1">Local GNS3 Server</option>
+          <option value="custom">Custom</option>
+        </select>
+        <input type="text" id="server_ip_input" style="display: none;">
+
 
         <label for="server_port">GNS3 Server Port:</label>
         <select id="server_port" name="server_port">
@@ -255,7 +259,7 @@
           <option value="3080">3080</option>
           <option value="custom">Custom</option>
         </select>
-        <input type="text" id="server_port_input" name="server_ip_input" style="display: none;">
+        <input type="text" id="server_port_input" style="display: none;">
 
         <label for="project_name">New GNS3 Project Name:</label>
         <select id="project_name" name="project_name">
@@ -263,6 +267,13 @@
           <option value="custom">Custom</option>
         </select>
         <input type="text" id="project_name_input" name="project_name_input" style="display: none;">
+
+        <label for="site_count">Site Count: </label>
+        <select id="site_count" name="site_count">
+          <option value="5">5</option>
+          <option value="custom">Custom</option>
+        </select>
+        <input type="text" id="site_count_input" style="display: none;">
 
         <label for="tap_name">Tap Interface Name:</label>
         <input type="text" id="tap_name" name="tap_name">
@@ -303,80 +314,115 @@
             }
         });
         document.getElementById("server_port").addEventListener("change", function() {
-            var selectedValue = this.value;
+          var selectedValue = this.value;
 
-            if (selectedValue === "custom") {
+          if (selectedValue === "custom") {
             document.getElementById("server_port_input").style.display = "block";
-            } else {
+          } else {
             document.getElementById("server_port_input").style.display = "none";
-            }
+          }
         });
+        var serverPort = document.getElementById("server_port").value;
+        if (serverPort === "custom") {
+          serverPort = document.getElementById("server_port_input").value;
+        }
         document.getElementById("project_name").addEventListener("change", function() {
-            var selectedValue = this.value;
+          var selectedValue = this.value;
 
-            if (selectedValue === "custom") {
+          if (selectedValue === "custom") {
             document.getElementById("project_name_input").style.display = "block";
-            } else {
+          } else {
             document.getElementById("project_name_input").style.display = "none";
-            }
+          }
+        });
+        var serverPort = document.getElementById("project_name").value;
+        if (serverPort === "custom") {
+          serverPort = document.getElementById("project_name_input").value;
+        }
+        document.getElementById("site_count").addEventListener("change", function() {
+          var selectedValue = this.value;
+
+          if (selectedValue === "custom") {
+            document.getElementById("site_count_input").style.display = "block";
+          } else {
+            document.getElementById("site_count_input").style.display = "none";
+          }
         });
         document.getElementById("tap_name").addEventListener("change", function() {
-            var selectedValue = this.value;
+          var selectedValue = this.value;
 
-            if (selectedValue === "custom") {
+          if (selectedValue === "custom") {
             document.getElementById("tap_name_input").style.display = "block";
-            } else {
+          } else {
             document.getElementById("tap_name_input").style.display = "none";
-            }
+          }
         });
+        var serverPort = document.getElementById("tap_name").value;
+        if (serverPort === "custom") {
+          serverPort = document.getElementById("tap_name_input").value;
+        }
 
         function submitForm() {
-        var server_ip = document.getElementById("server_ip").value;
-        var server_port = document.getElementById("server_port").value;
-        var project_name = document.getElementById("project_name").value;
-        var vmanage_api_ip = "172.16.2.2";
-        var site_count = "10";
-        var tap_name = document.getElementById("tap_name").value;
+          var startDeploymentButton = document.querySelector('input[type="button"]');
+          startDeploymentButton.value = "Initiating Deployment";
+          startDeploymentButton.disabled = true;
 
-        var data = JSON.stringify({
-        server_ip: server_ip,
-        server_port: server_port,
-        project_name: project_name,
-        vmanage_api_ip: vmanage_api_ip,
-        site_count: site_count,
-        tap_name: tap_name,
-        });
-
-        var xhr = new XMLHttpRequest();
-        var url = "/api/config";
-        xhr.open("POST", url, true);
-        xhr.setRequestHeader("Content-Type", "application/json");
-
-        xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4) {
-          if (xhr.status === 200) {
-            // Successful response
-            var putXhr = new XMLHttpRequest();
-            var putUrl = "/api/tasks/oa_start_viptela_deploy";
-            putXhr.open("PUT", putUrl, true);
-            putXhr.setRequestHeader("Content-Type", "application/json");
-
-            putXhr.onreadystatechange = function () {
-              if (putXhr.readyState === 4 && putXhr.status === 200) {
-                alert(putXhr.responseText);
-              }
-            };
-
-            putXhr.send();
-          } else {
-            // Handle error response from xhr.send(data)
-            console.error("Error: " + xhr.status);
+          var server_ip = document.getElementById("server_ip").value;
+          if (server_ip === "custom") {
+            server_ip = document.getElementById("server_ip_input").value;
           }
-        }
-        };
+          var server_port = document.getElementById("server_port").value;
+          var project_name = document.getElementById("project_name").value;
+          if (project_name === "custom") {
+            project_name = document.getElementById("project_name_input").value;
+          }
+          var vmanage_api_ip = "172.16.2.2";
+          var site_count = document.getElementById("site_count").value;
+          if (site_count === "custom") {
+            site_count = document.getElementById("site_count_input").value;
+          }
+          var tap_name = document.getElementById("tap_name").value;
 
-        xhr.send(data);
+          var data = JSON.stringify({
+            server_ip: server_ip,
+            server_port: server_port,
+            project_name: project_name,
+            vmanage_api_ip: vmanage_api_ip,
+            site_count: site_count,
+            tap_name: tap_name,
+          });
+
+          var xhr = new XMLHttpRequest();
+          var url = "/api/config";
+          xhr.open("POST", url, true);
+          xhr.setRequestHeader("Content-Type", "application/json");
+
+          xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+              if (xhr.status === 200) {
+                // Successful response
+                var putXhr = new XMLHttpRequest();
+                var putUrl = "/api/tasks/oa_start_viptela_deploy";
+                putXhr.open("PUT", putUrl, true);
+                putXhr.setRequestHeader("Content-Type", "application/json");
+
+                putXhr.onreadystatechange = function () {
+                  if (putXhr.readyState === 4 && putXhr.status === 200) {
+                    startDeploymentButton.value = "Deployment Started";
+                  }
+                };
+
+                putXhr.send();
+              } else {
+                // Handle error response from xhr.send(data)
+                console.error("Error: " + xhr.status);
+              }
+            }
+          };
+
+          xhr.send(data);
         }
+
         $(document).ready(function() {
         var fileDropZone = $('#file-drop-zone');
 
