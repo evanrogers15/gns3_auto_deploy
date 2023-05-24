@@ -59,9 +59,9 @@ def use_case_2(server, port, project_id, state):
         links = gns3_query_get_links(server, port, project_id, router_node_id)
         link_ids = gns3_query_get_node_links(nodes, links, server, port, project_id, router_node_id, router_node_name, remote_node_id_1, '2/0')
         if state == 'on':
-            for i in range(2, len(link_ids)):
-                link_id = link_ids[i]
-                set_single_packet_filter(server, port, project_id, link_id, filter_type, filter_value)
+            #for i in range(2, len(link_ids)):
+            #    link_id = link_ids[i]
+            set_single_packet_filter(server, port, project_id, link_id[0], filter_type, filter_value)
             print(f"Use Case 2 Applied to Site {site}")
         else:
             for i in range(2, len(link_ids)):
