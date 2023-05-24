@@ -143,6 +143,7 @@ def gns3_query_get_node_links(nodes, links, server, port, project_id, node_id, n
                 adapter_temp = f"{endpoint_adapter_number}/{endpoint_port_number}"
                 if adapter_port:
                     if adapter_temp == adapter_port:
+                        print(adapter_temp)
                         if remote_node_id:
                             if any(n['node_id'] == remote_node_id for n in link_data['nodes']):
                                 link_id = link_id  # Assign the link_id to itself
