@@ -154,6 +154,7 @@ def gns3_query_get_node_links(nodes, links, server, port, project_id, node_id, n
                                 link_id = link_id  # Assign the link_id to itself
                                 seen_node_ids.add(node['node_id'])
                                 break
+    print(link_id)
     return link_id if link_id else None
 
 def gns3_query_get_location_data(server_ip, server_port, project_id, item_type):
