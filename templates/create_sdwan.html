@@ -223,9 +223,8 @@
     <h3>Instructions:</h3>
       <ul>
         <li>Upload GNS3 images if they don't exist on the server</li>
-        <li>Set GNS3 server address</li>
+        <li>Set GNS3 server IP address, if Deployment container is running on the GNS3 host select Local</li>
         <li>Set different project name if desired</li>
-        <li>If you are unsure, you can use the default vManage API IP</li>
         <li>Set Site Count between 1 and 50 (note more sites require more resources)</li>
         <li>Set Tap Interface Name (Example: tap0)</li>
         <li>Click Start Deployment</li>
@@ -246,9 +245,9 @@
   </div>
     <div class="form-container">
       <form>
-        <label for="server_ip">If Deployment Container is running on GNS3 Server,<br> select local<br>GNS3 Server IP:</label>
+        <label for="server_ip">GNS3 Server IP:</label>
         <select id="server_ip" name="server_ip">
-          <option value="192.168.122.1">Local</option>
+          <option value="192.168.122.1">Local GNS3 Server</option>
           <option value="custom">Custom</option>
         </select>
         <input type="text" id="server_ip_input" style="display: none;">
