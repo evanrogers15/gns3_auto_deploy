@@ -6,7 +6,8 @@ import time
 import sys
 
 def use_case_1(server, port, project_id, state):
-    test_clients = ['Site_001_Client', 'Site_002_Client', 'Site_003_Client', 'Site_004_Client', 'Site_005_Client']
+    #test_clients = ['Site_001_Client', 'Site_002_Client', 'Site_003_Client', 'Site_004_Client', 'Site_005_Client']
+    matching_nodes = gns3_query_find_nodes_by_field(server, port, project_id, 'name', 'name', 'Client')
     remote_node_name_1 = 'Cloud_ISP_001'
     router_node_name = 'vEdge_001_NewYork'
     filter_type = 'packet_loss'
@@ -16,37 +17,32 @@ def use_case_1(server, port, project_id, state):
     router_node_id, router_console, router_aux = gns3_query_find_node_by_name(nodes, router_node_name)
     links = gns3_query_get_links(server, port, project_id, router_node_id)
     remote_node_id_1, remote_node_console_1, remote_node_aux_1 = gns3_query_find_node_by_name(nodes, remote_node_name_1)
-    link_ids = gns3_query_get_node_links(nodes, links, server, port, project_id, router_node_id, router_node_name, remote_node_id_1)
-    client_count = len(test_clients)
+    link_id = gns3_query_get_node_links(nodes, links, server, port, project_id, router_node_id, remote_node_id_1, '1/0')
+    client_count = len(matching_nodes)
     if state == 'on':
-        for index, client in enumerate(test_clients):
+        for index, client in enumerate(matching_nodes):
             server_ip = f"172.16.1{client_count:02}.51"
             client_command_1 = f'nohup sh -c "while true; do rand=\$(shuf -i 20-60 -n 1)m; echo \$rand; iperf3 -c {server_ip} -p 520{index+1} -u -b \$rand -t 30; done" > /dev/null 2>&1 &'
             client_node_id, client_console, client_aux = gns3_query_find_node_by_name(nodes, client)
             change_node_state(server, port, project_id, client_node_id, 'on')
             time.sleep(2)
-            if index == len(test_clients) - 1:
+            if index == len(matching_nodes) - 1:
                 run_telnet_command(server, port, project_id, client_node_id, client_console, state, client_command_2)
             else:
                 run_telnet_command(server, port, project_id, client_node_id, client_console, state, client_command_1)
-        for i in range(2, len(link_ids)):
-            link_id = link_ids[i]
-            set_single_packet_filter(server, port, project_id, link_id, filter_type, filter_value)
+        set_single_packet_filter(server, port, project_id, link_id, filter_type, filter_value)
         time.sleep(3)
         print("Use Case 1 Applied")
         return {'message': 'Scenario started successfully.'}, 200
     else:
-        for index, client in enumerate(test_clients):
+        for index, client in enumerate(matching_nodes):
             client_node_id, client_node_console, client_node_aux = gns3_query_find_node_by_name(nodes, client)
             change_node_state(server, port, project_id, client_node_id, 'off')
-        for i in range(2, len(link_ids)):
-            link_id = link_ids[i]
-            remove_single_packet_filter(server, port, project_id, link_id)
+        remove_single_packet_filter(server, port, project_id, link_id)
         print("Use Case 1 Removed")
         return {'message': 'Scenario started successfully.'}, 200
 
 def use_case_2(server, port, project_id, state):
-    #site_list = ['vEdge_001_NewYork', 'vEdge_002_LosAngeles', 'vEdge_003_Chicago', 'vEdge_004_Houston', 'vEdge_005_Phoenix', 'vEdge_006_Philadelphia', 'vEdge_007_SanAntonio', 'vEdge_008_SanDiego', 'vEdge_009_Dallas', 'vEdge_010_SanJose']
     matching_nodes = gns3_query_find_nodes_by_field(server, port, project_id, 'name', 'name', 'vEdge')
     for site in matching_nodes:
         remote_node_name_1 = 'Cloud_ISP_001'
@@ -59,13 +55,9 @@ def use_case_2(server, port, project_id, state):
         links = gns3_query_get_links(server, port, project_id, router_node_id)
         link_id = gns3_query_get_node_links(nodes, links, server, port, project_id, router_node_id, remote_node_id_1, '1/0')
         if state == 'on':
-            #for i in range(2, len(link_ids)):
-            #    link_id = link_ids[i]
             set_single_packet_filter(server, port, project_id, link_id, filter_type, filter_value)
             print(f"Use Case 2 Applied to Site {site}")
         else:
-            #for i in range(2, len(link_ids)):
-            #    link_id = link_ids[i]
             remove_single_packet_filter(server, port, project_id, link_id)
             print(f"Use Case 2 Removed from Site {site}")
     return {'message': 'Success.'}, 200
