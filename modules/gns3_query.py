@@ -127,36 +127,19 @@ def gns3_query_get_node_links_old(nodes, links, server, port, project_id, node_i
         return None
     return link_numbers
 
-def gns3_query_get_node_links(nodes, links, server, port, project_id, node_id, node_name, remote_node_id=None, adapter_port=None):
+def gns3_query_get_node_links(nodes, links, server, port, project_id, node_id, remote_node_id=None, adapter_port=None):
     link_id = None  # Initialize link_id as None
     seen_node_ids = set()
     for link in links:
-        link_id = link['link_id']
-        link_url = f"http://{server}:{port}/v2/projects/{project_id}/links/{link_id}"
-        response = requests.get(link_url)
-        link_data = response.json()
-        for endpoint in link_data['nodes']:
-            endpoint_node_id = endpoint['node_id']
-            if endpoint_node_id == node_id:
-                endpoint_port_number = endpoint['port_number']
-                endpoint_adapter_number = endpoint['adapter_number']
-                adapter_temp = f"{endpoint_adapter_number}/{endpoint_port_number}"
-                if adapter_port:
-                    if adapter_temp == adapter_port:
-                        print(adapter_temp)
-                        if remote_node_id:
-                            if any(n['node_id'] == remote_node_id for n in link_data['nodes']):
-                                link_id = link_id  # Assign the link_id to itself
-                        else:
-                            remote_node_id = [n['node_id'] for n in link_data['nodes'] if n['node_id'] != node_id][0]
-                        for node in nodes:
-                            if node['node_id'] == remote_node_id and node['node_id'] not in seen_node_ids:
-                                index = nodes.index(node)
-                                link_id = link_id  # Assign the link_id to itself
-                                seen_node_ids.add(node['node_id'])
-                                break
-    print(link_id)
-    return link_id if link_id else None
+        for node in link['nodes']:
+            if adapter_port is not None and node['label']['text'] == adapter_port:
+                link_id = link['link_id']
+                link_url = f"http://{server}:{port}/v2/projects/{project_id}/links/{link_id}"
+                response = requests.get(link_url)
+                link_data = response.json()
+                return link_id  # Return the matching link_id
+
+    return link_id  # Return None if no matching link_id is found
 
 def gns3_query_get_location_data(server_ip, server_port, project_id, item_type):
     url = f"http://{server_ip}:{server_port}/v2/projects/{project_id}/{item_type}"
