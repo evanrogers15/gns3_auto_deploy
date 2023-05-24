@@ -114,10 +114,10 @@ conn.execute('''INSERT INTO uc_scenarios (scenario_name, scenario_description)
                 VALUES ('Use Case #2', 'Start / Stop Manually: Causes a 5% degradation to all "biz-internet" uplinks inside of the deployment as well as starting variable traffic from all site clients. ')''')
 
 conn.execute('''INSERT INTO uc_scenarios (scenario_name, scenario_description)
-                VALUES ('Use Case #3', 'Start / Stop Manually: Use Case that will simulate real user traffic from site 2 and alternate flapping WAN links for Site 2 every 60 seconds that will cause AppNeta to alert on exccesive route changes.')''')
+                VALUES ('Use Case #3', 'TBD.')''')
 
 conn.execute('''INSERT INTO uc_scenarios (scenario_name, scenario_description)
-                VALUES ('Use Case #4', 'Offloads Use Case #3 to the local machine that will simulate real user traffic from site 2 and alternate flapping WAN links for Site 2 every 60 seconds and schedules to run for 1 hour then reoccur every day at 8PM until Use Case is stopped..')''')
+                VALUES ('Use Case #4', 'TBD.')''')
 
 # Commit the changes and close the connection
 conn.commit()
