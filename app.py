@@ -61,8 +61,7 @@ def update_config():
     c.execute("INSERT INTO config (server_ip, server_port, server_name, project_list, project_names, project_status, project_name, project_id, vmanage_api_ip, site_count, tap_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (server_ip, server_port, server_name, json.dumps(project_ids), json.dumps(project_names), json.dumps(project_status), new_project_name, project_id, vmanage_api_ip, site_count, tap_name))
     conn.commit()
     conn.close()
-    return 200
-    # return jsonify({'success': True})
+    return jsonify({'success': True})
 
 @app.route('/api/config', methods=['GET'])
 def get_config():
@@ -141,8 +140,7 @@ def viptela_deploy_full():
     running_thread = threading.Thread(target=viptela_deploy, args=())
     running_thread.start()
 
-    return 200
-    #return make_response(jsonify({'message': 'Deployment Started Successfully'}), 200)
+    return jsonify({'success': True})
 
 @app.route('/api/tasks/oa_start_viptela_deploy', methods=['PUT'])
 def oa_viptela_deploy_full():
