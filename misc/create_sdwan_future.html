@@ -264,6 +264,12 @@
         </select>
         <input type="text" id="project_name_input" name="project_name_input" style="display: none;">
 
+        <label for="vmanage_api_ip">vManage API IP:</label>
+        <select id="vmanage_api_ip" name="vmanage_api_ip">
+          <option value="172.16.2.2">Local</option>
+          <option value=server_ip>Remote (Uses GNS3 Server IP)</option>
+        </select>
+
         <label for="site_count">Site Count: </label>
         <input type="text" id="site_count" name="site_count">
 
@@ -344,15 +350,12 @@
         if (serverPort === "custom") {
           serverPort = document.getElementById("tap_name_input").value;
         }
-
+        
         function submitForm() {
-        var startDeploymentButton = document.querySelector('input[type="button"]');
-        startDeploymentButton.value = "Initiating Deployment";
-        startDeploymentButton.disabled = true;
         var server_ip = document.getElementById("server_ip").value;
         var server_port = document.getElementById("server_port").value;
         var project_name = document.getElementById("project_name").value;
-        var vmanage_api_ip = "172.16.2.2";
+        var vmanage_api_ip = document.getElementById("vmanage_api_ip").value;
         var site_count = document.getElementById("site_count").value;
         var tap_name = document.getElementById("tap_name").value;
 
@@ -365,35 +368,35 @@
         tap_name: tap_name,
         });
 
-          var xhr = new XMLHttpRequest();
-          var url = "/api/config";
-          xhr.open("POST", url, true);
-          xhr.setRequestHeader("Content-Type", "application/json");
+        var xhr = new XMLHttpRequest();
+        var url = "/api/config";
+        xhr.open("POST", url, true);
+        xhr.setRequestHeader("Content-Type", "application/json");
 
-          xhr.onreadystatechange = function () {
-            if (xhr.readyState === 4) {
-              if (xhr.status === 200) {
-                // Successful response
-                var putXhr = new XMLHttpRequest();
-                var putUrl = "/api/tasks/start_viptela_deploy";
-                putXhr.open("PUT", putUrl, true);
-                putXhr.setRequestHeader("Content-Type", "application/json");
+        xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            // Successful response
+            var putXhr = new XMLHttpRequest();
+            var putUrl = "/api/tasks/start_viptela_deploy";
+            putXhr.open("PUT", putUrl, true);
+            putXhr.setRequestHeader("Content-Type", "application/json");
 
-                putXhr.onreadystatechange = function () {
-                  if (putXhr.readyState === 4 && putXhr.status === 200) {
-                    alert(putXhr.responseText);
-                  }
-                };
-
-                putXhr.send();
-              } else {
-                // Handle error response from xhr.send(data)
-                console.error("Error: " + xhr.status);
+            putXhr.onreadystatechange = function () {
+              if (putXhr.readyState === 4 && putXhr.status === 200) {
+                alert(putXhr.responseText);
               }
-            }
-          };
+            };
 
-          xhr.send(data);
+            putXhr.send();
+          } else {
+            // Handle error response from xhr.send(data)
+            console.error("Error: " + xhr.status);
+          }
+        }
+        };
+
+        xhr.send(data);
         }
         $(document).ready(function() {
         var fileDropZone = $('#file-drop-zone');

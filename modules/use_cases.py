@@ -6,7 +6,6 @@ import time
 import sys
 
 def use_case_1(server, port, project_id, state):
-    #test_clients = ['Site_001_Client', 'Site_002_Client', 'Site_003_Client', 'Site_004_Client', 'Site_005_Client']
     matching_nodes = gns3_query_find_nodes_by_field(server, port, project_id, 'name', 'name', 'Client')
     remote_node_name_1 = 'Cloud_ISP_001'
     router_node_name = 'vEdge_001_NewYork'
