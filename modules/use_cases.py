@@ -1,8 +1,9 @@
-from modules.gns3_query import gns3_query_get_links, gns3_query_get_nodes, gns3_query_get_node_links
+from modules.gns3_query import *
 from modules.gns3_actions_old import set_single_packet_filter, remove_single_packet_filter, set_suspend, change_node_state, reset_single_suspend
 from modules.telnet import run_telnet_command
 from modules.gns3_actions import *
 import time
+import sys
 
 def use_case_1(server, port, project_id, state):
     test_clients = ['Site_001_Client', 'Site_002_Client', 'Site_003_Client', 'Site_004_Client', 'Site_005_Client']
@@ -46,7 +47,9 @@ def use_case_1(server, port, project_id, state):
 
 def use_case_2(server, port, project_id, state):
     site_list = ['vEdge_001_NewYork', 'vEdge_002_LosAngeles', 'vEdge_003_Chicago', 'vEdge_004_Houston', 'vEdge_005_Phoenix', 'vEdge_006_Philadelphia', 'vEdge_007_SanAntonio', 'vEdge_008_SanDiego', 'vEdge_009_Dallas', 'vEdge_010_SanJose']
-    # matching_nodes = gns3_find_nodes_by_field_new(project_id, 'name', 'name', 'vEdge', server, port)
+    matching_nodes = gns3_query_find_nodes_by_field(server, port, project_id, 'name', 'name', 'vEdge')
+    print(matching_nodes)
+    sys.exit()
     for site in site_list:
         remote_node_name_1 = 'Cloud_ISP_001'
         router_node_name = site
