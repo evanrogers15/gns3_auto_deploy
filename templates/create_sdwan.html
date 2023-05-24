@@ -246,8 +246,13 @@
   </div>
     <div class="form-container">
       <form>
-        <label for="server_ip">GNS3 Server IP:</label>
-        <input type="text" id="server_ip" name="server_ip">
+        <label for="server_ip">If Deployment Container is running on GNS3 Server,<br> select local<br>GNS3 Server IP:</label>
+        <select id="server_ip" name="server_ip">
+          <option value="192.168.122.1">Local</option>
+          <option value="custom">Custom</option>
+        </select>
+        <input type="text" id="server_ip_input" style="display: none;">
+
 
         <label for="server_port">GNS3 Server Port:</label>
         <select id="server_port" name="server_port">
@@ -351,6 +356,9 @@
           startDeploymentButton.disabled = true;
 
           var server_ip = document.getElementById("server_ip").value;
+          if (server_ip === "custom") {
+            server_ip = document.getElementById("server_ip_input").value;
+          }
           var server_port = document.getElementById("server_port").value;
           var project_name = document.getElementById("project_name").value;
           if (project_name === "custom") {

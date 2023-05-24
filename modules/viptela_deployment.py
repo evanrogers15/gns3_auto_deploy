@@ -298,7 +298,6 @@ def viptela_deploy():
     # endregion
     # region Start All GNS3 Nodes
     deployment_step = 'Starting Nodes'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting All Nodes")
     gns3_start_all_nodes(gns3_server_data, new_project_id)
     # endregion
     # region Deploy Site Clients in Lab
