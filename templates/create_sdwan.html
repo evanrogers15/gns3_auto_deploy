@@ -353,9 +353,15 @@
         var server_ip = document.getElementById("server_ip").value;
         var server_port = document.getElementById("server_port").value;
         var project_name = document.getElementById("project_name").value;
+        if (project_name === "custom") {
+          project_name = document.getElementById("project_name_input").value;
+        }
         var vmanage_api_ip = "172.16.2.2";
         var site_count = document.getElementById("site_count").value;
         var tap_name = document.getElementById("tap_name").value;
+        if (tap_name === "custom") {
+          project_name = document.getElementById("project_name_input").value;
+        }
 
         var data = JSON.stringify({
           server_ip: server_ip,
