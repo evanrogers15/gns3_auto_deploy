@@ -57,16 +57,16 @@ def use_case_2(server, port, project_id, state):
         router_node_id, router_console, router_aux = gns3_query_find_node_by_name(nodes, router_node_name)
         remote_node_id_1, remote_node_console_1, remote_node_aux_1 = gns3_query_find_node_by_name(nodes, remote_node_name_1)
         links = gns3_query_get_links(server, port, project_id, router_node_id)
-        link_ids = gns3_query_get_node_links(nodes, links, server, port, project_id, router_node_id, router_node_name, remote_node_id_1, '2/0')
+        link_id = gns3_query_get_node_links(nodes, links, server, port, project_id, router_node_id, router_node_name, remote_node_id_1, '2/0')
         if state == 'on':
             #for i in range(2, len(link_ids)):
             #    link_id = link_ids[i]
-            set_single_packet_filter(server, port, project_id, link_ids, filter_type, filter_value)
+            set_single_packet_filter(server, port, project_id, link_id, filter_type, filter_value)
             print(f"Use Case 2 Applied to Site {site}")
         else:
-            for i in range(2, len(link_ids)):
-                link_id = link_ids[i]
-                remove_single_packet_filter(server, port, project_id, link_id)
+            #for i in range(2, len(link_ids)):
+            #    link_id = link_ids[i]
+            remove_single_packet_filter(server, port, project_id, link_id)
             print(f"Use Case 2 Removed from Site {site}")
     return {'message': 'Success.'}, 200
 
