@@ -24,13 +24,12 @@ def use_case_1(server, port, project_id, state):
             client_command_1 = f'nohup sh -c "while true; do rand=\$(shuf -i 20-60 -n 1)m; echo \$rand; iperf3 -c {server_ip} -p 520{index+1} -u -b \$rand -t 30; done" > /dev/null 2>&1 &'
             client_node_id, client_console, client_aux = gns3_query_find_node_by_name(nodes, client)
             change_node_state(server, port, project_id, client_node_id, 'on')
-            time.sleep(2)
+            #time.sleep(2)
             if index == len(matching_nodes) - 1:
                 run_telnet_command(server, port, project_id, client_node_id, client_console, state, client_command_2)
             else:
                 run_telnet_command(server, port, project_id, client_node_id, client_console, state, client_command_1)
         set_single_packet_filter(server, port, project_id, link_id, filter_type, filter_value)
-        time.sleep(3)
         print("Use Case 1 Applied")
         return {'message': 'Scenario started successfully.'}, 200
     else:
@@ -63,12 +62,11 @@ def use_case_2(server, port, project_id, state):
             client_command_1 = f'nohup sh -c "while true; do rand=\$(shuf -i 20-60 -n 1)m; echo \$rand; iperf3 -c {server_ip} -p 520{index + 1} -u -b \$rand -t 30; done" > /dev/null 2>&1 &'
             client_node_id, client_console, client_aux = gns3_query_find_node_by_name(nodes, client)
             change_node_state(server, port, project_id, client_node_id, 'on')
-            time.sleep(2)
+            #time.sleep(2)
             if index == len(client_nodes) - 1:
                 run_telnet_command(server, port, project_id, client_node_id, client_console, state, client_command_2)
             else:
                 run_telnet_command(server, port, project_id, client_node_id, client_console, state, client_command_1)
-            time.sleep(3)
         return {'message': 'Scenario started successfully.'}, 200
     else:
         for site in matching_nodes:
