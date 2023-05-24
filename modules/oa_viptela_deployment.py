@@ -127,7 +127,7 @@ def oa_viptela_deploy():
     cloud_node_template_id = gns3_query_get_template_id(server_ip, server_port, "Cloud")
     # endregion
     #  region Setup Dynamic Networking
-    vedge_deploy_data, client_deploy_data, site_drawing_deploy_data = generate_vedge_deploy_data(vedge_count)
+    vedge_deploy_data, client_deploy_data, site_drawing_deploy_data = oa_generate_vedge_deploy_data(vedge_count)
     isp_deploy_data = generate_isp_deploy_data(isp_switch_count)
     mgmt_switch_deploy_data = generate_mgmt_switch_deploy_data(mgmt_switch_count)
     # endregion
@@ -324,7 +324,7 @@ def oa_viptela_deploy():
     client_filename = 'client_interfaces'
     client_node_file_path = 'etc/network/interfaces'
     generate_client_interfaces_file(client_filename)
-    vedge_deploy_data, client_deploy_data, site_drawing_deploy_data = generate_vedge_deploy_data(vedge_count)
+    vedge_deploy_data, client_deploy_data, site_drawing_deploy_data = oa_generate_vedge_deploy_data(vedge_count)
     client_every = 1
     v = 1
     vedge_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "vEdge")
