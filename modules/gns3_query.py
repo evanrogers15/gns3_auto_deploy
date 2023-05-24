@@ -101,15 +101,18 @@ def gns3_query_get_node_links(nodes, links, server, port, project_id, node_id, n
                     if adapter_temp == adapter_port:
                         if remote_node_id:
                             if any(n['node_id'] == remote_node_id for n in link_data['nodes']):
-                                link_numbers.append(link_id)
+                                if link_id not in link_numbers:  # Check if link_id is not already in the list
+                                    link_numbers.append(link_id)
                         else:
                             remote_node_id = [n['node_id'] for n in link_data['nodes'] if n['node_id'] != node_id][0]
                         for node in nodes:
                             if node['node_id'] == remote_node_id and node['node_id'] not in seen_node_ids:
                                 index = nodes.index(node)
-                                link_numbers.append(link_id)
+                                if link_id not in link_numbers:  # Check if link_id is not already in the list
+                                    link_numbers.append(link_id)
                                 seen_node_ids.add(node['node_id'])
                                 break
+
     print(link_numbers)
     if not link_numbers:
         return None
