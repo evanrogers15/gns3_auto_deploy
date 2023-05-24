@@ -109,7 +109,8 @@ def gns3_query_get_node_links(nodes, links, server, port, project_id, node_id, n
                             if node['node_id'] == remote_node_id and node['node_id'] not in seen_node_ids:
                                 index = nodes.index(node)
                                 if link_id not in link_numbers:  # Check if link_id is not already in the list
-                                    link_numbers.append(link_id)
+                                    return link_id
+                                    #link_numbers.append(link_id)
                                 seen_node_ids.add(node['node_id'])
                                 break
 
