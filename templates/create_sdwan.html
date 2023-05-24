@@ -269,7 +269,11 @@
         <input type="text" id="project_name_input" name="project_name_input" style="display: none;">
 
         <label for="site_count">Site Count: </label>
-        <input type="text" id="site_count" name="site_count">
+        <select id="site_count" name="site_count">
+          <option value="5">5</option>
+          <option value="custom">Custom</option>
+        </select>
+        <input type="text" id="site_count_input" style="display: none;">
 
         <label for="tap_name">Tap Interface Name:</label>
         <input type="text" id="tap_name" name="tap_name">
@@ -335,6 +339,15 @@
         if (serverPort === "custom") {
           serverPort = document.getElementById("project_name_input").value;
         }
+        document.getElementById("site_count").addEventListener("change", function() {
+          var selectedValue = this.value;
+
+          if (selectedValue === "custom") {
+            document.getElementById("site_count_input").style.display = "block";
+          } else {
+            document.getElementById("site_count_input").style.display = "none";
+          }
+        });
         document.getElementById("tap_name").addEventListener("change", function() {
           var selectedValue = this.value;
 
@@ -365,6 +378,9 @@
           }
           var vmanage_api_ip = "172.16.2.2";
           var site_count = document.getElementById("site_count").value;
+          if (site_count === "custom") {
+            site_count = document.getElementById("site_count_input").value;
+          }
           var tap_name = document.getElementById("tap_name").value;
 
           var data = JSON.stringify({
