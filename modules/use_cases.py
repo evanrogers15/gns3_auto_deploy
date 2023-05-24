@@ -61,7 +61,7 @@ def use_case_2(server, port, project_id, state):
         if state == 'on':
             #for i in range(2, len(link_ids)):
             #    link_id = link_ids[i]
-            set_single_packet_filter(server, port, project_id, link_id[0], filter_type, filter_value)
+            set_single_packet_filter(server, port, project_id, link_ids[0], filter_type, filter_value)
             print(f"Use Case 2 Applied to Site {site}")
         else:
             for i in range(2, len(link_ids)):
