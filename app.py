@@ -27,7 +27,7 @@ def oa_sdwan_deploy():
     return render_template('oa_create_sdwan.html')
 
 @app.route('/versa')
-def oa_sdwan_deploy():
+def oa_versa_deploy():
     return render_template('create_versa_sdwan.html')
 
 @app.route('/demo')
