@@ -102,7 +102,7 @@ def versa_deploy():
             log_and_update_db(server_name, project_name, deployment_type, 'Failed', 'Image Validation',
                               f"{image} image not on GNS3 Server")
             return 404
-    gns3_actions_remove_templates(gns3_server_data)
+    gns3_actions_versa_remove_templates(gns3_server_data)
     gns3_set_project(gns3_server_data, new_project_id)
     # endregion
     # region Create GNS3 Templates
