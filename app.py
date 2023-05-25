@@ -12,6 +12,7 @@ from modules.oa_viptela_deployment import *
 from modules.gns3_actions_old import *
 from modules.gns3_variables import *
 from modules.use_cases import *
+from modules.versa_deployment import versa_deploy
 
 app = Flask(__name__)
 
@@ -24,6 +25,10 @@ def index():
 @app.route('/oa')
 def oa_sdwan_deploy():
     return render_template('oa_create_sdwan.html')
+
+@app.route('/versa')
+def oa_sdwan_deploy():
+    return render_template('create_versa_sdwan.html')
 
 @app.route('/demo')
 def oa_sdwan_deploy():
@@ -198,6 +203,19 @@ def oa_viptela_deploy_full():
     running_thread.start()
 
     return make_response(jsonify({'message': 'Deployment Started Successfully'}), 200)
+
+@app.route('/api/tasks/start_versa_deploy', methods=['PUT'])
+def versa_deploy_full():
+    global running_thread
+    # Check if a thread is already running
+    if running_thread is not None and running_thread.is_alive():
+        return make_response(jsonify({'message': 'Deployment is already in progress'}), 400)
+
+    # Start a new thread for deployment
+    running_thread = threading.Thread(target=versa_deploy, args=())
+    running_thread.start()
+
+    return jsonify({'success': True})
 
 @app.route('/api/projects', methods=['GET'])
 def get_project_list():
@@ -515,31 +533,6 @@ def uc_delete_task(scenario_id):
             success = use_case_function(server_ip, port, project_id, 'off')
             if success:
                 status = 0
-    elif scenario_id == 3:
-        use_case_3(server_ip, port, project_id, 'off')
-        use_case_4_sim_user(server_ip, port, project_id, 'off')
-        # Call the /api/stop_script endpoint to stop the script
-        data = {
-            'project_id': project_id,
-            'scenario_id': scenario_id
-        }
-        response = requests.post('http://localhost:8080/api/stop_script', json=data)
-        if response.status_code != 200:
-            return jsonify({'error': 'Could not stop script.'}), 500
-        else:
-            status = 0
-    elif scenario_id == 4:
-        use_case_4(server_ip, port, project_id, 'off')
-        # Call the /api/stop_script endpoint to stop the script
-        data = {
-            'project_id': project_id,
-            'scenario_id': scenario_id
-        }
-        response = requests.post('http://localhost:8080/api/stop_script', json=data)
-        if response.status_code != 200:
-            return jsonify({'error': 'Could not stop script.'}), 500
-        else:
-            status = 0
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
     c.execute("UPDATE uc_scenario_status SET status=? WHERE server_ip=? AND project_id=? AND scenario_id=?",
@@ -576,34 +569,6 @@ def uc_create_function_file_endpoint(scenario_id):
                 f.write(f"\n\nschedule.every().day.at('8:00').do(run_task)\n\n")
                 f.write(
                     f"while True:\n\tschedule.run_pending()\n\tnow = datetime.now().strftime('%Y-%m-%d %H:%M:%S')\n\tprint(f'Waiting for scheduled task for {function_name}...')\n\ttime.sleep(60)\n")
-        elif scenario_id == 3:
-            with open(filename, 'w') as f:
-                f.write(f"import time\nfrom {module_name} import {function_name}, use_case_4_sim_user\n\n")
-                f.write(f"use_case_4_sim_user('{server_ip}', {server_port}, '{project_id}', 'on')\n\nset_link = 1\n")
-                f.write(f"def run_task():\n")
-                f.write(f"\twhile True:\n")
-                f.write(f"\t\tfor i in range(30):\n")
-                f.write(f"\t\t\tset_link = 2 if i % 2 == 0 else 1\n")
-                f.write(f"\t\t\t{function_name}('{server_ip}', {server_port}, '{project_id}', 'on', set_link)\n")
-                f.write(f"\t\t\ttime.sleep(30)\n")
-                f.write(f"\t\t\t{function_name}('{server_ip}', {server_port}, '{project_id}', 'off', set_link)\n")
-                f.write(f"\t\t\ttime.sleep(15)\n")
-                f.write(f"run_task()")
-        elif scenario_id == 4:
-            with open(filename, 'w') as f:
-                f.write(
-                    f"import time\nimport schedule\nfrom datetime import datetime\nfrom {module_name} import {function_name}, {sim_function_name}\n\n")
-                f.write(f"{sim_function_name}('{server_ip}', {server_port}, '{project_id}', 'on')\n\nset_link = 1\n")
-                f.write(f"def run_task():\n")
-                f.write(f"\tfor i in range(120):\n")
-                f.write(f"\t\tset_link = 2 if i % 2 == 0 else 1\n")
-                f.write(f"\t\t{function_name}('{server_ip}', {server_port}, '{project_id}', 'on', set_link)\n")
-                f.write(f"\t\ttime.sleep(120)\n")
-                f.write(f"\t\t{function_name}('{server_ip}', {server_port}, '{project_id}', 'off', set_link)\n")
-                f.write(f"\t\ttime.sleep(15)\n")
-                f.write(f"\n\nschedule.every().day.at('11:00').do(run_task)\n\n")
-                f.write(
-                    f"while True:\n\tschedule.run_pending()\n\tnow = datetime.now().strftime('%Y-%m-%d %H:%M:%S')\n\tprint(f'Waiting for scheduled task {function_name}...')\n\ttime.sleep(60)\n")
         else:
             return jsonify({'error': f'Invalid use case ID {scenario_id}.'})
         return jsonify({'filename': filename})
