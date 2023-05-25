@@ -630,7 +630,7 @@ def versa_generate_flexvnf_deploy_data(flexvnf_count):
         y_s = -107
         for i in range(1, flexvnf_count + 1):
             temp_name = f"FlexVNF_{i:03}"
-            name = f"FlexVNF_{i:03}_{oa_city_data[temp_name]['city']}"
+            name = f"FlexVNF_{i:03}_{versa_city_data[temp_name]['city']}"
             client_name = f"Site_{i:03}_Client"
             if i == 1:
                 x = x_o
@@ -693,7 +693,7 @@ def versa_generate_flexvnf_deploy_data(flexvnf_count):
         y_s = -107
         for i in range(1, flexvnf_count + 1):
             temp_name = f"FlexVNF_{i:03}"
-            name = f"FlexVNF_{i:03}_{oa_city_data[temp_name]['city']}"
+            name = f"FlexVNF_{i:03}_{versa_city_data[temp_name]['city']}"
             client_name = f"Site_{i:03}_Client"
             if i == 1:
                 x = x_o
@@ -754,7 +754,7 @@ def versa_generate_flexvnf_deploy_data(flexvnf_count):
     else:
         for i in range(1, flexvnf_count + 1):
             temp_name = f"FlexVNF_{i:03}"
-            name = f"FlexVNF_{i:03}_{oa_city_data[temp_name]['city']}"
+            name = f"FlexVNF_{i:03}_{versa_city_data[temp_name]['city']}"
             client_name = f"Site_{i:03}_Client"
             if i == 1:
                 x = x_o
