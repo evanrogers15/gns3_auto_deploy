@@ -366,7 +366,7 @@ def versa_deploy():
                 tn.read_until(b"Enter interface name [eg. eth0]:")
                 tn.write(b'eth0\n')
                 tn.read_until(b"Enter IP Address:")
-                tn.write(b'172.16.2.2\n')
+                tn.write(b'172.14.2.2\n')
                 tn.read_until(b"Enter Netmask Address:")
                 tn.write(b'255.255.255.0\n')
                 tn.read_until(b"Configure Gateway Address? (y/n)?")
@@ -380,7 +380,7 @@ def versa_deploy():
                 tn.read_until(b"Enter IP Address:")
                 tn.write(b'172.16.4.2\n')
                 tn.read_until(b"Enter Netmask Address:")
-                tn.write(b'255.255.255.0\n')
+                tn.write(b'255.255.255.252\n')
                 tn.read_until(b"Configure Gateway Address? (y/n)?")
                 tn.write(b'y\n')
                 tn.read_until(b"Enter Gateway Address:")
@@ -415,16 +415,16 @@ def versa_deploy():
                 tn.close()
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed Director Device Setup Part 1")
     # endregion
-    sys.exit()
-    # region Viptela vSmart Setup
-    deployment_step = 'vSmart Setup'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vSmart Device Setup")
+    # region Versa Analytics Device Setup
+    deployment_step = 'Versa Analytics Setup'
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting Versa Analytics Device Setup")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
+    remote_file_name = '/etc/network/interfaces'
     abs_path = os.path.abspath(__file__)
-    configs_path = os.path.join(os.path.dirname(abs_path), 'configs/viptela')
-    file_name = os.path.join(configs_path, 'vsmart_template')
+    configs_path = os.path.join(os.path.dirname(abs_path), 'configs/versa')
+    local_file_name = os.path.join(configs_path, 'versa_interface_template')
     for server_ip in server_ips:
-        temp_node_name = f'vSmart'
+        temp_node_name = f'Analytics'
         matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
         if matching_nodes:
             for matching_node in matching_nodes:
@@ -434,131 +434,94 @@ def versa_deploy():
                 tn = telnetlib.Telnet(server_ip, console_port)
                 while True:
                     tn.write(b"\r\n")
-                    output = tn.read_until(b"login:", timeout=2).decode('ascii')
-                    if 'vsmart#' in output:
-                        tn.write(b"\r\n")
+                    tn.read_until(b"login:", timeout=1)
+                    tn.write(versa_analytics_username.encode("ascii") + b"\n")
+                    tn.read_until(b"Password:", timeout=5)
+                    tn.write(versa_old_password.encode("ascii") + b"\n")
+                    output = tn.read_until(b"Password:", timeout=5).decode('ascii')
+                    if 'admin@versa-analytics:~$' in output:
                         break
-                    tn.write(viptela_username.encode("ascii") + b"\n")
-                    tn.read_until(b"Password:", timeout=2)
-                    tn.write(viptela_old_password.encode("ascii") + b"\n")
-                    output = tn.read_until(b"Password:", timeout=10).decode('ascii')
-                    if 'Login incorrect' in output:
-                        tn.read_until(b"login:", timeout=1)
-                        tn.write(viptela_username.encode("ascii") + b"\n")
-                        tn.read_until(b"Password:", timeout=1)
-                        tn.write(viptela_password.encode("ascii") + b"\n")
-                        tn.write(b"\r\n")
-                        break
-                    elif 'Welcome' in output:
-                        tn.write(viptela_password.encode("ascii") + b"\n")
-                        tn.read_until(b"password:", timeout=2)
-                        tn.write(viptela_password.encode("ascii") + b"\n")
-                        tn.write(b"\r\n")
-                        break
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"{temp_node_name} not available yet, trying again in 30 seconds")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                      f"{temp_node_name} not available yet, trying again in 30 seconds")
                     time.sleep(30)
                 tn.write(b"\r\n")
-                tn.read_until(b"#")
-                with open(file_name, 'r') as f:
-                    lines = f.readlines()
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Sending configuration commands to {node_name[0]}")
-                    for line in lines:
-                        formatted_line = line.format(
-                            hostname=temp_node_name,
-                            latitude='40.758701',
-                            longitude='-111.876183',
-                            system_ip='172.16.2.6',
-                            org_name=org_name,
-                            vbond_address=vbond_address,
-                            vpn_0_eth1_ip_address='172.16.4.6/30',
-                            vpn_0_eth1_ip_gateway='172.16.4.5',
-                            vpn_512_eth0_ip_address='172.16.2.6/24',
-                            vpn_512_eth0_ip_gateway='172.16.2.1'
-                        )
-                        tn.write(formatted_line.encode('ascii') + b"\n")
-                        tn.read_until(b"#")
+                tn.read_until(b"admin@versa-analytics:~$")
+                with open(local_file_name, 'r') as local_file:
+                    lines = local_file.readlines()
+                formatted_lines = []
+                for line in lines:
+                    formatted_line = line.format(
+                        eth0_ip_address='172.14.2.6',
+                        eth0_netmask='255.255.255.0',
+                        eth0_gateway='172.14.2.1',
+                        eth1_ip_address='172.16.4.6',
+                        eth1_netmask='255.255.255.252',
+                        eth1_gateway='172.16.4.5',
+                    )
+                    formatted_lines.append(formatted_line)
+                for line in formatted_lines:
+                    tn.write(f"echo '{line}' >> {remote_file_name}\n".encode('ascii'))
+                    tn.read_until(b"admin@versa-analytics:~$")
                 tn.write(b"\r\n")
-                output = tn.read_until(b"Commit complete.").decode('ascii')
-                # tn.write(b"\r\n")
-                # exit_var = tn.read_until(b"vSmart#").decode('ascii')
-                # if temp_node_name not in exit_var:
-                #        sys.exit()
-                tn.write(b"exit\r")
                 tn.read_until(b"exit")
                 tn.close()
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vSmart Device Setup")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed Versa AnalyticsDevice Setup")
     # endregion
     # region Viptela vBond Setup
-    deployment_step = 'vBond Setup'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vBond Device Setup")
+    deployment_step = 'Versa Controller Device Setup'
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting Versa Controller Device Setup")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
+    remote_file_name = '/etc/network/interfaces'
     abs_path = os.path.abspath(__file__)
-    configs_path = os.path.join(os.path.dirname(abs_path), 'configs/viptela')
-    file_name = os.path.join(configs_path, 'vbond_template')
+    configs_path = os.path.join(os.path.dirname(abs_path), 'configs/versa')
+    local_file_name = os.path.join(configs_path, 'versa_interface_template')
     for server_ip in server_ips:
-        temp_node_name = f'vBond'
+        temp_node_name = f'Controller'
         matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
         if matching_nodes:
             for matching_node in matching_nodes:
                 node_id, console_port, aux = matching_node
-                node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id', 'name', node_id)
-                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Logging in to console for node {temp_node_name}")
+                node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id', 'name',
+                                                           node_id)
+                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                  f"Logging in to console for node {node_name[0]}")
                 tn = telnetlib.Telnet(server_ip, console_port)
                 while True:
                     tn.write(b"\r\n")
-                    output = tn.read_until(b"login:", timeout=1).decode('ascii')
-                    if 'vbond#' in output:
-                        tn.write(b"\r\n")
-                        break
-                    tn.write(viptela_username.encode("ascii") + b"\n")
-                    tn.read_until(b"Password:")
-                    tn.write(viptela_old_password.encode("ascii") + b"\n")
+                    tn.read_until(b"login:", timeout=1)
+                    tn.write(versa_analytics_username.encode("ascii") + b"\n")
+                    tn.read_until(b"Password:", timeout=5)
+                    tn.write(versa_old_password.encode("ascii") + b"\n")
                     output = tn.read_until(b"Password:", timeout=5).decode('ascii')
-                    if 'Login incorrect' in output:
-                        tn.read_until(b"login:", timeout=1)
-                        tn.write(viptela_username.encode("ascii") + b"\n")
-                        tn.read_until(b"Password:", timeout=1)
-                        tn.write(viptela_password.encode("ascii") + b"\n")
-                        tn.write(b"\r\n")
+                    if 'admin@versa-analytics:~$' in output:
                         break
-                    elif 'Welcome' in output:
-                        tn.write(viptela_password.encode("ascii") + b"\n")
-                        tn.read_until(b"password:", timeout=2)
-                        tn.write(viptela_password.encode("ascii") + b"\n")
-                        tn.write(b"\r\n")
-                        break
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"{temp_node_name} not available yet, trying again in 30 seconds")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                      f"{temp_node_name} not available yet, trying again in 30 seconds")
                     time.sleep(30)
                 tn.write(b"\r\n")
-                tn.read_until(b"#")
-                with open(file_name, 'r') as f:
-                    lines = f.readlines()
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Sending configuration commands to {temp_node_name}")
-                    for line in lines:
-                        formatted_line = line.format(
-                            hostname=temp_node_name,
-                            latitude='40.758701',
-                            longitude='-111.876183',
-                            system_ip='172.16.2.10',
-                            org_name=org_name,
-                            vbond_address=vbond_address,
-                            vpn_0_eth1_ip_address='172.16.4.10/30',
-                            vpn_0_eth1_ip_gateway='172.16.4.9',
-                            vpn_512_eth0_ip_address='172.16.2.10/24',
-                            vpn_512_eth0_ip_gateway='172.16.2.1'
-                        )
-                        tn.write(formatted_line.encode('ascii') + b"\n")
-                        tn.read_until(b"#")
+                tn.read_until(b"admin@versa-analytics:~$")
+                with open(local_file_name, 'r') as local_file:
+                    lines = local_file.readlines()
+                formatted_lines = []
+                for line in lines:
+                    formatted_line = line.format(
+                        eth0_ip_address='172.14.2.10',
+                        eth0_netmask='255.255.255.0',
+                        eth0_gateway='172.14.2.1',
+                        eth1_ip_address='172.16.4.10',
+                        eth1_netmask='255.255.255.252',
+                        eth1_gateway='172.16.4.9',
+                    )
+                    formatted_lines.append(formatted_line)
+                for line in formatted_lines:
+                    tn.write(f"echo '{line}' >> {remote_file_name}\n".encode('ascii'))
+                    tn.read_until(b"admin@versa-flexvnf: ~] $")
                 tn.write(b"\r\n")
-                output = tn.read_until(b"Commit complete.").decode('ascii')
-                # tn.write(b"\r\n")
-                # exit_var = tn.read_until(b"vSmart#").decode('ascii')
-                # if temp_node_name not in exit_var:
-                #        sys.exit()
-                tn.write(b"exit\r")
                 tn.read_until(b"exit")
+                tn.close()
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vBond Device Setup")
     # endregion
+    sys.exit()
     # region Viptela Director Setup Part 2
     deployment_step = 'Director Setup Part 2'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting Director setup part 2")
@@ -586,7 +549,7 @@ def versa_deploy():
                         break
                     tn.write(viptela_username.encode("ascii") + b"\n")
                     tn.read_until(b"Password:", timeout=1)
-                    tn.write(viptela_password.encode("ascii") + b"\n")
+                    tn.write(versa_old_password.encode("ascii") + b"\n")
                     output = tn.read_until(b"#", timeout=1).decode('ascii')
                     if 'vmanage#' in output:
                         break
@@ -613,7 +576,7 @@ def versa_deploy():
                         tn.write(formatted_line.encode('ascii') + b"\n")
                         tn.read_until(b"#")
                 tn.write(b"\r\n")
-                # exit_var = tn.read_until(b"vSmart#").decode('ascii')
+                # exit_var = tn.read_until(b"Analytics#").decode('ascii')
                 # if temp_node_name not in exit_var:
                 #        sys.exit()
                 tn.write(b'vshell\r\n')
@@ -634,7 +597,7 @@ def versa_deploy():
                     else:
                         tn.write(b"\n")
                     tn.read_until(b"Password:")
-                    tn.write(viptela_password.encode("ascii") + b"\n")
+                    tn.write(versa_old_password.encode("ascii") + b"\n")
                     tn.read_until(b'#')
                 tn.write(b'exit\r\n')
                 tn.close()
@@ -647,7 +610,7 @@ def versa_deploy():
     abs_path = os.path.abspath(__file__)
     configs_path = os.path.join(os.path.dirname(abs_path), 'configs/viptela')
     file_name = os.path.join(configs_path, 'flexvnf_cloud_site_template')
-    flexvnf_lan_objects = generate_flexvnf_objects(flexvnf_count)
+    flexvnf_lan_objects = generate_vedge_objects(flexvnf_count, '172.14.2')
     isp_index = 0
     for server_ip in server_ips:
         for i in range(1, flexvnf_count + 1):
@@ -687,19 +650,19 @@ def versa_deploy():
                             break
                         tn.write(viptela_username.encode("ascii") + b"\n")
                         tn.read_until(b"Password:")
-                        tn.write(viptela_old_password.encode("ascii") + b"\n")
+                        tn.write(versa_old_password.encode("ascii") + b"\n")
                         output = tn.read_until(b"Password:", timeout=5).decode('ascii')
                         if 'Login incorrect' in output:
                             tn.read_until(b"login:", timeout=1)
                             tn.write(viptela_username.encode("ascii") + b"\n")
                             tn.read_until(b"Password:", timeout=1)
-                            tn.write(viptela_password.encode("ascii") + b"\n")
+                            tn.write(versa_old_password.encode("ascii") + b"\n")
                             tn.write(b"\r\n")
                             break
                         elif 'Welcome' in output:
-                            tn.write(viptela_password.encode("ascii") + b"\n")
+                            tn.write(versa_old_password.encode("ascii") + b"\n")
                             tn.read_until(b"password:", timeout=2)
-                            tn.write(viptela_password.encode("ascii") + b"\n")
+                            tn.write(versa_old_password.encode("ascii") + b"\n")
                             tn.write(b"\r\n")
                             break
                         log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"{temp_node_name} not available yet, trying again in 30 seconds")
@@ -776,7 +739,7 @@ def versa_deploy():
                         break
                     tn.write(viptela_username.encode("ascii") + b"\n")
                     tn.read_until(b"Password:", timeout=1)
-                    tn.write(viptela_password.encode("ascii") + b"\n")
+                    tn.write(versa_old_password.encode("ascii") + b"\n")
                     output = tn.read_until(b"#", timeout=1).decode('ascii')
                     if '#' in output:
                         tn.write(b"\r\n")
@@ -815,15 +778,15 @@ def versa_deploy():
                 vdevice_cert = vdevice_cert.decode('ascii').split('\r\n', 1)[1]
                 vdevice_cert = vdevice_cert.replace('\r\n', '\n')
                 vmanage_install_cert(gns3_server_data, vmanage_headers, vdevice_cert)
-                vmanage_set_device(gns3_server_data, vmanage_headers, vsmart_address, "vsmart")
+                vmanage_set_device(gns3_server_data, vmanage_headers, versa_analytics_address, "versa_analytics")
                 vmanage_set_device(gns3_server_data, vmanage_headers, vbond_address, "vbond")
                 vbond_csr = vmanage_generate_csr(gns3_server_data, vmanage_headers, vbond_address, 'vbond')
-                vsmart_csr = vmanage_generate_csr(gns3_server_data, vmanage_headers, vsmart_address, 'vsmart')
+                versa_analytics_csr = vmanage_generate_csr(gns3_server_data, vmanage_headers, versa_analytics_address, 'versa_analytics')
                 tn.write(b'exit\r\n')
                 tn.read_until(b'#')
                 tn.write(b'vshell\r\n')
                 tn.read_until(b'$')
-                tn.write(b'echo -n "' + vsmart_csr.encode('ascii') + b'\n" > vdevice.csr\r\n')
+                tn.write(b'echo -n "' + versa_analytics_csr.encode('ascii') + b'\n" > vdevice.csr\r\n')
                 tn.read_until(b'$')
                 tn.write(b"sed '/^$/d' vdevice.csr\n")
                 tn.read_until(b'$')
@@ -894,7 +857,7 @@ def versa_deploy():
                             break
                         tn.write(viptela_username.encode("ascii") + b"\n")
                         tn.read_until(b"Password:", timeout=1)
-                        tn.write(viptela_password.encode("ascii") + b"\n")
+                        tn.write(versa_old_password.encode("ascii") + b"\n")
                         output = tn.read_until(b"#", timeout=1).decode('ascii')
                         if '#' in output:
                             tn.write(b"\r\n")
@@ -917,12 +880,12 @@ def versa_deploy():
                     else:
                         tn.write(b"\n")
                     tn.read_until(b"Password:")
-                    tn.write(viptela_password.encode("ascii") + b"\n")
+                    tn.write(versa_old_password.encode("ascii") + b"\n")
                     tn.read_until(b'#')
                     # SSH to FlexVNF
                     tn.write(ssh_command.encode('ascii') + b"\n")
                     tn.read_until(b"Password:")
-                    tn.write(viptela_password.encode("ascii") + b"\n")
+                    tn.write(versa_old_password.encode("ascii") + b"\n")
                     tn.read_until(b'#')
                     tn.write(b'request root-cert-chain install /home/admin/SDWAN.pem\n')
                     tn.read_until(b'#')
@@ -940,7 +903,7 @@ def versa_deploy():
                     else:
                         tn.write(b"\n")
                     tn.read_until(b"Password:")
-                    tn.write(viptela_password.encode("ascii") + b"\n")
+                    tn.write(versa_old_password.encode("ascii") + b"\n")
                     tn.read_until(b'#')
                     # Drop back to the vManage
                     tn.write(b'exit\r\n')
@@ -955,12 +918,12 @@ def versa_deploy():
                     # SCP the FlexVNF.crt to the FlexVNF
                     tn.write(scp_2_command.encode('ascii') + b"\n")
                     tn.read_until(b"Password:")
-                    tn.write(viptela_password.encode("ascii") + b"\n")
+                    tn.write(versa_old_password.encode("ascii") + b"\n")
                     tn.read_until(b'#')
                     # SSH to the FlexVNF to install the new cert
                     tn.write(ssh_command.encode('ascii') + b"\n")
                     tn.read_until(b"Password:")
-                    tn.write(viptela_password.encode("ascii") + b"\n")
+                    tn.write(versa_old_password.encode("ascii") + b"\n")
                     tn.read_until(b'#')
                     while True:
                         tn.write(b'request certificate install /home/admin/flexvnf.crt\r\n')
@@ -980,7 +943,7 @@ def versa_deploy():
                     flexvnf_install_command = f"request flexvnf add chassis-num {chassis_number} serial-num {serial_number}"
                     tn.write(ssh_2_command.encode('ascii') + b"\n")
                     tn.read_until(b"Password:")
-                    tn.write(viptela_password.encode("ascii") + b"\n")
+                    tn.write(versa_old_password.encode("ascii") + b"\n")
                     tn.read_until(b'#')
                     tn.write(flexvnf_install_command.encode('ascii') + b"\n")
                     tn.read_until(b'#')

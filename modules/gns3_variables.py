@@ -142,18 +142,18 @@ arista_ceos_template_data = {"compute_id": "local", "adapters": 20, "category": 
                              "start_command": "/sbin/init systemd.setenv=INTFTYPE=eth systemd.setenv=ETBA=1 systemd.setenv=SKIP_ZEROTOUCH_BARRIER_IN_SYSDBINIT=1 systemd.setenv=CEOS=1 systemd.setenv=EOS_PLATFORM=ceoslab systemd.setenv=container=docker",
                              "environment": "INTFTYPE=eth\nETBA=1 \nSKIP_ZEROTOUCH_BARRIER_IN_SYSDBINIT=1 \nCEOS=1 \nEOS_PLATFORM=ceoslab \ncontainer=docker\nMAPETH0=1\nMGMTINF=eth0", }
 # endregion
-versa_director_template_data = {"compute_id": "local", "cpus": 12, "adapters": 6,
+versa_director_template_data = {"compute_id": "local", "cpus": 16, "adapters": 6,
                                  "symbol": ":/symbols/affinity/circle/blue/server_cluster.svg",
                                  "adapter_type": "virtio-net-pci", "qemu_path": "/usr/bin/qemu-system-x86_64",
                                  "hda_disk_image": "versa-director-c19c43c-21.2.3.qcow2",
-                                 "name": versa_director_template_name, "ram": 8192,
+                                 "name": versa_director_template_name, "ram": 16384,
                                  "template_type": "qemu", "hda_disk_interface": "virtio",
                                  "options": "-cpu host -smp 2,maxcpus=2"}
-versa_analytics_template_data = {"compute_id": "local", "cpus": 2, "adapters": 6,
+versa_analytics_template_data = {"compute_id": "local", "cpus": 6, "adapters": 6,
                                 "symbol": ":/symbols/affinity/circle/blue/interconnect.svg",
                                 "adapter_type": "virtio-net-pci", "qemu_path": "/usr/bin/qemu-system-x86_64",
                                 "hda_disk_image": "versa-analytics-67ff6c7-21.2.3.qcow2",
-                                "name": versa_analytics_template_name, "ram": 4096, "template_type": "qemu",
+                                "name": versa_analytics_template_name, "ram": 16384, "template_type": "qemu",
                                 "hda_disk_interface": "virtio", "options": "-cpu host"}
 versa_flexvnf_template_data = {"compute_id": "local", "cpus": 2, "adapters": 6,
                                "symbol": ":/symbols/affinity/circle/blue/isdn.svg", "adapter_type": "vmxnet3",

@@ -110,7 +110,6 @@ def generate_interfaces_file(interface_data_1, router_index, interface_data_2, i
             eth_2 += 1
     logging.info(f"Deploy - Created file {filename_temp}")
 
-
 def generate_arista_interfaces_file(filename_temp, mgmt_network_address, ip_var):
     abs_path = os.path.abspath(__file__)
     configs_path = os.path.join(os.path.dirname(abs_path), 'configs/')
@@ -139,7 +138,7 @@ def generate_isp_deploy_data(num_nodes):
     return deploy_data
 
 
-def generate_vedge_objects(vedge_count):
+def generate_vedge_objects(vedge_count, base_subnet):
     subnet_mask = 24
     k = 101
     networks = []
@@ -163,9 +162,9 @@ def generate_vedge_objects(vedge_count):
                     'lan_dhcp_exclude': dhcp_exclude_var,
                     'client_1_address': client_1_address_var,
                     'vedge': f'vEdge_{i:003}',
-                    'system_ip': f'172.16.2.{i + 100}',
-                    'mgmt_address': f'172.16.2.{i + 100}/24',
-                    'mgmt_gateway': '172.16.2.1',
+                    'system_ip': f'{base_subnet}.{i + 100}',
+                    'mgmt_address': f'{base_subnet}.{i + 100}/24',
+                    'mgmt_gateway': f'{base_subnet}.1',
                     'site_id': k,
                     'org_name': 'sdwan-lab'
                 }

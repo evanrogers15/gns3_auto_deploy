@@ -637,7 +637,7 @@ def oa_viptela_deploy():
     abs_path = os.path.abspath(__file__)
     configs_path = os.path.join(os.path.dirname(abs_path), 'configs/viptela')
     file_name = os.path.join(configs_path, 'vedge_cloud_site_template')
-    vedge_lan_objects = generate_vedge_objects(vedge_count)
+    vedge_lan_objects = generate_vedge_objects(vedge_count, '172.16.2')
     isp_index = 0
     for server_ip in server_ips:
         for i in range(1, vedge_count + 1):
