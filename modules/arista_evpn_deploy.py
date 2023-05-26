@@ -15,9 +15,9 @@ from modules.gns3_actions import *
 from modules.gns3_variables import *
 from modules.gns3_dynamic_data import *
 from modules.gns3_query import *
+
 def arista_deploy():
     # region Runtime
-
     main_mgmt_switch_deploy_data = {"x": 278, "y": -141, "name": "Main_MGMT-switch"}
     evpn_cloud_node_deploy_data = {"x": 431, "y": -236, "name": "MGMT-Cloud-TAP", "node_type": "cloud",
                               "compute_id": "local", "symbol": ":/symbols/cloud.svg"}
@@ -31,8 +31,6 @@ def arista_deploy():
     # region Runtime
     start_time = time.time()
     # region GNS3 Lab Setup
-    # time.sleep(10)
-    c = conn.cursor()
     c.execute("SELECT * FROM config")
     row = c.fetchone()
     conn.close()

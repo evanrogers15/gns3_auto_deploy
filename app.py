@@ -19,23 +19,23 @@ app = Flask(__name__)
 running_thread = None
 
 @app.route('/')
-def index():
+def index_render():
     return render_template('create_sdwan.html')
 
 @app.route('/oa')
-def oa_sdwan_deploy():
+def oa_sdwan_deploy_render():
     return render_template('oa_create_sdwan.html')
 
 @app.route('/versa')
-def oa_versa_deploy():
+def oa_versa_deploy_render():
     return render_template('create_versa_sdwan.html')
 
 @app.route('/demo')
-def demo_sdwan_deploy():
+def demo_sdwan_deploy_render():
     return render_template('demo_create_sdwan.html')
 
 @app.route('/arista')
-def arista_deploy():
+def arista_deploy_render():
     return render_template('create_arista_evpn.html')
 
 @app.route('/admin')

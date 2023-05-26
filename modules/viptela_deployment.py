@@ -49,11 +49,9 @@ def viptela_deploy():
     required_image_response = 201
     # endregion
     conn = sqlite3.connect(db_path)
-    c = conn.cursor()
     # region Runtime
     start_time = time.time()
     # region GNS3 Lab Setup
-    # time.sleep(10)
     c = conn.cursor()
     c.execute("SELECT * FROM config")
     row = c.fetchone()
