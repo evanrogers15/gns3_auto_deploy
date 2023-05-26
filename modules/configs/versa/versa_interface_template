@@ -1,13 +1,10 @@
 auto eth0
 iface eth0 inet static
-	address {eth0_ip_address}
-	netmask {eth0_netmask}
-	gateway {eth0_gateway}
-	up echo nameserver 192.168.122.1 > /etc/resolv.conf
-
+address {eth0_ip_address}
+netmask {eth0_netmask}
+gateway {eth0_gateway}
+up echo nameserver 192.168.122.1 > /etc/resolv.conf
 auto eth1
 iface eth1 inet static
-	address {eth1_ip_address}
-	netmask {eth1_netmask}
-	gateway {eth1_gateway}
-	up echo nameserver 192.168.122.1 > /etc/resolv.conf
+address {eth1_ip_address}
+netmask {eth1_netmask}

@@ -328,7 +328,7 @@ def versa_deploy():
     # region Versa Director Setup Part 1
     deployment_step = 'Starting Nodes'
     wait_time = 5  # minutes
-    sys.exit()
+
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Waiting {wait_time} mins for devices to come up, to resume at {util_resume_time(wait_time)}")
     time.sleep(wait_time * 60)
     deployment_step = 'Versa Director device Setup'
@@ -371,29 +371,29 @@ def versa_deploy():
                 tn.read_until(b"Enter Netmask Address:")
                 tn.write(b'255.255.255.0\n')
                 tn.read_until(b"Configure Gateway Address? (y/n)?")
-                tn.write(b'n\n')
-                #tn.read_until(b"Enter Gateway Address:")
-                #tn.write(b'172.16.2.1\n')
+                tn.write(b'y\n')
+                tn.read_until(b"Enter Gateway Address:")
+                tn.write(b'172.14.2.1\n')
                 tn.read_until(b"Configure another interface? (y/n)?")
                 tn.write(b'y\n')
                 tn.read_until(b"Enter interface name [eg. eth0]:")
                 tn.write(b'eth1\n')
                 tn.read_until(b"Enter IP Address:")
-                tn.write(b'172.16.4.2\n')
+                tn.write(b'172.14.4.2\n')
                 tn.read_until(b"Enter Netmask Address:")
-                tn.write(b'255.255.255.252\n')
+                tn.write(b'255.255.255.0\n')
                 tn.read_until(b"Configure Gateway Address? (y/n)?")
-                tn.write(b'y\n')
-                tn.read_until(b"Enter Gateway Address:")
-                tn.write(b'172.16.4.1\n')
+                tn.write(b'n\n')
+                #tn.read_until(b"Enter Gateway Address:")
+                #tn.write(b'172.16.4.1\n')
                 tn.read_until(b"Configure another interface? (y/n)?")
                 tn.write(b'n\n')
                 tn.read_until(b"Configure North-Bound interface (If not configured, default 0.0.0.0 will be accepted) (y/n)?")
                 tn.write(b'y\n')
                 tn.read_until(b"Enter interface name [eg. eth0]:")
-                tn.write(b'eth1\n')
-                tn.read_until(b"Enter interface name [eg. eth0]:")
                 tn.write(b'eth0\n')
+                tn.read_until(b"Enter interface name [eg. eth0]:")
+                tn.write(b'eth1\n')
                 tn.read_until(b"Configure another South-Bound interface? (y/n)?")
                 tn.write(b'n\n')
                 tn.read_until(b"Enable secure mode for Director HA ports? (y/n)?")
@@ -404,13 +404,13 @@ def versa_deploy():
                 tn.write(b'n\n')
                 tn.read_until(b"Edit list of hosts allowed to access Versa GUI? (y/n)?")
                 tn.write(b'n\n')
-                tn.read_until(b"Press ENTER to continue")
-                tn.write(b"\r\n")
-                tn.read_until(b"director login:")
-                tn.write(versa_director_username.encode("ascii") + b"\n")
-                tn.read_until(b"Password:")
-                tn.write(versa_old_password.encode("ascii") + b"\n")
-                tn.read_until(b"[Administrator@director: ~] $")
+                #tn.read_until(b"Press ENTER to continue")
+                #tn.write(b"\r\n")
+                #tn.read_until(b"director login:")
+                #tn.write(versa_director_username.encode("ascii") + b"\n")
+                #tn.read_until(b"Password:")
+                #tn.write(versa_old_password.encode("ascii") + b"\n")
+                #tn.read_until(b"[Administrator@director: ~] $")
                 tn.close()
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed Director Device Setup Part 1")
     # endregion
@@ -457,9 +457,8 @@ def versa_deploy():
                         eth0_ip_address='172.14.2.6',
                         eth0_netmask='255.255.255.0',
                         eth0_gateway='172.14.2.1',
-                        eth1_ip_address='172.16.4.6',
-                        eth1_netmask='255.255.255.252',
-                        eth1_gateway='172.16.4.5',
+                        eth1_ip_address='172.14.4.6',
+                        eth1_netmask='255.255.255.0',
                     )
                     formatted_lines.append(formatted_line.strip())
                 command = f"echo $'{chr(92)}n'.join([{', '.join(map(repr, formatted_lines))}]) > {remote_file_name}\n"
@@ -514,13 +513,12 @@ def versa_deploy():
                         eth0_ip_address='172.14.2.10',
                         eth0_netmask='255.255.255.0',
                         eth0_gateway='172.14.2.1',
-                        eth1_ip_address='172.16.4.10',
-                        eth1_netmask='255.255.255.252',
-                        eth1_gateway='172.16.4.9',
+                        eth1_ip_address='172.14.4.10',
+                        eth1_netmask='255.255.255.0',
                     )
                     formatted_lines.append(formatted_line.strip())
-                tn.write(
-                    ("echo -e '" + '\\\n'.join(formatted_lines) + "' > " + remote_file_name + "\n").encode('ascii'))
+                command = f"echo $'{chr(92)}n'.join([{', '.join(map(repr, formatted_lines))}]) > {remote_file_name}\n"
+                tn.write(command.encode('ascii'))
                 tn.read_until(b"[root@versa-flexvnf: admin]#")
                 tn.write(b"exit\n")
                 tn.close()
