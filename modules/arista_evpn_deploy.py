@@ -1,6 +1,15 @@
+import requests
+import json
+import telnetlib
+import time
+import datetime
+import urllib3
+import ipaddress
+import os
+import re
 import logging
 import logging.handlers
-
+import sqlite3
 
 from modules.gns3_actions import *
 from modules.gns3_variables import *
@@ -12,7 +21,6 @@ def arista_deploy():
     main_mgmt_switch_deploy_data = {"x": 278, "y": -141, "name": "Main_MGMT-switch"}
     evpn_cloud_node_deploy_data = {"x": 431, "y": -236, "name": "MGMT-Cloud-TAP", "node_type": "cloud",
                               "compute_id": "local", "symbol": ":/symbols/cloud.svg"}
-    start_time = time.time()
     deployment_type = 'arista'
     deployment_status = 'running'
     deployment_step = '- Action - '

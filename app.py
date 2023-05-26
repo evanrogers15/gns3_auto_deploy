@@ -181,7 +181,6 @@ def get_uploaded_files():
     ios_files = [file for file in os.listdir(ios_dir) if os.path.isfile(os.path.join(ios_dir, file))]
     return jsonify({'qemu_files': qemu_files, 'iou_files': iou_files, 'ios_files': ios_files})
 
-
 @app.route('/api/tasks/start_viptela_deploy', methods=['PUT'])
 def viptela_deploy_full():
     global running_thread
