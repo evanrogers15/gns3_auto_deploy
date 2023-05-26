@@ -84,7 +84,6 @@ def versa_deploy():
     c.execute("SELECT COUNT(*) FROM deployments")
     count = c.fetchone()[0]
     if count == 0:
-        # Perform initial insertion to populate the table
         c.execute(
             "INSERT INTO deployments (server_name, server_ip, project_name) VALUES (?, ?, ?)", (server_ip, server_name, project_name))
         conn.commit()
@@ -132,6 +131,8 @@ def versa_deploy():
     
     versa_director_node_id = gns3_create_node(gns3_server_data, new_project_id, versa_director_template_id, versa_director_deploy_data)
     versa_analytics_node_id = gns3_create_node(gns3_server_data, new_project_id, versa_analytics_template_id, versa_analytics_deploy_data)
+    versa_controller_node_id = gns3_create_node(gns3_server_data, new_project_id, versa_flexvnf_template_id,
+                                               versa_controller_deploy_data)
     isp_router_node_id = gns3_create_node(gns3_server_data, new_project_id, cisco_iou_template_id,
                                           isp_router_deploy_data)
     mgmt_main_switch_node_id = gns3_create_node(gns3_server_data, new_project_id, regular_ethernet_hub_template_id,
@@ -169,6 +170,7 @@ def versa_deploy():
             log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Node {node_name} already exists in project {project_name}")
     gns3_update_nodes(gns3_server_data, new_project_id, versa_director_node_id, versa_director_deploy_data)
     gns3_update_nodes(gns3_server_data, new_project_id, versa_analytics_node_id, versa_analytics_deploy_data)
+    gns3_update_nodes(gns3_server_data, new_project_id, versa_controller_node_id, versa_controller_deploy_data)
     gns3_update_nodes(gns3_server_data, new_project_id, isp_router_node_id, isp_router_deploy_data)
     gns3_update_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, main_mgmt_switch_deploy_data)
     gns3_update_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, deploy_data_z)
@@ -211,11 +213,13 @@ def versa_deploy():
     gns3_connect_nodes(gns3_server_data, new_project_id, nat_node_id, 0, 0, isp_router_node_id, 0, 0)
     gns3_connect_nodes(gns3_server_data, new_project_id, cloud_isp_node_id, 1, 0, versa_director_node_id, 1, 0)
     gns3_connect_nodes(gns3_server_data, new_project_id, cloud_isp_node_id, 2, 0, versa_analytics_node_id, 1, 0)
+    gns3_connect_nodes(gns3_server_data, new_project_id, cloud_isp_node_id, 3, 0, versa_controller_node_id, 1, 0)
     if use_tap == 1:
         gns3_connect_nodes(gns3_server_data, new_project_id, cloud_node_id, 0, mgmt_tap_interface,
                            mgmt_main_switch_node_id, 0, 0)
     gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, 1, versa_director_node_id, 0, 0)
     gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, 2, versa_analytics_node_id, 0, 0)
+    gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, 3, versa_controller_node_id, 0, 0)
     mgmt_switch_interface = 1
     switch_adapter_a = 5
     switch_adapter_b = (switchport_count // 2) + 4
@@ -321,16 +325,16 @@ def versa_deploy():
                 gns3_connect_nodes(gns3_server_data, new_project_id, node_id, 3, 0, network_test_node_id, 0, 0)
             v += 1
     # endregion
-    sys.exit()
-    # region Viptela vManage Setup Part 1
-    deployment_step = 'vManage Setup Part 1'
+    # region Versa Director Setup Part 1
+    deployment_step = 'Starting Nodes'
     wait_time = 5  # minutes
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Waiting {wait_time} mins for devices to come up, to resume at {util_resume_time(wait_time)}")
     time.sleep(wait_time * 60)
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, "Starting vManage device setup part 1")
+    deployment_step = 'Versa Director device Setup'
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, "Starting Director device setup part 1")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     for server_ip in server_ips:
-        temp_node_name = f'vManage'
+        temp_node_name = f'Director'
         matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
         if matching_nodes:
             for matching_node in matching_nodes:
@@ -340,29 +344,78 @@ def versa_deploy():
                 while True:
                     tn.write(b"\r\n")
                     tn.read_until(b"login:", timeout=1)
-                    tn.write(viptela_username.encode("ascii") + b"\n")
+                    tn.write(versa_director_username.encode("ascii") + b"\n")
                     tn.read_until(b"Password:", timeout=5)
-                    tn.write(viptela_old_password.encode("ascii") + b"\n")
+                    tn.write(versa_old_password.encode("ascii") + b"\n")
                     output = tn.read_until(b"Password:", timeout=5).decode('ascii')
-                    if 'Welcome' in output:
+                    if 'enter setup' in output:
                         break
                     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"{temp_node_name} not available yet, trying again in 30 seconds")
                     time.sleep(30)
-                tn.write(viptela_password.encode("ascii") + b"\n")
-                tn.read_until(b"password:")
-                tn.write(viptela_password.encode("ascii") + b"\n")
-                tn.read_until(b":")
-                tn.write(b'1\n')
-                tn.read_until(b"[y/n]")
+                tn.write(b"\r\n")
+                tn.read_until(b"Do you want to enter setup? (y/n)?")
                 tn.write(b'y\n')
-                tn.read_until(b":")
-                tn.write(b'1\n')
-                tn.read_until(b"):")
+                tn.read_until(b"[sudo] password for Administrator: ")
+                tn.write(versa_old_password.encode("ascii") + b"\n")
+                tn.read_until(b"Do you want to setup hostname for system? (y/n)?")
                 tn.write(b'y\n')
-                tn.read_until(b"umount")
+                tn.read_until(b"Enter hostname:")
+                tn.write(b'director.local\n')
+                tn.read_until(b"Do you want to setup network interface configuration? (y/n)?")
+                tn.write(b'y\n')
+                tn.read_until(b"Enter interface name [eg. eth0]:")
+                tn.write(b'eth0\n')
+                tn.read_until(b"Enter IP Address:")
+                tn.write(b'172.16.2.2\n')
+                tn.read_until(b"Enter Netmask Address:")
+                tn.write(b'255.255.255.0\n')
+                tn.read_until(b"Configure Gateway Address? (y/n)?")
+                tn.write(b'y\n')
+                tn.read_until(b"Enter Gateway Address:")
+                tn.write(b'172.16.2.1\n')
+                tn.read_until(b"Configure another interface? (y/n)?")
+                tn.write(b'y\n')
+                tn.read_until(b"Enter interface name [eg. eth0]:")
+                tn.write(b'eth1\n')
+                tn.read_until(b"Enter IP Address:")
+                tn.write(b'172.16.4.2\n')
+                tn.read_until(b"Enter Netmask Address:")
+                tn.write(b'255.255.255.0\n')
+                tn.read_until(b"Configure Gateway Address? (y/n)?")
+                tn.write(b'y\n')
+                tn.read_until(b"Enter Gateway Address:")
+                tn.write(b'172.16.4.1\n')
+                tn.read_until(b"Configure another interface? (y/n)?")
+                tn.write(b'n\n')
+                tn.read_until(b"Configure North-Bound interface (If not configured, default 0.0.0.0 will be accepted) (y/n)?")
+                tn.write(b'y\n')
+                tn.read_until(b"Enter interface name [eg. eth0]:")
+                tn.write(b'eth1\n')
+                tn.read_until(b"Enter interface name [eg. eth0]:")
+                tn.write(b'eth0\n')
+                tn.read_until(b"Configure another South-Bound interface? (y/n)?")
+                tn.write(b'n\n')
+                tn.read_until(b"Enable secure mode for Director HA ports? (y/n)?")
+                tn.write(b'n\n')
+                tn.read_until(b"Secure Director HA communication? (y/n)?")
+                tn.write(b'n\n')
+                tn.read_until(b"Prompt to set new password at first time UI login? (y/n)?")
+                tn.write(b'n\n')
+                tn.read_until(b"Edit list of hosts allowed to access Versa GUI? (y/n)?")
+                tn.write(b'n\n')
+                tn.read_until(b"Press ENTER to continue")
+                tn.write(b"\r\n")
+                tn.read_until(b"director login:")
+                tn.write(versa_director_username.encode("ascii") + b"\n")
+                tn.read_until(b"Password:")
+                tn.write(versa_old_password.encode("ascii") + b"\n")
+                tn.read_until(b"[Administrator@director: ~] $")
+
+                tn.read_until(b"[Administrator@director: ~] $")
                 tn.close()
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vManage Device Setup Part 1")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed Director Device Setup Part 1")
     # endregion
+    sys.exit()
     # region Viptela vSmart Setup
     deployment_step = 'vSmart Setup'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vSmart Device Setup")
@@ -506,16 +559,16 @@ def versa_deploy():
                 tn.read_until(b"exit")
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vBond Device Setup")
     # endregion
-    # region Viptela vManage Setup Part 2
-    deployment_step = 'vManage Setup Part 2'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vManage setup part 2")
+    # region Viptela Director Setup Part 2
+    deployment_step = 'Director Setup Part 2'
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting Director setup part 2")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     abs_path = os.path.abspath(__file__)
-    configs_path = os.path.join(os.path.dirname(abs_path), 'configs/viptela')
-    file_name = os.path.join(configs_path, 'vmanage_template')
+    configs_path = os.path.join(os.path.dirname(abs_path), 'configs/versa')
+    file_name = os.path.join(configs_path, 'director_template')
     vdevices = [6, 10]
     for server_ip in server_ips:
-        temp_node_name = f'vManage'
+        temp_node_name = f'Director'
         matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
         if matching_nodes:
             for matching_node in matching_nodes:

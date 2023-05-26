@@ -20,6 +20,11 @@ vmanage_address = '172.16.2.2'
 vsmart_address = '172.16.4.6'
 switchport_count = 95
 
+versa_director_username = 'Administrator'
+versa_old_password = "versa123"
+versa_analytics_username = "admin"
+versa_flexvnf_username = "admin"
+
 mgmt_switchport_count = 45
 mgmt_main_switchport_count = 30
 # endregion
@@ -144,13 +149,13 @@ versa_director_template_data = {"compute_id": "local", "cpus": 12, "adapters": 6
                                  "name": versa_director_template_name, "ram": 8192,
                                  "template_type": "qemu", "hda_disk_interface": "virtio",
                                  "options": "-cpu host -smp 2,maxcpus=2"}
-versa_analytics_template_data = {"compute_id": "local", "cpus": 2, "adapters": 3,
+versa_analytics_template_data = {"compute_id": "local", "cpus": 2, "adapters": 6,
                                 "symbol": ":/symbols/affinity/circle/blue/interconnect.svg",
                                 "adapter_type": "virtio-net-pci", "qemu_path": "/usr/bin/qemu-system-x86_64",
                                 "hda_disk_image": "versa-analytics-67ff6c7-21.2.3.qcow2",
                                 "name": versa_analytics_template_name, "ram": 4096, "template_type": "qemu",
                                 "hda_disk_interface": "virtio", "options": "-cpu host"}
-versa_flexvnf_template_data = {"compute_id": "local", "cpus": 2, "adapters": 3,
+versa_flexvnf_template_data = {"compute_id": "local", "cpus": 2, "adapters": 6,
                                "symbol": ":/symbols/affinity/circle/blue/isdn.svg", "adapter_type": "vmxnet3",
                                "qemu_path": "/usr/bin/qemu-system-x86_64",
                                "hda_disk_image": "versa-flexvnf-67ff6c7-21.2.3.qcow2",
@@ -170,6 +175,7 @@ nat_node_deploy_data = {"x": -154, "y": -554, "name": "Internet", "node_type": "
 
 versa_director_deploy_data = {"x": -107, "y": 570, "name": "Versa_Director"}
 versa_analytics_deploy_data = {"x": -182, "y": 495, "name": "Versa_Analytics"}
+versa_controller_deploy_data = {"x": -32, "y": 495, "name": "Versa_Controller"}
 
 big_block_deploy_data = {
     "svg": "<svg height=\"1500\" width=\"3681\"><rect fill=\"#ffffff\" fill-opacity=\"1.0\" height=\"1500\" stroke=\"#000000\" stroke-width=\"2\" width=\"3681\" /></svg>",
