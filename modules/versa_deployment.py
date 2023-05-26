@@ -328,6 +328,7 @@ def versa_deploy():
     # region Versa Director Setup Part 1
     deployment_step = 'Starting Nodes'
     wait_time = 5  # minutes
+    sys.exit()
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Waiting {wait_time} mins for devices to come up, to resume at {util_resume_time(wait_time)}")
     time.sleep(wait_time * 60)
     deployment_step = 'Versa Director device Setup'

@@ -156,7 +156,7 @@ versa_analytics_template_data = {"compute_id": "local", "cpus": 6, "adapters": 6
                                 "name": versa_analytics_template_name, "ram": 16384, "template_type": "qemu",
                                 "hda_disk_interface": "virtio", "options": "-cpu host"}
 versa_flexvnf_template_data = {"compute_id": "local", "cpus": 2, "adapters": 6,
-                               "symbol": ":/symbols/affinity/circle/blue/isdn.svg", "adapter_type": "vmxnet3",
+                               "symbol": ":/symbols/affinity/circle/blue/isdn.svg", "adapter_type": "virtio-net-pci",
                                "qemu_path": "/usr/bin/qemu-system-x86_64",
                                "hda_disk_image": "versa-flexvnf-67ff6c7-21.2.3.qcow2",
                                "name": versa_flexvnf_template_name, "ram": 2048, "template_type": "qemu",
