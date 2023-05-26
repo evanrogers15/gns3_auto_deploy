@@ -410,8 +410,6 @@ def versa_deploy():
                 tn.read_until(b"Password:")
                 tn.write(versa_old_password.encode("ascii") + b"\n")
                 tn.read_until(b"[Administrator@director: ~] $")
-
-                tn.read_until(b"[Administrator@director: ~] $")
                 tn.close()
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed Director Device Setup Part 1")
     # endregion
@@ -446,6 +444,10 @@ def versa_deploy():
                     time.sleep(30)
                 tn.write(b"\r\n")
                 tn.read_until(b"admin@versa-analytics:~$")
+                tn.write(b'sudo su\r\n')
+                tn.read_until(b"[sudo] password for admin:")
+                tn.write(versa_old_password.encode("ascii") + b"\n")
+                tn.read_until(b"[root@versa-analytics: admin]#")
                 with open(local_file_name, 'r') as local_file:
                     lines = local_file.readlines()
                 formatted_lines = []
@@ -458,12 +460,10 @@ def versa_deploy():
                         eth1_netmask='255.255.255.252',
                         eth1_gateway='172.16.4.5',
                     )
-                    formatted_lines.append(formatted_line)
-                for line in formatted_lines:
-                    tn.write(f"echo '{line}' >> {remote_file_name}\n".encode('ascii'))
-                    tn.read_until(b"admin@versa-analytics:~$")
-                tn.write(b"\r\n")
-                tn.read_until(b"exit")
+                    formatted_lines.append(formatted_line.strip())
+                tn.write(("echo -e '" + '\\\n'.join(formatted_lines) + "' > " + remote_file_name + "\n").encode('ascii'))
+                tn.read_until(b"[root@versa-analytics: admin]#")
+                tn.write(b"exit\n")
                 tn.close()
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed Versa AnalyticsDevice Setup")
     # endregion
@@ -493,13 +493,17 @@ def versa_deploy():
                     tn.read_until(b"Password:", timeout=5)
                     tn.write(versa_old_password.encode("ascii") + b"\n")
                     output = tn.read_until(b"Password:", timeout=5).decode('ascii')
-                    if 'admin@versa-analytics:~$' in output:
+                    if 'admin@versa-flexvnf: ~] $' in output:
                         break
                     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
                                       f"{temp_node_name} not available yet, trying again in 30 seconds")
                     time.sleep(30)
                 tn.write(b"\r\n")
-                tn.read_until(b"admin@versa-analytics:~$")
+                tn.read_until(b"admin@versa-flexvnf: ~] $")
+                tn.write(b'sudo su\r\n')
+                tn.read_until(b"[sudo] password for admin:")
+                tn.write(versa_old_password.encode("ascii") + b"\n")
+                tn.read_until(b"[root@versa-flexvnf: admin]#")
                 with open(local_file_name, 'r') as local_file:
                     lines = local_file.readlines()
                 formatted_lines = []
@@ -512,14 +516,13 @@ def versa_deploy():
                         eth1_netmask='255.255.255.252',
                         eth1_gateway='172.16.4.9',
                     )
-                    formatted_lines.append(formatted_line)
-                for line in formatted_lines:
-                    tn.write(f"echo '{line}' >> {remote_file_name}\n".encode('ascii'))
-                    tn.read_until(b"admin@versa-flexvnf: ~] $")
-                tn.write(b"\r\n")
-                tn.read_until(b"exit")
+                    formatted_lines.append(formatted_line.strip())
+                tn.write(
+                    ("echo -e '" + '\\\n'.join(formatted_lines) + "' > " + remote_file_name + "\n").encode('ascii'))
+                tn.read_until(b"[root@versa-flexvnf: admin]#")
+                tn.write(b"exit\n")
                 tn.close()
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vBond Device Setup")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed Versa Controller Device Setup")
     # endregion
     sys.exit()
     # region Viptela Director Setup Part 2
@@ -540,41 +543,34 @@ def versa_deploy():
                 tn = telnetlib.Telnet(server_ip, console_port)
                 while True:
                     tn.write(b"\r\n")
-                    output = tn.read_until(b"login:", timeout=2).decode('ascii')
-                    if 'vManage#' in output:
-                        break
-                    elif 'vManage:~$' in output:
-                        tn.write(b"exit\r\n")
-                        tn.read_until(b"#")
-                        break
-                    tn.write(viptela_username.encode("ascii") + b"\n")
-                    tn.read_until(b"Password:", timeout=1)
+                    tn.read_until(b"login:", timeout=1)
+                    tn.write(versa_analytics_username.encode("ascii") + b"\n")
+                    tn.read_until(b"Password:", timeout=5)
                     tn.write(versa_old_password.encode("ascii") + b"\n")
-                    output = tn.read_until(b"#", timeout=1).decode('ascii')
-                    if 'vmanage#' in output:
+                    output = tn.read_until(b"Password:", timeout=5).decode('ascii')
+                    if '[Administrator@director: ~] $' in output:
                         break
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"{temp_node_name} not available yet, trying again in 30 seconds")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                      f"{temp_node_name} not available yet, trying again in 30 seconds")
                     time.sleep(30)
                 tn.write(b"\r\n")
-                tn.read_until(b"#")
-                with open(file_name, 'r') as f:
-                    lines = f.readlines()
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Sending configuration commands to {temp_node_name}")
-                    for line in lines:
-                        formatted_line = line.format(
-                            hostname=temp_node_name,
-                            latitude='40.758701',
-                            longitude='-111.876183',
-                            system_ip='172.16.2.2',
-                            org_name=org_name,
-                            vbond_address=vbond_address,
-                            vpn_0_eth1_ip_address='172.16.4.2/30',
-                            vpn_0_eth1_ip_gateway='172.16.4.1',
-                            vpn_512_eth0_ip_address='172.16.2.2/24',
-                            vpn_512_eth0_ip_gateway='172.16.2.1'
-                        )
-                        tn.write(formatted_line.encode('ascii') + b"\n")
-                        tn.read_until(b"#")
+                tn.read_until(b"[Administrator@director: ~] $")
+                with open(local_file_name, 'r') as local_file:
+                    lines = local_file.readlines()
+                formatted_lines = []
+                for line in lines:
+                    formatted_line = line.format(
+                        eth0_ip_address='172.14.2.10',
+                        eth0_netmask='255.255.255.0',
+                        eth0_gateway='172.14.2.1',
+                        eth1_ip_address='172.16.4.10',
+                        eth1_netmask='255.255.255.252',
+                        eth1_gateway='172.16.4.9',
+                    )
+                    formatted_lines.append(formatted_line)
+                for line in formatted_lines:
+                    tn.write(f"echo '{line}' >> {remote_file_name}\n".encode('ascii'))
+                    tn.read_until(b"[Administrator@director: ~] $")
                 tn.write(b"\r\n")
                 # exit_var = tn.read_until(b"Analytics#").decode('ascii')
                 # if temp_node_name not in exit_var:
