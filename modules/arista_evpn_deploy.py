@@ -5,39 +5,76 @@ import logging.handlers
 from modules.gns3_actions import *
 from modules.gns3_variables import *
 from modules.gns3_dynamic_data import *
-
-def evpn_deploy():
+from modules.gns3_query import *
+def arista_deploy():
     # region Runtime
 
     main_mgmt_switch_deploy_data = {"x": 278, "y": -141, "name": "Main_MGMT-switch"}
     evpn_cloud_node_deploy_data = {"x": 431, "y": -236, "name": "MGMT-Cloud-TAP", "node_type": "cloud",
                               "compute_id": "local", "symbol": ":/symbols/cloud.svg"}
     start_time = time.time()
-    with open('app_evpn.log', 'w'):
-        pass
+    deployment_type = 'arista'
+    deployment_status = 'running'
+    deployment_step = '- Action - '
 
-    # logging.basicConfig(filename='app_evpn.log', level=logging.DEBUG,
-    #                    format='%(asctime)s %(levelname)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
-    log_content = ""
-    with open('app_evpn.log', 'r') as log_file:
-        for line in log_file:
-            if "Deploy" in line:
-                log_content += line
-    for server_record in gns3_server_data:
-        server_ip, server_port, project_name, vmanage_api_ip, vedge_count, tap_name, use_tap = server_record[
-            'GNS3 Server'], server_record[
-            'Server Port'], server_record['Project Name'], server_record['vManage API IP'], server_record['Site Count'], \
-        server_record['Tap Name'], server_record['Use Tap']
-    gns3_delete_project(gns3_server_data)
+    # endregion
+    conn = sqlite3.connect(db_path)
+    c = conn.cursor()
+    # region Runtime
+    start_time = time.time()
+    # region GNS3 Lab Setup
+    # time.sleep(10)
+    c = conn.cursor()
+    c.execute("SELECT * FROM config")
+    row = c.fetchone()
+    conn.close()
+    if row:
+        server_name = row[1]
+        server_ip = row[2]
+        server_port = row[3]
+        project_name = row[7]
+        new_project_id = row[8]
+        site_count = row[9]
+        tap_name = row[10]
+        vmanage_api_ip = row[11]
+    if tap_name == 'none':
+        use_tap = 0
+    else:
+        use_tap = 1
+
+    gns3_server_data = [{"GNS3 Server": server_ip, "Server Name": server_name, "Server Port": server_port,
+                         "vManage API IP": vmanage_api_ip, "Project Name": project_name, "Project ID": new_project_id,
+                         "Tap Name": tap_name,
+                         "Site Count": site_count, "Use Tap": use_tap, "Deployment Type": deployment_type,
+                         "Deployment Status": deployment_status, "Deployment Step": deployment_step}]
+    isp_switch_count = (site_count // 40) + 1
+    mgmt_switch_count = (site_count // 30) + 1
+    conn = sqlite3.connect(db_path)
+    c = conn.cursor()
+    c.execute("DELETE FROM deployments")
+    c.execute("SELECT COUNT(*) FROM deployments")
+    count = c.fetchone()[0]
+    if count == 0:
+        # Perform initial insertion to populate the table
+        c.execute(
+            "INSERT INTO deployments (server_name, server_ip, project_name) VALUES (?, ?, ?)",
+            (server_ip, server_name, project_name))
+        conn.commit()
+
     gns3_actions_remove_templates(gns3_server_data)
-    new_project_id = gns3_create_project(gns3_server_data)
     gns3_set_project(gns3_server_data, new_project_id)
+    # endregion
     # region Deploy Nodes
+    deployment_step = 'Creating Templates'
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, "Starting Template Creation")
     arista_count = 7
     arista_template_id = gns3_create_template(gns3_server_data, arista_ceos_template_data)
     temp_hub_data = generate_temp_hub_data(mgmt_main_switchport_count, mgmt_main_hub_template_name)
     regular_ethernet_hub_template_id = gns3_create_template(gns3_server_data, temp_hub_data)
     network_test_tool_template_id = gns3_create_template(gns3_server_data, network_test_tool_template_data)
+    deployment_step = 'Deploy GNS3 Nodes'
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Starting Node Deployment")
     cloud_node_id = gns3_create_cloud_node(gns3_server_data, new_project_id, evpn_cloud_node_deploy_data)
     mgmt_main_switch_node_id = gns3_create_node(gns3_server_data, new_project_id, regular_ethernet_hub_template_id,
                                                 main_mgmt_switch_deploy_data)
@@ -49,8 +86,11 @@ def evpn_deploy():
     gns3_start_all_nodes(gns3_server_data, new_project_id)
     # endregion
     # region Connect Nodes
+    deployment_step = 'Connect'
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      "Connect Nodes")
     if use_tap == 1:
-        matching_nodes = gns3_find_nodes_by_field(gns3_server_data, new_project_id, 'name', 'ports', 'MGMT-Cloud-TAP')
+        matching_nodes = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'name', 'ports', 'MGMT-Cloud-TAP')
         mgmt_tap_interface = 0
         for port in matching_nodes[0]:
             if port["short_name"] == tap_name:
@@ -80,19 +120,30 @@ def evpn_deploy():
                                arista_deploy_data[f"arista_06_deploy_data"]["node_id"],
                                10, 0)
     # endregion
+    # region Create GNS3 Drawings
+    deployment_step = 'Drawings'
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      "Creating Drawings")
+    drawing_index = 1
+    for drawing_data in drawing_deploy_data:
+        gns3_create_drawing(gns3_server_data, new_project_id, drawing_deploy_data[f'drawing_{drawing_index:02}'])
+        drawing_index += 1
+    # endregion
     # region Configure
-    logging.info(f"Deploy - Waiting 1 minute for nodes to start")
+    deployment_step = 'Configure'
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      "Configuring nodes..")
     time.sleep(60)
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     for server_ip in server_ips:
         arista_nodes = f'arista-'
-        client_nodes = gns3_find_nodes_by_name(gns3_server_data, new_project_id, arista_nodes)
+        client_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, arista_nodes)
         abs_path = os.path.abspath(__file__)
         configs_path = os.path.join(os.path.dirname(abs_path), 'configs/arista')
         if client_nodes:
             for client_node in client_nodes:
                 client_node_id, client_console_port, client_aux = client_node
-                temp_node_name = gns3_find_nodes_by_field(gns3_server_data, new_project_id, 'node_id', 'name',
+                temp_node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id', 'name',
                                                           client_node_id)
                 temp_file = temp_node_name[0]
                 file_name = os.path.join(configs_path, temp_file)
@@ -124,10 +175,13 @@ def evpn_deploy():
 
     # endregion
     # region Deploy Site Clients in Lab
-    regular_ethernet_hub_template_id = gns3_get_template_id(gns3_server_data, 'Main-MGMT-Switch')
-    network_test_tool_template_id = gns3_get_template_id(gns3_server_data, 'Network_Test_Tool')
+    deployment_step = 'Client Deploy'
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      "Deploying Clients")
+    regular_ethernet_hub_template_id = gns3_query_get_template_id(server_ip, server_port, 'Main-MGMT-Switch')
+    network_test_tool_template_id = gns3_query_get_template_id(server_ip, server_port, 'Network_Test_Tool')
     v = 1
-    leaf_nodes = gns3_find_nodes_by_name(gns3_server_data, new_project_id, "leaf")
+    leaf_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "leaf")
     for i in range(1, 4):
         local_switch_deploy_data[f"switch_{i:02}_deploy_data"]["node_id"] = gns3_create_node(gns3_server_data,
                                                                                              new_project_id,
@@ -172,13 +226,10 @@ def evpn_deploy():
             gns3_start_node(gns3_server_data, new_project_id, client_node_id)
             v += 1
     # endregion
-    # region Create GNS3 Drawings
-    drawing_index = 1
-    for drawing_data in drawing_deploy_data:
-        gns3_create_drawing(gns3_server_data, new_project_id, drawing_deploy_data[f'drawing_{drawing_index:02}'])
-        drawing_index += 1
-    # endregion
     end_time = time.time()
     total_time = (end_time - start_time) / 60
-    logging.info(f"Total time for GNS3 Lab Deployment for project {project_name} deployment: {total_time:.2f} minutes")
+    deployment_step = 'Complete'
+    deployment_status = 'Complete'
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Total time for GNS3 Lab Deployment for project {project_name} deployment: {total_time:.2f} minutes")
     # endregion

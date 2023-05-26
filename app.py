@@ -34,6 +34,10 @@ def oa_versa_deploy():
 def demo_sdwan_deploy():
     return render_template('demo_create_sdwan.html')
 
+@app.route('/arista')
+def arista_deploy():
+    return render_template('create_arista_evpn.html')
+
 @app.route('/admin')
 def adminPage():
     return render_template('admin.html')
@@ -213,6 +217,19 @@ def versa_deploy_full():
 
     # Start a new thread for deployment
     running_thread = threading.Thread(target=versa_deploy, args=())
+    running_thread.start()
+
+    return jsonify({'success': True})
+
+@app.route('/api/tasks/start_arista_deploy', methods=['PUT'])
+def arista_deploy_full():
+    global running_thread
+    # Check if a thread is already running
+    if running_thread is not None and running_thread.is_alive():
+        return make_response(jsonify({'message': 'Deployment is already in progress'}), 400)
+
+    # Start a new thread for deployment
+    running_thread = threading.Thread(target=arista_deploy, args=())
     running_thread.start()
 
     return jsonify({'success': True})
