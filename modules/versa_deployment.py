@@ -327,7 +327,7 @@ def versa_deploy():
     # endregion
     # region Versa Director Setup Part 1
     deployment_step = 'Starting Nodes'
-    wait_time = 5  # minutes
+    wait_time = 2  # minutes
 
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Waiting {wait_time} mins for devices to come up, to resume at {util_resume_time(wait_time)}")
     time.sleep(wait_time * 60)
@@ -382,7 +382,7 @@ def versa_deploy():
                 tn.write(b'172.14.4.2\n')
                 tn.read_until(b"Enter Netmask Address:")
                 tn.write(b'255.255.255.0\n')
-                tn.read_until(b"Configure Gateway Address? (y/n)?")
+                #tn.read_until(b"Configure Gateway Address? (y/n)?")
                 tn.write(b'n\n')
                 #tn.read_until(b"Enter Gateway Address:")
                 #tn.write(b'172.16.4.1\n')

@@ -1,0 +1,7 @@
+apk update
+apk add iproute2
+
+# To add a 3ms delay to all interfaces on the switch
+for interface in $(ls /sys/class/net | grep eth); do tc qdisc add dev $interface root netem delay 3ms; done
+# To remove all rules from all interfaces on the switch
+for interface in $(ls /sys/class/net | grep eth); do tc qdisc del dev $interface root; done

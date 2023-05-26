@@ -1,0 +1,13 @@
+./vnms-startup.sh
+
+# might not be needed... sudo -u versa /opt/versa/vnms/scripts/vnms-csrgen.sh --domain versa.forwardinc.biz --country US --state CA /
+--locality SanJose --organization versa-sdwan --organizationalunit demo --email demo@demo.com /
+--keypass PW4netops --san versa.forwardinc.biz
+
+
+
+vi /opt/versa/vnms/scripts/van-cluster-config/van_cluster_install/clustersetup.conf
+
+sudo /opt/versa/vnms/scripts/van-cluster-config/van_cluster_install/van_cluster_installer.py
+
+sudo ./opt/versa/vnms/scripts/van-cluster-config/van_cluster_install/van_cluster_installer.py --post-setup --gen-vd-cert
