@@ -461,7 +461,8 @@ def versa_deploy():
                         eth1_gateway='172.16.4.5',
                     )
                     formatted_lines.append(formatted_line.strip())
-                tn.write(("echo -e '" + '\\\n'.join(formatted_lines) + "' > " + remote_file_name + "\n").encode('ascii'))
+                command = f"echo $'{chr(92)}n'.join([{', '.join(map(repr, formatted_lines))}]) > {remote_file_name}\n"
+                tn.write(command.encode('ascii'))
                 tn.read_until(b"[root@versa-analytics: admin]#")
                 tn.write(b"exit\n")
                 tn.close()
