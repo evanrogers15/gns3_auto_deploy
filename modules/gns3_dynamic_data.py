@@ -298,7 +298,7 @@ def generate_vedge_deploy_data(vedge_count):
             site_drawing_deploy_data[f"site_drawing_{i:03}_deploy_data"] = {
                 "svg": "<svg height=\"267\" width=\"169\"><rect fill=\"#aaffff\" fill-opacity=\"1.0\" height=\"267\" stroke=\"#000000\" stroke-width=\"2\" width=\"169\" /></svg>",
                 "x": drawing_x, "y": drawing_y, "z": 0}
-    elif vedge_count <= 20:
+    elif vedge_count <= 25:
         row_count = 10
         y = -107
         y_s = -107
