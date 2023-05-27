@@ -271,9 +271,9 @@ def versa_deploy():
     if matching_nodes:
         for matching_node in matching_nodes:
             node_id = matching_node[0]
-            isp_router_base_subnet = '172.16.5.0/24'
-            flexvnf_isp_1_base_subnet = f'172.16.{starting_subnet}.0/24'
-            flexvnf_isp_2_base_subnet = f'172.16.{starting_subnet + 1}.0/24'
+            isp_router_base_subnet = '172.14.3.0/24'
+            flexvnf_isp_1_base_subnet = f'172.14.{starting_subnet}.0/24'
+            flexvnf_isp_2_base_subnet = f'172.14.{starting_subnet + 1}.0/24'
             temp_file_name = f'cloud_isp_switch_{switch_index}_interfaces'
             isp_router_objects = generate_network_objects(isp_router_base_subnet, 30)
             isp_switch_1_objects = generate_network_objects(flexvnf_isp_1_base_subnet, 30, flexvnf_index)
@@ -282,7 +282,7 @@ def versa_deploy():
             isp_2_overall.append(isp_switch_2_objects)
             starting_subnet += 2
             switch_index += 1
-            generate_interfaces_file(isp_router_objects, router_ip, isp_switch_1_objects, isp_switch_2_objects,
+            generate_versa_interfaces_file(isp_router_objects, router_ip, isp_switch_1_objects, isp_switch_2_objects,
                                      temp_file_name)
             router_ip += 1
             gns3_upload_file_to_node(gns3_server_data, new_project_id, node_id, "etc/network/interfaces",
@@ -411,7 +411,7 @@ def versa_deploy():
                 #tn.read_until(b"Password:")
                 #tn.write(versa_old_password.encode("ascii") + b"\n")
                 #tn.read_until(b"[Administrator@director: ~] $")
-                tn.close()
+                sys.exit()
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed Director Device Setup Part 1")
     # endregion
     # region Versa Analytics Device Setup

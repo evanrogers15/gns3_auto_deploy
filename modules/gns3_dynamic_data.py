@@ -16,7 +16,6 @@ def generate_temp_hub_data(num_ports, template_name):
 
     return temp_hub_data
 
-
 def generate_network_objects(base_subnet, subnet_mask, vedge_index=1):
     network = ipaddress.IPv4Network(base_subnet)
     subnets_64 = list(network.subnets(new_prefix=subnet_mask))
@@ -45,7 +44,6 @@ def generate_network_objects(base_subnet, subnet_mask, vedge_index=1):
             switch_limit += 1
     return networks
 
-
 def generate_client_interfaces_file(filename_temp, ip=None):
     abs_path = os.path.abspath(__file__)
     configs_path = os.path.join(os.path.dirname(abs_path), 'configs/')
@@ -63,7 +61,6 @@ def generate_client_interfaces_file(filename_temp, ip=None):
             f.write('\tnetmask 255.255.255.0\n\n')
 
     logging.info(f"Deploy - Created file {filename_temp}")
-
 
 def generate_interfaces_file(interface_data_1, router_index, interface_data_2, interface_data_3, filename_temp):
     abs_path = os.path.abspath(__file__)
@@ -110,6 +107,52 @@ def generate_interfaces_file(interface_data_1, router_index, interface_data_2, i
             eth_2 += 1
     logging.info(f"Deploy - Created file {filename_temp}")
 
+def generate_versa_interfaces_file(interface_data_1, router_index, interface_data_2, interface_data_3, filename_temp):
+    abs_path = os.path.abspath(__file__)
+    configs_path = os.path.join(os.path.dirname(abs_path), 'configs/')
+    filename = os.path.join(configs_path, filename_temp)
+    with open(filename, 'w') as f:
+        eth_1 = 0
+        eth_2 = 0
+        f.write(f'#{filename}\n')
+        f.write('auto eth0\n')
+        f.write('iface eth0 inet static\n')
+        f.write(f'\taddress {interface_data_1[router_index]["isp_switch_address"]}\n')
+        f.write(f'\tnetmask {interface_data_1[router_index]["subnet_address"]}\n')
+        f.write(f'\tgateway {interface_data_1[router_index]["router_address"]}\n')
+        f.write('\tup echo nameserver 192.168.122.1 > /etc/resolv.conf\n\n')
+        f.write('auto eth1\n')
+        f.write('iface eth1 inet static\n')
+        if filename_temp == "cloud_isp_switch_0_interfaces":
+            f.write(f'\taddress 172.14.5.1\n')
+            f.write(f'\tnetmask 255.255.255.252\n')
+            f.write('auto eth2\n')
+            f.write('iface eth2 inet static\n')
+            f.write(f'\taddress 172.14.5.5\n')
+            f.write(f'\tnetmask 255.255.255.252\n')
+            f.write('auto eth3\n')
+            f.write('iface eth3 inet static\n')
+            f.write(f'\taddress 172.14.5.9\n')
+            f.write(f'\tnetmask 255.255.255.252\n')
+        for i in range(5, 49):
+            f.write(f'#{interface_data_2[eth_1]["vedge"]} interface ge0/0\n')
+            f.write(f'auto eth{i}\n')
+            f.write(f'iface eth{i} inet static\n')
+            f.write(f'\taddress {interface_data_2[eth_1]["router_address"]}\n')
+            f.write(f'\tnetmask {interface_data_2[eth_1]["subnet_address"]}\n')
+            f.write('\n')
+            eth_1 += 1
+        for i in range(51, 95):
+            f.write(f'#{interface_data_3[eth_2]["vedge"]} interface ge0/1\n')
+            f.write(f'auto eth{i}\n')
+            f.write(f'iface eth{i} inet static\n')
+            f.write(f'\taddress {interface_data_3[eth_2]["router_address"]}\n')
+            f.write(f'\tnetmask {interface_data_3[eth_2]["subnet_address"]}\n')
+            f.write('\n')
+            eth_2 += 1
+    logging.info(f"Deploy - Created file {filename_temp}")
+
+
 def generate_arista_interfaces_file(filename_temp, mgmt_network_address, ip_var):
     abs_path = os.path.abspath(__file__)
     configs_path = os.path.join(os.path.dirname(abs_path), 'configs/')
@@ -124,7 +167,6 @@ def generate_arista_interfaces_file(filename_temp, mgmt_network_address, ip_var)
 
     logging.info(f"Deploy - Created file {filename_temp}")
 
-
 def generate_isp_deploy_data(num_nodes):
     deploy_data = {}
     x = -154
@@ -136,7 +178,6 @@ def generate_isp_deploy_data(num_nodes):
         deploy_data[f"isp_{i:03}_deploy_data"] = {"x": x, "y": y, "name": name}
 
     return deploy_data
-
 
 def generate_vedge_objects(vedge_count, base_subnet):
     subnet_mask = 24
@@ -172,7 +213,6 @@ def generate_vedge_objects(vedge_count, base_subnet):
             k += 1
     # logging.info(networks)
     return networks
-
 
 def generate_vedge_deploy_data(vedge_count):
     deploy_data = {}
