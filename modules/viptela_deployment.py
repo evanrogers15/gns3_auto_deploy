@@ -586,6 +586,7 @@ def viptela_deploy():
                     tn.write(viptela_password.encode("ascii") + b"\n")
                     tn.read_until(b'#')
                 tn.write(b'exit\r\n')
+                tn.read_until(b'exit')
                 tn.close()
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, "Completed vManage Device Setup Part 2")
     # endregion
