@@ -920,7 +920,7 @@ def versa_generate_flexvnf_deploy_data(flexvnf_count):
                 "x": drawing_x, "y": drawing_y, "z": 0}
     return deploy_data, client_deploy_data, site_drawing_deploy_data
 
-def generate_mgmt_switch_deploy_data(num_nodes):
+def generate_mgmt_switch_deploy_data_old(num_nodes):
     deploy_data = {}
     e = 1
     o = 1
@@ -943,6 +943,17 @@ def generate_mgmt_switch_deploy_data(num_nodes):
             else:
                 x = x_o + -100 * o
                 o += 1
+        deploy_data[f"mgmt_switch_{i:03}_deploy_data"] = {"x": x, "y": y, "name": name}
+
+    return deploy_data
+
+def generate_mgmt_switch_deploy_data(num_nodes):
+    deploy_data = {}
+    x = -279
+    y = -313
+    for i in range(1, num_nodes + 1):
+        name = f"MGMT_switch_{i:03}"
+        y = y + 100
         deploy_data[f"mgmt_switch_{i:03}_deploy_data"] = {"x": x, "y": y, "name": name}
 
     return deploy_data
