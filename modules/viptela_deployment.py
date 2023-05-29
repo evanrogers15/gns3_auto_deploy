@@ -258,6 +258,10 @@ def viptela_deploy():
     for i in range(1, vedge_count + 1):
         gns3_create_drawing(gns3_server_data, new_project_id,
                             site_drawing_deploy_data[f"site_drawing_{i:03}_deploy_data"])
+    drawing_index = 1
+    for drawing_data in viptela_drawing_data:
+        gns3_create_drawing(gns3_server_data, new_project_id, viptela_drawing_data[f'drawing_{drawing_index:02}'])
+        drawing_index += 1
     # endregion
     # region Deploy GNS3 Node Config Files
     deployment_step = 'Node Configs'
