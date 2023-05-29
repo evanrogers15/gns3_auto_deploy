@@ -159,7 +159,7 @@ versa_flexvnf_template_data = {"compute_id": "local", "cpus": 2, "adapters": 6,
                                "symbol": ":/symbols/affinity/circle/blue/isdn.svg", "adapter_type": "virtio-net-pci",
                                "qemu_path": "/usr/bin/qemu-system-x86_64",
                                "hda_disk_image": "versa-flexvnf-67ff6c7-21.2.3.qcow2",
-                               "name": versa_flexvnf_template_name, "ram": 3072, "template_type": "qemu",
+                               "name": versa_flexvnf_template_name, "ram": 4096, "template_type": "qemu",
                                "hda_disk_interface": "virtio", "options": "-cpu host"}
 
 
