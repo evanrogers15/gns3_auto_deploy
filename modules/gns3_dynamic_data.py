@@ -950,10 +950,14 @@ def generate_mgmt_switch_deploy_data_old(num_nodes):
 def generate_mgmt_switch_deploy_data(num_nodes):
     deploy_data = {}
     x = -279
-    y = -313
+    y_s = -313
     for i in range(1, num_nodes + 1):
         name = f"MGMT_switch_{i:03}"
+        if i == 1:
+            y = y_s
+        else:
+            y = y + 100
         deploy_data[f"mgmt_switch_{i:03}_deploy_data"] = {"x": x, "y": y, "name": name}
-        y = y + 100
+
 
     return deploy_data
