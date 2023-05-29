@@ -298,10 +298,7 @@ def viptela_deploy():
             node_id = matching_node[0]
             gns3_upload_file_to_node(gns3_server_data, new_project_id, node_id, "startup-config.cfg", temp_file_name)
     # endregion
-    # region Start All GNS3 Nodes
-    deployment_step = 'Starting Nodes'
-    gns3_start_all_nodes(gns3_server_data, new_project_id)
-    # endregion
+
     # region Deploy Site Clients in Lab
     deployment_step = 'Deploy Site Clients'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
@@ -327,6 +324,11 @@ def viptela_deploy():
                                          temp_file_name)
                 gns3_connect_nodes(gns3_server_data, new_project_id, node_id, 3, 0, network_test_node_id, 0, 0)
             v += 1
+    # endregion
+    # region Start All GNS3 Nodes
+    sys.exit()
+    deployment_step = 'Starting Nodes'
+    gns3_start_all_nodes(gns3_server_data, new_project_id)
     # endregion
     # region Viptela vManage Setup Part 1
     deployment_step = 'vManage Setup Part 1'
