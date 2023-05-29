@@ -297,7 +297,7 @@ def generate_vedge_deploy_data(vedge_count):
             site_drawing_deploy_data[f"site_drawing_{i:03}_deploy_data"] = {
                 "svg": "<svg height=\"267\" width=\"169\"><rect fill=\"#aaffff\" fill-opacity=\"1.0\" height=\"267\" stroke=\"#000000\" stroke-width=\"2\" width=\"169\" /></svg>",
                 "x": drawing_x, "y": drawing_y, "z": 0}
-    elif vedge_count <= 50:
+    elif vedge_count <= 25:
         row_count = 10
         y = -107
         y_s = -107
@@ -361,6 +361,71 @@ def generate_vedge_deploy_data(vedge_count):
             site_drawing_deploy_data[f"site_drawing_{i:03}_deploy_data"] = {
                 "svg": "<svg height=\"267\" width=\"169\"><rect fill=\"#aaffff\" fill-opacity=\"1.0\" height=\"267\" stroke=\"#000000\" stroke-width=\"2\" width=\"169\" /></svg>",
                 "x": drawing_x, "y": drawing_y, "z": 0}
+    elif vedge_count <= 50:
+        row_count = 10
+        #y = -107
+        #y_s = -107
+        for i in range(1, vedge_count + 1):
+            temp_name = f"vEdge_{i:03}"
+            name = f"vEdge_{i:03}_{city_data[temp_name]['city']}"
+            client_name = f"Site_{i:03}_Client"
+            if i == 1:
+                x = x_o
+                client_x = x
+                client_y = y + client_y_modifier
+                drawing_x = x - 55
+                drawing_y = y - 55
+            elif i == 2:
+                x = x_e
+                client_x = x
+                client_y = y + client_y_modifier
+                drawing_x = x - 55
+                drawing_y = y - 55
+            elif i <= row_count:
+                if i % 2 == 0:
+                    x = x_e + 200 * e
+                    e += 1
+                    client_x = x
+                    client_y = y + client_y_modifier
+                    drawing_x = x - 55
+                    drawing_y = y - 55
+                else:
+                    x = x_o + -200 * (o)
+                    o += 1
+                    client_x = x
+                    client_y = y + client_y_modifier
+                    drawing_x = x - 55
+                    drawing_y = y - 55
+            else:
+                if (i - 1) % row_count == 0:
+                    e = 1
+                    o = 1
+                    y_modifier += 1
+                    x_o = -557
+                    x_e = 267
+                if i % 2 == 0:
+                    x = x_e + 200 * (e - 1)
+                    e += 1
+                    y = y_s + 300 * y_modifier
+                    client_x = x
+                    client_y = y + client_y_modifier
+                    drawing_x = x - 55
+                    drawing_y = y - 55
+                else:
+                    x = x_o - 200 * (o - 1)
+                    y = y_s + 300 * y_modifier
+                    o += 1
+                    client_x = x
+                    client_y = y + client_y_modifier
+                    drawing_x = x - 55
+                    drawing_y = y - 55
+            deploy_data[f"vedge_{i:03}_deploy_data"] = {"x": x, "y": y, "name": name}
+            client_deploy_data[f"network_test_client_{i:03}_deploy_data"] = {"x": client_x, "y": client_y,
+                                                                             "name": client_name}
+            site_drawing_deploy_data[f"site_drawing_{i:03}_deploy_data"] = {
+                "svg": "<svg height=\"267\" width=\"169\"><rect fill=\"#aaffff\" fill-opacity=\"1.0\" height=\"267\" stroke=\"#000000\" stroke-width=\"2\" width=\"169\" /></svg>",
+                "x": drawing_x, "y": drawing_y, "z": 0}
+
     else:
         for i in range(1, vedge_count + 1):
             temp_name = f"vEdge_{i:03}"
