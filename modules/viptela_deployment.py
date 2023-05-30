@@ -985,7 +985,7 @@ def viptela_deploy():
     time.sleep(wait_time * 60)
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     for server_ip in server_ips:
-        temp_node_name = f'101_Client'
+        temp_node_name = f'001_Client'
         vedge_nodes = f'vEdge_'
         matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
         client_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, vedge_nodes)

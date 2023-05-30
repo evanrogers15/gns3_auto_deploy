@@ -5,3 +5,9 @@ apk add iproute2
 for interface in $(ls /sys/class/net | grep eth); do tc qdisc add dev $interface root netem delay 30ms; done
 # To remove all rules from all interfaces on the switch
 for interface in $(ls /sys/class/net | grep eth); do tc qdisc del dev $interface root; done
+
+
+# use ovs as nat device
+apk update
+apk add iproute2
+iptables -t nat -A POSTROUTING -s 172.16.0.0/16 -o eth0 -j MASQUERADE
