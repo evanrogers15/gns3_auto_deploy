@@ -1,9 +1,53 @@
 ./vnms-startup.sh
 
-# might not be needed... sudo -u versa /opt/versa/vnms/scripts/vnms-csrgen.sh --domain versa.forwardinc.biz --country US --state CA /
---locality SanJose --organization versa-sdwan --organizationalunit demo --email demo@demo.com /
---keypass PW4netops --san versa.forwardinc.biz
+#analytics
+auto eth0
+iface eth0 inet static
+address 172.14.2.6
+netmask 255.255.255.0
+gateway 172.14.2.1
+up echo nameserver 192.168.122.1 > /etc/resolv.conf
+auto eth1
+iface eth1 inet static
+address 172.14.4.6
+netmask 255.255.255.0
 
+#controller
+auto eth0
+iface eth0 inet static
+address 172.14.2.10
+netmask 255.255.255.0
+gateway 172.14.2.1
+up echo nameserver 192.168.122.1 > /etc/resolv.conf
+
+#newyork
+auto eth0
+iface eth0 inet static
+address 172.14.2.101
+netmask 255.255.255.0
+gateway 172.14.2.1
+
+curl -k -X POST \
+  -H "Content-Type: application/json" \
+  -u 'Administrator:versa123' \
+  -d '{
+    "analytics-cluster": {
+        "name": "Analytics",
+        "connector-config": {
+            "port": "8443",
+            "ip-address": [
+                "172.14.2.6"
+            ]
+        },
+        "log-collector-config": {
+            "port": "1234",
+            "ip-address": [
+                "172.14.4.6"
+            ]
+        }
+    }
+}' \
+  https://172.14.2.2:9182/api/config/nms/provider
 
 
 vi /opt/versa/vnms/scripts/van-cluster-config/van_cluster_install/clustersetup.conf
@@ -11,3 +55,9 @@ vi /opt/versa/vnms/scripts/van-cluster-config/van_cluster_install/clustersetup.c
 sudo /opt/versa/vnms/scripts/van-cluster-config/van_cluster_install/van_cluster_installer.py
 
 sudo /opt/versa/vnms/scripts/van-cluster-config/van_cluster_install/van_cluster_installer.py --post-setup --gen-vd-cert
+
+sudo /opt/versa/scripts/staging.py -w 0 -n SN101 -c 172.14.5.2 -s 172.14.6.2/30 -g 172.14.6.1 -l SDWAN-Branch@Versa-Demo.com -r Versa-Controller-01-staging@Versa-Demo.com
+sudo /opt/versa/scripts/staging.py -w 0 -n SN102 -c 172.14.5.2 -s 172.14.6.6/30 -g 172.14.6.5 -l SDWAN-Branch@Versa-Demo.com -r Versa-Controller-01-staging@Versa-Demo.com
+sudo /opt/versa/scripts/staging.py -w 0 -n SN103 -c 172.14.5.2 -s 172.14.6.10/30 -g 172.14.6.9 -l SDWAN-Branch@Versa-Demo.com -r Versa-Controller-01-staging@Versa-Demo.com
+sudo /opt/versa/scripts/staging.py -w 0 -n SN104 -c 172.14.5.2 -s 172.14.6.14/30 -g 172.14.6.13 -l SDWAN-Branch@Versa-Demo.com -r Versa-Controller-01-staging@Versa-Demo.com
+sudo /opt/versa/scripts/staging.py -w 0 -n SN105 -c 172.14.5.2 -s 172.14.6.18/30 -g 172.14.6.17 -l SDWAN-Branch@Versa-Demo.com -r Versa-Controller-01-staging@Versa-Demo.com

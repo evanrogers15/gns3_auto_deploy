@@ -1,18 +1,5 @@
 auto eth0
 iface eth0 inet static
-address 172.14.2.10
-netmask 255.255.255.0
-gateway 172.14.2.1
-up echo nameserver 192.168.122.1 > /etc/resolv.conf
-auto eth1
-iface eth1 inet static
-address 172.14.2.10
-netmask 255.255.255.0
-
-
-
-auto eth0
-iface eth0 inet static
 address 172.14.2.6
 netmask 255.255.255.0
 gateway 172.14.2.1
@@ -21,10 +8,3 @@ auto eth1
 iface eth1 inet static
 address 172.14.4.6
 netmask 255.255.255.0
-
-
-auto eth0
-iface eth0 inet static
-address 172.14.2.101
-netmask 255.255.255.0
-gateway 172.14.2.1
