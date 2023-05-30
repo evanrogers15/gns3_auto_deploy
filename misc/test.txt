@@ -10,4 +10,4 @@ vi /opt/versa/vnms/scripts/van-cluster-config/van_cluster_install/clustersetup.c
 
 sudo /opt/versa/vnms/scripts/van-cluster-config/van_cluster_install/van_cluster_installer.py
 
-sudo ./opt/versa/vnms/scripts/van-cluster-config/van_cluster_install/van_cluster_installer.py --post-setup --gen-vd-cert
+sudo /opt/versa/vnms/scripts/van-cluster-config/van_cluster_install/van_cluster_installer.py --post-setup --gen-vd-cert

@@ -173,9 +173,10 @@ main_mgmt_switch_deploy_data = {"x": 60, "y": -313, "name": "Main_MGMT-switch"}
 nat_node_deploy_data = {"x": -154, "y": -554, "name": "Internet", "node_type": "nat", "compute_id": "local",
                         "symbol": ":/symbols/cloud.svg"}
 
-versa_director_deploy_data = {"x": -107, "y": 570, "name": "Versa_Director"}
-versa_analytics_deploy_data = {"x": -182, "y": 495, "name": "Versa_Analytics"}
-versa_controller_deploy_data = {"x": -32, "y": 495, "name": "Versa_Controller"}
+versa_director_deploy_data = {"x": 5, "y": 495, "name": "Versa_Director"}
+versa_analytics_deploy_data = {"x": -190, "y": 495, "name": "Versa_Analytics"}
+versa_controller_deploy_data = {"x": -100, "y": 317, "name": "Versa_Controller"}
+versa_control_switch_deploy_data = {"x": -103, "y": 422, "name": "Control_Network"}
 
 big_block_deploy_data = {
     "svg": "<svg height=\"1500\" width=\"3681\"><rect fill=\"#ffffff\" fill-opacity=\"1.0\" height=\"1500\" stroke=\"#000000\" stroke-width=\"2\" width=\"3681\" /></svg>",

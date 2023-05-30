@@ -145,7 +145,7 @@ def arista_deploy():
         arista_nodes = f'arista-'
         client_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, arista_nodes)
         abs_path = os.path.abspath(__file__)
-        configs_path = os.path.join(os.path.dirname(abs_path), 'configs/arista')
+        configs_path = os.path.join(os.path.dirname(abs_path), 'configs/arista/lab')
         if client_nodes:
             for client_node in client_nodes:
                 client_node_id, client_console_port, client_aux = client_node
