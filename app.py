@@ -8,6 +8,7 @@ from werkzeug.utils import secure_filename
 from modules.arista_evpn_deploy import *
 from modules.gns3_query import *
 from modules.viptela_deployment import *
+from modules.viptela_large_scale_deployment import *
 from modules.oa_viptela_deployment import *
 from modules.gns3_actions_old import *
 from modules.gns3_variables import *
@@ -33,6 +34,10 @@ def oa_versa_deploy_render():
 @app.route('/demo')
 def demo_sdwan_deploy_render():
     return render_template('demo_create_sdwan.html')
+
+@app.route('/scale')
+def scale_sdwan_deploy_render():
+    return render_template('scale_create_sdwan.html')
 
 @app.route('/arista')
 def arista_deploy_render():
@@ -203,6 +208,19 @@ def oa_viptela_deploy_full():
 
     # Start a new thread for deployment
     running_thread = threading.Thread(target=oa_viptela_deploy, args=())
+    running_thread.start()
+
+    return make_response(jsonify({'message': 'Deployment Started Successfully'}), 200)
+
+@app.route('/api/tasks/start_scale_viptela_deploy', methods=['PUT'])
+def scale_viptela_deploy_full():
+    global running_thread
+    # Check if a thread is already running
+    if running_thread is not None and running_thread.is_alive():
+        return make_response(jsonify({'message': 'Deployment is already in progress'}), 400)
+
+    # Start a new thread for deployment
+    running_thread = threading.Thread(target=scale_viptela_deploy, args=())
     running_thread.start()
 
     return make_response(jsonify({'message': 'Deployment Started Successfully'}), 200)
