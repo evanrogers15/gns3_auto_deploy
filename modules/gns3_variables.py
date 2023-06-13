@@ -174,7 +174,7 @@ vbond_deploy_data = {"x": -32, "y": 495, "name": "vBond"}
 isp_router_deploy_data = {"x": -108, "y": -247, "name": "ISP-Router"}
 cloud_node_deploy_data = {"x": -154, "y": -247, "name": "MGMT-Cloud-TAP", "node_type": "cloud",
                           "compute_id": "local", "symbol": ":/symbols/cloud.svg"}
-openvswitch_isp_deploy_data = {"x": -154, "y": -51, "name": "Cloud_ISP_", "node_type": "cloud", "compute_id": "local", "symbol": ":/symbols/cloud.svg", "start_command": "./bin/boot.sh"}
+openvswitch_isp_deploy_data = {"x": -154, "y": -51, "name": "Cloud_ISP_01", "symbol": ":/symbols/cloud.svg", "start_command": "./bin/boot.sh"}
 main_mgmt_switch_deploy_data = {"x": 60, "y": -313, "name": "Main_MGMT-switch"}
 nat_node_deploy_data = {"x": -154, "y": -554, "name": "Internet", "node_type": "nat", "compute_id": "local",
                         "symbol": ":/symbols/cloud.svg"}
