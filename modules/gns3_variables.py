@@ -111,7 +111,7 @@ openvswitch_cloud_template_data = {"compute_id": "local", "adapters": switchport
 openvswitch_isp_template_data = {"compute_id": "local", "adapters": switchport_count, "category": "switch",
                                    "image": "evanrogers719/ovs-snmp-nat:latest", "name": open_vswitch_isp_template_name,
                                    "symbol": ":/symbols/cloud.svg", "template_type": "docker",
-                                   "usage": "By default all interfaces are connected to the br0"}
+                                   "usage": "By default all interfaces are connected to the br0", "start_command": "./bin/boot.sh"}
 network_test_tool_template_data = {"compute_id": "local", "adapters": 2, "category": "guest",
                                    "image": "evanrogers719/network_test_tool:latest",
                                    "name": network_test_tool_template_name, "symbol": ":/symbols/docker_guest.svg",
@@ -174,7 +174,7 @@ vbond_deploy_data = {"x": -32, "y": 495, "name": "vBond"}
 isp_router_deploy_data = {"x": -108, "y": -247, "name": "ISP-Router"}
 cloud_node_deploy_data = {"x": -154, "y": -247, "name": "MGMT-Cloud-TAP", "node_type": "cloud",
                           "compute_id": "local", "symbol": ":/symbols/cloud.svg"}
-openvswitch_isp_deploy_data = {"x": -154, "y": -51, "name": "Cloud_ISP_01", "symbol": ":/symbols/cloud.svg", "start_command": "./bin/boot.sh"}
+openvswitch_isp_deploy_data = {"x": -154, "y": -51, "name": "Cloud_ISP_01", "symbol": ":/symbols/cloud.svg"}
 main_mgmt_switch_deploy_data = {"x": 60, "y": -313, "name": "Main_MGMT-switch"}
 nat_node_deploy_data = {"x": -154, "y": -554, "name": "Internet", "node_type": "nat", "compute_id": "local",
                         "symbol": ":/symbols/cloud.svg"}
