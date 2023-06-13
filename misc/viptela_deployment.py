@@ -17,7 +17,8 @@ from modules.gns3_variables import *
 from modules.gns3_dynamic_data import *
 from modules.gns3_query import *
 
-def scale_viptela_deploy():
+
+def viptela_deploy():
     # region Variables
     vmanage_headers = {}
     lan_subnet_address = ''
@@ -44,6 +45,7 @@ def scale_viptela_deploy():
     cloud_node_deploy_data = {"x": 25, "y": -554, "name": "MGMT-Cloud-TAP", "node_type": "cloud",
                               "compute_id": "local", "symbol": ":/symbols/cloud.svg"}
     required_qemu_images = {"viptela-vmanage-li-20.10.1-genericx86-64.qcow2", "empty30G.qcow2", "viptela-smart-li-20.10.1-genericx86-64.qcow2", "viptela-edge-20.10.1-genericx86-64.qcow2"}
+    required_iou_images = {"L3-ADVENTERPRISEK9-M-15.5-2T.bin"}
     required_image_response = 201
     # endregion
     conn = sqlite3.connect(db_path)
@@ -92,6 +94,12 @@ def scale_viptela_deploy():
             log_and_update_db(server_name, project_name, deployment_type, 'Failed', 'Image Validation',
                               f"{image} image not on GNS3 Server")
             return 404
+    for image in required_iou_images:
+        response_code = gns3_query_get_image(server_ip, server_port, 'iou', image)
+        if response_code != 201:
+            log_and_update_db(server_name, project_name, deployment_type, 'Failed', 'Image Validation',
+                              f"{image} image not on GNS3 Server")
+            return 404
     gns3_actions_remove_templates(gns3_server_data)
     gns3_set_project(gns3_server_data, new_project_id)
     # endregion
@@ -102,8 +110,9 @@ def scale_viptela_deploy():
     vbond_template_id = gns3_create_template(gns3_server_data, viptela_vbond_template_data)
     vsmart_template_id = gns3_create_template(gns3_server_data, viptela_vsmart_template_data)
     vedge_template_id = gns3_create_template(gns3_server_data, viptela_vedge_template_data)
+    cisco_iou_template_id = gns3_create_template(gns3_server_data, cisco_l3_router_template_data)
     network_test_tool_template_id = gns3_create_template(gns3_server_data, network_test_tool_template_data)
-    openvswitch_isp_template_id = gns3_create_template(gns3_server_data, openvswitch_isp_template_data)
+    openvswitch_template_id = gns3_create_template(gns3_server_data, openvswitch_cloud_template_data)
     temp_hub_data = generate_temp_hub_data(mgmt_main_switchport_count, mgmt_main_hub_template_name)
     regular_ethernet_hub_template_id = gns3_create_template(gns3_server_data, temp_hub_data)
     temp_hub_data = generate_temp_hub_data(mgmt_switchport_count, mgmt_hub_template_name)
@@ -113,20 +122,32 @@ def scale_viptela_deploy():
     # endregion
     #  region Setup Dynamic Networking
     vedge_deploy_data, client_deploy_data, site_drawing_deploy_data = generate_vedge_deploy_data(vedge_count)
+    isp_deploy_data = generate_isp_deploy_data(isp_switch_count)
     mgmt_switch_deploy_data = generate_mgmt_switch_deploy_data(mgmt_switch_count)
     # endregion
     # region Deploy GNS3 Nodes
     deployment_step = 'Deploy GNS3 Nodes'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting Node Deployment")
+    
     vmanage_node_id = gns3_create_node(gns3_server_data, new_project_id, vmanage_template_id, vmanage_deploy_data)
     vsmart_node_id = gns3_create_node(gns3_server_data, new_project_id, vsmart_template_id, vsmart_deploy_data)
     vbond_node_id = gns3_create_node(gns3_server_data, new_project_id, vbond_template_id, vbond_deploy_data)
-    isp_ovs_node_id = gns3_create_node(gns3_server_data, new_project_id, openvswitch_isp_template_id, openvswitch_isp_deploy_data)
+    isp_router_node_id = gns3_create_node(gns3_server_data, new_project_id, cisco_iou_template_id,
+                                          isp_router_deploy_data)
     mgmt_main_switch_node_id = gns3_create_node(gns3_server_data, new_project_id, regular_ethernet_hub_template_id,
                                                 main_mgmt_switch_deploy_data)
     nat_node_id = gns3_create_cloud_node(gns3_server_data, new_project_id, nat_node_deploy_data)
     cloud_node_id = gns3_create_cloud_node(gns3_server_data, new_project_id, cloud_node_deploy_data)
-
+    for i in range(1, isp_switch_count + 1):
+        node_name = f"ISP_{i:03}"
+        matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, node_name)
+        if not matching_nodes:
+            node_id, node_name = gns3_create_node_multi_return(gns3_server_data, new_project_id,
+                                                               openvswitch_template_id,
+                                                               isp_deploy_data[f"isp_{i:03}_deploy_data"])
+            isp_switch_nodes.append({'node_name': node_name, 'node_id': node_id})
+        else:
+            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Node {node_name} already exists in project {project_name}")
     for i in range(1, mgmt_switch_count + 1):
         node_name = f"MGMT_switch_{i:03}"
         matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, node_name)
@@ -149,9 +170,17 @@ def scale_viptela_deploy():
     gns3_update_nodes(gns3_server_data, new_project_id, vmanage_node_id, vmanage_deploy_data)
     gns3_update_nodes(gns3_server_data, new_project_id, vsmart_node_id, vsmart_deploy_data)
     gns3_update_nodes(gns3_server_data, new_project_id, vbond_node_id, vbond_deploy_data)
-    gns3_update_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, openvswitch_isp_deploy_data)
+    gns3_update_nodes(gns3_server_data, new_project_id, isp_router_node_id, isp_router_deploy_data)
     gns3_update_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, main_mgmt_switch_deploy_data)
     gns3_update_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, deploy_data_z)
+
+    for i in range(1, isp_switch_count + 1):
+        matching_node = isp_switch_nodes[i - 1]
+        if matching_node:
+            node_id = matching_node['node_id']
+            gns3_update_nodes(gns3_server_data, new_project_id, node_id, isp_deploy_data[f"isp_{i:03}_deploy_data"])
+        else:
+            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"No nodes found in project {project_name} for isp_switch_{i}")
 
     for i in range(1, mgmt_switch_count + 1):
         matching_node = mgmt_switch_nodes[i - 1]
@@ -179,10 +208,11 @@ def scale_viptela_deploy():
     for port in matching_nodes[0]:
         if port["short_name"] == tap_name:
             mgmt_tap_interface = port['port_number']
-    gns3_connect_nodes(gns3_server_data, new_project_id, nat_node_id, 0, 0, isp_ovs_node_id, 0, 0)
-    gns3_connect_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, 1, 0, vmanage_node_id, 1, 0)
-    gns3_connect_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, 2, 0, vsmart_node_id, 1, 0)
-    gns3_connect_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, 3, 0, vbond_node_id, 1, 0)
+    cloud_isp_node_id = isp_switch_nodes[0]['node_id']
+    gns3_connect_nodes(gns3_server_data, new_project_id, nat_node_id, 0, 0, isp_router_node_id, 0, 0)
+    gns3_connect_nodes(gns3_server_data, new_project_id, cloud_isp_node_id, 1, 0, vmanage_node_id, 1, 0)
+    gns3_connect_nodes(gns3_server_data, new_project_id, cloud_isp_node_id, 2, 0, vsmart_node_id, 1, 0)
+    gns3_connect_nodes(gns3_server_data, new_project_id, cloud_isp_node_id, 3, 0, vbond_node_id, 1, 0)
     if use_tap == 1:
         gns3_connect_nodes(gns3_server_data, new_project_id, cloud_node_id, 0, mgmt_tap_interface,
                            mgmt_main_switch_node_id, 0, 0)
@@ -194,6 +224,9 @@ def scale_viptela_deploy():
     switch_adapter_b = (switchport_count // 2) + 4
     cloud_isp_node_index = 0
     mgmt_switch_node_index = 0
+    for i in range(isp_switch_count):
+        cloud_isp_node_id = isp_switch_nodes[i]['node_id']
+        gns3_connect_nodes(gns3_server_data, new_project_id, cloud_isp_node_id, 0, 0, isp_router_node_id, 0, i + 1)
     for i in range(mgmt_switch_count):
         first_vedge_index = i * 30
         last_vedge_index = min((i + 1) * 30, vedge_count)
@@ -205,9 +238,10 @@ def scale_viptela_deploy():
             vedge_node_id = vedge_info[j]['node_id']
             gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_switch_node_id, 0, mgmt_switch_interface,
                                vedge_node_id, 0, 0)
-            gns3_connect_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, switch_adapter_a, 0, vedge_node_id,
+            cloud_isp_node_id = isp_switch_nodes[cloud_isp_node_index]['node_id']
+            gns3_connect_nodes(gns3_server_data, new_project_id, cloud_isp_node_id, switch_adapter_a, 0, vedge_node_id,
                                1, 0)
-            gns3_connect_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, switch_adapter_b, 0, vedge_node_id,
+            gns3_connect_nodes(gns3_server_data, new_project_id, cloud_isp_node_id, switch_adapter_b, 0, vedge_node_id,
                                2, 0)
             switch_adapter_a += 1
             switch_adapter_b += 1
@@ -244,25 +278,25 @@ def scale_viptela_deploy():
             vedge_isp_1_base_subnet = f'172.16.{starting_subnet}.0/24'
             vedge_isp_2_base_subnet = f'172.16.{starting_subnet + 1}.0/24'
             temp_file_name = f'cloud_isp_switch_{switch_index}_interfaces'
-            # isp_router_objects = generate_network_objects(isp_router_base_subnet, 30)
+            isp_router_objects = generate_network_objects(isp_router_base_subnet, 30)
             isp_switch_1_objects = generate_network_objects(vedge_isp_1_base_subnet, 30, vedge_index)
             isp_switch_2_objects = generate_network_objects(vedge_isp_2_base_subnet, 30, vedge_index)
             isp_1_overall.append(isp_switch_1_objects)
             isp_2_overall.append(isp_switch_2_objects)
             starting_subnet += 2
             switch_index += 1
-            generate_interfaces_file_new(isp_switch_1_objects, isp_switch_2_objects,
+            generate_interfaces_file(isp_router_objects, router_ip, isp_switch_1_objects, isp_switch_2_objects,
                                      temp_file_name)
             router_ip += 1
             gns3_upload_file_to_node(gns3_server_data, new_project_id, node_id, "etc/network/interfaces",
                                      temp_file_name)
             vedge_index += 44
-    # matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "ISP-Router")
-    # if matching_nodes:
-    #    for matching_node in matching_nodes:
-    #        temp_file_name = "ISP-Router"
-    #        node_id = matching_node[0]
-    #        gns3_upload_file_to_node(gns3_server_data, new_project_id, node_id, "startup-config.cfg", temp_file_name)
+    matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "ISP-Router")
+    if matching_nodes:
+        for matching_node in matching_nodes:
+            temp_file_name = "ISP-Router"
+            node_id = matching_node[0]
+            gns3_upload_file_to_node(gns3_server_data, new_project_id, node_id, "startup-config.cfg", temp_file_name)
     # endregion
     # region Start All GNS3 Nodes
     deployment_step = 'Starting Nodes'
