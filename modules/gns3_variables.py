@@ -56,6 +56,7 @@ vbond_template_name = 'vBond'
 vsmart_template_name = 'vSmart'
 vedge_template_name = 'vEdge'
 open_vswitch_cloud_template_name = 'Open_vSwitch_Cloud'
+open_vswitch_isp_template_name = 'Open_vSwitch_ISP'
 network_test_tool_template_name = 'Network_Test_Tool'
 cisco_l3_router_template_name = 'Cisco IOU L3 155-2T'
 mgmt_hub_template_name = 'MGMT_Hub'
@@ -108,7 +109,7 @@ openvswitch_cloud_template_data = {"compute_id": "local", "adapters": switchport
                                    "symbol": ":/symbols/cloud.svg", "template_type": "docker",
                                    "usage": "By default all interfaces are connected to the br0"}
 openvswitch_isp_template_data = {"compute_id": "local", "adapters": switchport_count, "category": "switch",
-                                   "image": "gns3/ovs-snmp:latest", "name": open_vswitch_cloud_template_name,
+                                   "image": "evanrogers719/ovs-snmp-nat:latest", "name": open_vswitch_isp_template_name,
                                    "symbol": ":/symbols/cloud.svg", "template_type": "docker",
                                    "usage": "By default all interfaces are connected to the br0"}
 network_test_tool_template_data = {"compute_id": "local", "adapters": 2, "category": "guest",

@@ -110,9 +110,9 @@ def scale_viptela_deploy():
     vbond_template_id = gns3_create_template(gns3_server_data, viptela_vbond_template_data)
     vsmart_template_id = gns3_create_template(gns3_server_data, viptela_vsmart_template_data)
     vedge_template_id = gns3_create_template(gns3_server_data, viptela_vedge_template_data)
-    cisco_iou_template_id = gns3_create_template(gns3_server_data, cisco_l3_router_template_data)
+    # cisco_iou_template_id = gns3_create_template(gns3_server_data, cisco_l3_router_template_data)
     network_test_tool_template_id = gns3_create_template(gns3_server_data, network_test_tool_template_data)
-    openvswitch_template_id = gns3_create_template(gns3_server_data, openvswitch_cloud_template_data)
+    # openvswitch_template_id = gns3_create_template(gns3_server_data, openvswitch_cloud_template_data)
     openvswitch_isp_template_id = gns3_create_template(gns3_server_data, openvswitch_isp_template_data)
     temp_hub_data = generate_temp_hub_data(mgmt_main_switchport_count, mgmt_main_hub_template_name)
     regular_ethernet_hub_template_id = gns3_create_template(gns3_server_data, temp_hub_data)
@@ -123,7 +123,7 @@ def scale_viptela_deploy():
     # endregion
     #  region Setup Dynamic Networking
     vedge_deploy_data, client_deploy_data, site_drawing_deploy_data = generate_vedge_deploy_data(vedge_count)
-    isp_deploy_data = generate_isp_deploy_data(isp_switch_count)
+    # isp_deploy_data = generate_isp_deploy_data(isp_switch_count)
     mgmt_switch_deploy_data = generate_mgmt_switch_deploy_data(mgmt_switch_count)
     # endregion
     # region Deploy GNS3 Nodes
