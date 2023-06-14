@@ -354,10 +354,6 @@ def versa_deploy():
                 tn.write(b'172.14.4.2\n')
                 tn.read_until(b"Enter Netmask Address:")
                 tn.write(b'255.255.255.0\n')
-                #tn.read_until(b"Configure Gateway Address? (y/n)?")
-                tn.write(b'n\n')
-                #tn.read_until(b"Enter Gateway Address:")
-                #tn.write(b'172.16.4.1\n')
                 tn.read_until(b"Configure another interface? (y/n)?")
                 tn.write(b'n\n')
                 tn.read_until(b"Configure North-Bound interface (If not configured, default 0.0.0.0 will be accepted) (y/n)?")
@@ -376,24 +372,24 @@ def versa_deploy():
                 tn.write(b'n\n')
                 tn.read_until(b"Edit list of hosts allowed to access Versa GUI? (y/n)?")
                 tn.write(b'n\n')
-                #tn.read_until(b"Press ENTER to continue")
-                #tn.write(b"\r\n")
-                #tn.read_until(b"director login:")
-                #tn.write(versa_director_username.encode("ascii") + b"\n")
-                #tn.read_until(b"Password:")
-                #tn.write(versa_old_password.encode("ascii") + b"\n")
-                #tn.read_until(b"[Administrator@director: ~] $")
-                sys.exit()
+                tn.read_until(b"Restarting Versa Director")
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed Director Device Setup Part 1")
     # endregion
     # region Versa Analytics Device Setup
     deployment_step = 'Versa Analytics Setup'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting Versa Analytics Device Setup")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
-    remote_file_name = '/etc/network/interfaces'
-    abs_path = os.path.abspath(__file__)
-    configs_path = os.path.join(os.path.dirname(abs_path), 'configs/versa')
-    local_file_name = os.path.join(configs_path, 'versa_interface_template')
+    versa_interfaces = """auto eth0
+    iface eth0 inet static
+    address 172.14.2.6
+    netmask 255.255.255.0
+    gateway 172.14.2.1
+    up echo nameserver 192.168.122.1 > /etc/resolv.conf
+    auto eth1
+    iface eth1 inet static
+    address 172.14.4.6
+    netmask 255.255.255.0
+    """
     for server_ip in server_ips:
         temp_node_name = f'Analytics'
         matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
@@ -421,21 +417,10 @@ def versa_deploy():
                 tn.read_until(b"[sudo] password for admin:")
                 tn.write(versa_old_password.encode("ascii") + b"\n")
                 tn.read_until(b"[root@versa-analytics: admin]#")
-                with open(local_file_name, 'r') as local_file:
-                    lines = local_file.readlines()
-                formatted_lines = []
-                for line in lines:
-                    formatted_line = line.format(
-                        eth0_ip_address='172.14.2.6',
-                        eth0_netmask='255.255.255.0',
-                        eth0_gateway='172.14.2.1',
-                        eth1_ip_address='172.14.4.6',
-                        eth1_netmask='255.255.255.0',
-                    )
-                    formatted_lines.append(formatted_line.strip())
-                command = f"echo $'{chr(92)}n'.join([{', '.join(map(repr, formatted_lines))}]) > {remote_file_name}\n"
-                tn.write(command.encode('ascii'))
+                command = f"echo \"{versa_interfaces}\" > /etc/network/interfaces\n"
+                tn.write(command.encode('utf-8'))
                 tn.read_until(b"[root@versa-analytics: admin]#")
+                tn.write(b"ifdown eth0 && ifup eth0 && ifup eth1\n")
                 tn.write(b"exit\n")
                 tn.close()
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed Versa AnalyticsDevice Setup")
@@ -444,10 +429,14 @@ def versa_deploy():
     deployment_step = 'Versa Controller Device Setup'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting Versa Controller Device Setup")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
-    remote_file_name = '/etc/network/interfaces'
-    abs_path = os.path.abspath(__file__)
-    configs_path = os.path.join(os.path.dirname(abs_path), 'configs/versa')
-    local_file_name = os.path.join(configs_path, 'versa_interface_template')
+    versa_interfaces = """auto eth0
+        auto eth0
+        iface eth0 inet static
+        address 172.14.2.10
+        netmask 255.255.255.0
+        gateway 172.14.2.1
+        up echo nameserver 192.168.122.1 > /etc/resolv.conf
+        """
     for server_ip in server_ips:
         temp_node_name = f'Controller'
         matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
@@ -477,21 +466,10 @@ def versa_deploy():
                 tn.read_until(b"[sudo] password for admin:")
                 tn.write(versa_old_password.encode("ascii") + b"\n")
                 tn.read_until(b"[root@versa-flexvnf: admin]#")
-                with open(local_file_name, 'r') as local_file:
-                    lines = local_file.readlines()
-                formatted_lines = []
-                for line in lines:
-                    formatted_line = line.format(
-                        eth0_ip_address='172.14.2.10',
-                        eth0_netmask='255.255.255.0',
-                        eth0_gateway='172.14.2.1',
-                        eth1_ip_address='172.14.4.10',
-                        eth1_netmask='255.255.255.0',
-                    )
-                    formatted_lines.append(formatted_line.strip())
-                command = f"echo $'{chr(92)}n'.join([{', '.join(map(repr, formatted_lines))}]) > {remote_file_name}\n"
-                tn.write(command.encode('ascii'))
+                command = f"echo \"{versa_interfaces}\" > /etc/network/interfaces\n"
+                tn.write(command.encode('utf-8'))
                 tn.read_until(b"[root@versa-flexvnf: admin]#")
+                tn.write(b"ifdown eth0 && ifup eth0\n")
                 tn.write(b"exit\n")
                 tn.close()
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed Versa Controller Device Setup")
