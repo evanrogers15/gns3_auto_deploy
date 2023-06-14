@@ -12,7 +12,7 @@ import logging.handlers
 import sqlite3
 import sys
 from modules.gns3_actions import *
-from modules.viptela_actions import *
+from modules.versa_actions import *
 from modules.gns3_variables import *
 from modules.gns3_dynamic_data import *
 from modules.gns3_query import *
@@ -187,8 +187,8 @@ def versa_deploy():
         if port["short_name"] == tap_name:
             mgmt_tap_interface = port['port_number']
     gns3_connect_nodes(gns3_server_data, new_project_id, nat_node_id, 0, 0, isp_ovs_node_id, 0, 0)
-    gns3_connect_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, 1, 0, versa_controller_node_id, 2, 0)
-    gns3_connect_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, 2, 0, versa_controller_node_id, 3, 0)
+    gns3_connect_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, 1, 0, versa_controller_node_id, 3, 0)
+    gns3_connect_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, 2, 0, versa_controller_node_id, 4, 0)
     if use_tap == 1:
         gns3_connect_nodes(gns3_server_data, new_project_id, cloud_node_id, 0, mgmt_tap_interface,
                            mgmt_main_switch_node_id, 0, 0)
@@ -197,7 +197,7 @@ def versa_deploy():
     gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, 3, versa_controller_node_id, 0, 0)
     gns3_connect_nodes(gns3_server_data, new_project_id, versa_control_switch_node_id, 0, 0, versa_director_node_id, 1, 0)
     gns3_connect_nodes(gns3_server_data, new_project_id, versa_control_switch_node_id, 0, 1, versa_analytics_node_id, 1, 0)
-    gns3_connect_nodes(gns3_server_data, new_project_id, versa_control_switch_node_id, 0, 2, versa_controller_node_id, 1, 0)
+    gns3_connect_nodes(gns3_server_data, new_project_id, versa_control_switch_node_id, 0, 2, versa_controller_node_id, 2, 0)
     mgmt_switch_interface = 1
     switch_adapter_a = 5
     switch_adapter_b = (switchport_count // 2) + 4
@@ -476,7 +476,6 @@ def versa_deploy():
                 tn.write(b"exit\n")
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed Versa Controller Device Setup")
     # endregion
-    sys.exit()
     # region Viptela Director Setup Part 2
     deployment_step = 'Director Setup Part 2'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting Director setup part 2")
@@ -485,6 +484,8 @@ def versa_deploy():
     configs_path = os.path.join(os.path.dirname(abs_path), 'configs/versa')
     clustersetup_file = os.path.join(configs_path, 'clustersetup.conf')
     vdevices = [6, 10]
+    director_ip = '172.14.2.2'
+    versa_configure_analytics_cluster(director_ip)
     for server_ip in server_ips:
         temp_node_name = f'Director'
         matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
@@ -507,38 +508,98 @@ def versa_deploy():
                     time.sleep(30)
                 tn.write(b"\r\n")
                 tn.read_until(b"[Administrator@director: ~] $")
-                with open(local_file_name, 'r') as local_file:
-                    lines = local_file.readlines()
-                formatted_lines = []
-                for line in lines:
-                    formatted_line = line.format(
-                        eth0_ip_address='172.14.2.10',
-                        eth0_netmask='255.255.255.0',
-                        eth0_gateway='172.14.2.1',
-                        eth1_ip_address='172.16.4.10',
-                        eth1_netmask='255.255.255.252',
-                        eth1_gateway='172.16.4.9',
-                    )
-                    formatted_lines.append(formatted_line)
-                for line in formatted_lines:
-                    tn.write(f"echo '{line}' >> {remote_file_name}\n".encode('ascii'))
-                    tn.read_until(b"[Administrator@director: ~] $")
-                tn.write(b"\r\n")
-                # exit_var = tn.read_until(b"Analytics#").decode('ascii')
-                # if temp_node_name not in exit_var:
-                #        sys.exit()
-                tn.write(b'vshell\r\n')
-                tn.read_until(b'vManage:~$')
-                tn.write(b'openssl genrsa -out SDWAN.key 2048\r\n')
-                tn.read_until(b'vManage:~$')
-                tn.write(
-                    b'openssl req -x509 -new -nodes -key SDWAN.key -sha256 -days 2000 -subj "/C=US/ST=MS/O=sdwan-lab/CN=sdwan-lab" -out SDWAN.pem\r')
-                tn.read_until(b'vManage:~$')
-                tn.write(b'exit\r\n')
-                tn.read_until(b'#')
-                for vdevice in vdevices:
-                    scp_command = f"request execute vpn 512 scp /home/admin/SDWAN.pem admin@172.16.2.{vdevice}:/home/admin"
-                    tn.write(scp_command.encode('ascii') + b"\r")
+                tn.write(b'sudo su\r\n')
+                tn.read_until(b"[sudo] password for Administrator:")
+                tn.write(versa_old_password.encode("ascii") + b"\n")
+                tn.read_until(b"root@director:/home/Administrator#")
+                with open(clustersetup_file, 'r') as f:
+                    file_contents = f.read()
+                remote_file_path = "/opt/versa/vnms/scripts/van-cluster-config/van_cluster_install/clustersetup.conf"
+                command = f"echo \"{file_contents}\" > {remote_file_path}\n"
+                tn.write(command.encode('utf-8'))
+                tn.read_until(b"root@director:/home/Administrator#")
+                tn.write(b"cd /opt/versa/vnms/scripts/van-cluster-config/van_cluster_install\r\n")
+                tn.read_until(b"root@director:")
+                tn.write(b"./van_cluster_installer.py\r\n")
+                tn.read_until(b"Continue? [y/n]:")
+                tn.write(b'y\n')
+                tn.read_until(b"root@director:")
+                tn.write(b"./van_cluster_installer.py --post-setup --gen-vd-cert\r\n")
+                tn.read_until(b"root@director:")
+    versa_create_provider_org(director_ip)
+    versa_create_overlay_prefix(director_ip)
+    versa_create_overlay_route(director_ip)
+    versa_create_controller_workflow(director_ip)
+    versa_deploy_controller(director_ip)
+    versa_create_device_template(director_ip)
+    versa_deploy_device_template(director_ip)
+    versa_create_device_group(director_ip)
+    versa_create_site_device_workflow_1(director_ip)
+    versa_create_site_device_workflow_2(director_ip)
+    versa_deploy_device_workflow_1(director_ip)
+    versa_deploy_device_workflow_2(director_ip)
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, "Completed vManage Device Setup Part 2")
+    # endregion
+    sys.exit()
+    # region Viptela FlexVNF Final Setup
+    deployment_step = 'FlexVNF Final Setup'
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Starting FlexVNF Certificate setup and deployment into Viptela Environment")
+    server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
+    ve = 101
+    v = 1
+    for server_ip in server_ips:
+        temp_node_name = f'vManage'
+        matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
+        flexvnf_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "FlexVNF")
+        if matching_nodes:
+            for matching_node in matching_nodes:
+                node_id, console_port, aux = matching_node
+                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                  f"Logging in to console for node {temp_node_name}")
+                for flexvnf_node in flexvnf_nodes:
+                    flexvnf_id, flexvnf_console, flexvnf_aux = flexvnf_node
+                    node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id',
+                                                               'name', flexvnf_id)
+                    scp_command = f"request execute vpn 512 scp /home/admin/SDWAN.pem admin@172.16.2.{ve}:/home/admin"
+                    scp_2_command = f"request execute vpn 512 scp /home/admin/flexvnf.crt admin@172.16.2.{ve}:/home/admin"
+                    ssh_command = f"request execute vpn 512 ssh admin@172.16.2.{ve}"
+                    ssh_2_command = f"request execute vpn 512 ssh admin@172.16.2.10"
+                    tn = telnetlib.Telnet(server_ip, console_port)
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                      f"Starting FlexVNF Certificate Setup for {node_name[0]} - FlexVNF {v} of {flexvnf_count}")
+                    while True:
+                        tn.write(b"\r\n")
+                        output = tn.read_until(b"login:", timeout=2).decode('ascii')
+                        if '#' in output:
+                            tn.write(b"\r\n")
+                            tn.read_until(b"#")
+                            tn.write(b'vshell\r\n')
+                            break
+                        elif ':~$' in output:
+                            tn.write(b"\r\n")
+                            break
+                        tn.write(viptela_username.encode("ascii") + b"\n")
+                        tn.read_until(b"Password:", timeout=1)
+                        tn.write(versa_old_password.encode("ascii") + b"\n")
+                        output = tn.read_until(b"#", timeout=1).decode('ascii')
+                        if '#' in output:
+                            tn.write(b"\r\n")
+                            tn.read_until(b"#")
+                            tn.write(b'vshell\r\n')
+                            break
+                        log_and_update_db(server_name, project_name, deployment_type, deployment_status,
+                                          deployment_step,
+                                          f"{temp_node_name} not available yet, trying again in 30 seconds")
+                        time.sleep(30)
+                    tn.write(b"\r\n")
+                    tn.read_until(b'$')
+                    tn.write(b'rm -rf flexvnf*\r\n')
+                    tn.read_until(b'$')
+                    tn.write(b'exit\r\n')
+                    # SCP SDWAN.pem to FlexVNF
+                    tn.read_until(b'#')
+                    tn.write(scp_command.encode('ascii') + b"\n")
                     test_o = tn.read_until(b"?", timeout=2).decode('ascii')
                     if "fingerprint" in test_o:
                         tn.write(b'yes\r\n')
@@ -547,10 +608,97 @@ def versa_deploy():
                     tn.read_until(b"Password:")
                     tn.write(versa_old_password.encode("ascii") + b"\n")
                     tn.read_until(b'#')
-                tn.write(b'exit\r\n')
-                tn.close()
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, "Completed vManage Device Setup Part 2")
+                    # SSH to FlexVNF
+                    tn.write(ssh_command.encode('ascii') + b"\n")
+                    tn.read_until(b"Password:")
+                    tn.write(versa_old_password.encode("ascii") + b"\n")
+                    tn.read_until(b'#')
+                    tn.write(b'request root-cert-chain install /home/admin/SDWAN.pem\n')
+                    tn.read_until(b'#')
+                    tn.write(b'request csr upload home/admin/flexvnf.csr\n')
+                    tn.read_until(b":")
+                    tn.write(b'sdwan-lab\n')
+                    tn.read_until(b":")
+                    tn.write(b'sdwan-lab\n')
+                    tn.read_until(b'#')
+                    # SCP the FlexVNF.csr to the vManage
+                    tn.write(b'request execute vpn 512 scp /home/admin/flexvnf.csr admin@172.16.2.2:/home/admin\r\n')
+                    test_o = tn.read_until(b"?", timeout=2).decode('ascii')
+                    if "fingerprint" in test_o:
+                        tn.write(b'yes\r\n')
+                    else:
+                        tn.write(b"\n")
+                    tn.read_until(b"Password:")
+                    tn.write(versa_old_password.encode("ascii") + b"\n")
+                    tn.read_until(b'#')
+                    # Drop back to the vManage
+                    tn.write(b'exit\r\n')
+                    tn.read_until(b'vManage#')
+                    tn.write(b'vshell\r\n')
+                    tn.read_until(b'$')
+                    tn.write(
+                        b'openssl x509 -req -in flexvnf.csr -CA SDWAN.pem -CAkey SDWAN.key -CAcreateserial -out flexvnf.crt -days 2000 -sha256\n')
+                    tn.read_until(b'$')
+                    tn.write(b'exit\r\n')
+                    tn.read_until(b'#')
+                    # SCP the FlexVNF.crt to the FlexVNF
+                    tn.write(scp_2_command.encode('ascii') + b"\n")
+                    tn.read_until(b"Password:")
+                    tn.write(versa_old_password.encode("ascii") + b"\n")
+                    tn.read_until(b'#')
+                    # SSH to the FlexVNF to install the new cert
+                    tn.write(ssh_command.encode('ascii') + b"\n")
+                    tn.read_until(b"Password:")
+                    tn.write(versa_old_password.encode("ascii") + b"\n")
+                    tn.read_until(b'#')
+                    while True:
+                        tn.write(b'request certificate install /home/admin/flexvnf.crt\r\n')
+                        tn.read_until(b'#')
+                        tn.write(b'show certificate serial\r\n')
+                        cert_output = tn.read_until(b"#").decode("ascii")
+                        chassis_regex = r"Chassis number: (.+?)\s+serial number:"
+                        serial_regex = r"serial number: ([A-F0-9]+)"
+                        chassis_number = re.search(chassis_regex, cert_output).group(1)
+                        serial_number = re.search(serial_regex, cert_output).group(1)
+                        if chassis_number and serial_number:
+                            break
+                        log_and_update_db(server_name, project_name, deployment_type, deployment_status,
+                                          deployment_step,
+                                          f"{node_name[0]} tried to install certificate too quickly, trying again in 10 seconds ")
+                        time.sleep(10)
+                    tn.write(b'exit\r\n')
+                    tn.read_until(b'#')
+                    flexvnf_install_command = f"request flexvnf add chassis-num {chassis_number} serial-num {serial_number}"
+                    tn.write(ssh_2_command.encode('ascii') + b"\n")
+                    tn.read_until(b"Password:")
+                    tn.write(versa_old_password.encode("ascii") + b"\n")
+                    tn.read_until(b'#')
+                    tn.write(flexvnf_install_command.encode('ascii') + b"\n")
+                    tn.read_until(b'#')
+                    tn.write(b'exit\r\n')
+                    tn.read_until(b'#')
+                    tn.write(flexvnf_install_command.encode('ascii') + b"\n")
+                    tn.read_until(b'#')
+                    ve += 1
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                      f"Completed FlexVNF Certificate Setup for {node_name[0]}, Remaining - {flexvnf_count - v}")
+                    tn.close()
+                    v += 1
+    while True:
+        try:
+            auth = Authentication()
+            response = auth.get_jsessionid(gns3_server_data)
+            break
+        except:
+            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                              f'vManage API is yet not available')
+            time.sleep(60)
+    vmanage_headers = vmanage_create_auth(gns3_server_data)
+    vmanage_push_certs(gns3_server_data, vmanage_headers)
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Completed FlexVNF Certificate setup and deployment into Viptela Environment")
     # endregion
+    sys.exit()
     # region Viptela FlexVNF Device Setup
     deployment_step = 'FlexVNF Device Setup'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting FlexVNF Device Setup for {flexvnf_count} FlexVNFs")
@@ -652,122 +800,6 @@ def versa_deploy():
                     if i % 44 == 0 and i != 0:
                         isp_index += 1
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed FlexVNF Device Setup for {flexvnf_count} FlexVNF devices")
-    # endregion
-    # region Viptela vManage API Setup
-    deployment_step = ' vManage API Setup'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vManage API Setup")
-    auth = Authentication()
-    while True:
-        try:
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Checking if vManage API is available..")
-            response = auth.get_jsessionid(gns3_server_data)
-            break
-        except:
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f'vManage API is yet not available, checking again in 1 minute at {util_resume_time(1)}')
-            time.sleep(60)
-    vmanage_headers = vmanage_create_auth(gns3_server_data)
-    server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
-    for server_ip in server_ips:
-        temp_node_name = f'vManage'
-        matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
-        if matching_nodes:
-            for matching_node in matching_nodes:
-                node_id, console_port, aux = matching_node
-                tn = telnetlib.Telnet(server_ip, console_port)
-                while True:
-                    tn.write(b"\r\n")
-                    output = tn.read_until(b"login:", timeout=2).decode('ascii')
-                    if '#' in output:
-                        tn.write(b"\r\n")
-                        tn.read_until(b"#")
-                        tn.write(b'vshell\r\n')
-                        break
-                    elif ':~$' in output:
-                        tn.write(b"\r\n")
-                        break
-                    tn.write(viptela_username.encode("ascii") + b"\n")
-                    tn.read_until(b"Password:", timeout=1)
-                    tn.write(versa_old_password.encode("ascii") + b"\n")
-                    output = tn.read_until(b"#", timeout=1).decode('ascii')
-                    if '#' in output:
-                        tn.write(b"\r\n")
-                        tn.read_until(b"#")
-                        tn.write(b'vshell\r\n')
-                        break
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"{temp_node_name} not available yet, trying again in 30 seconds")
-                    time.sleep(30)
-                tn.write(b"\r\n")
-                tn.read_until(b'$')
-                tn.write(b"cat SDWAN.pem\r")
-                tn.read_until(b"cat SDWAN.pem")
-                vmanage_root_cert = tn.read_until(b"-----END CERTIFICATE-----")
-                vmanage_root_cert = vmanage_root_cert.decode('ascii').split('\r\n', 1)[1]
-                vmanage_root_cert = vmanage_root_cert.replace('\r\n', '\n')
-                vmanage_set_org(gns3_server_data, vmanage_headers)
-                vmanage_set_cert_type(gns3_server_data, vmanage_headers)
-                vmanage_set_cert(gns3_server_data, vmanage_headers, vmanage_root_cert)
-                vmanage_sync_rootcertchain(gns3_server_data, vmanage_headers)
-                vmanage_set_vbond(gns3_server_data, vmanage_headers)
-                vmanage_csr = vmanage_generate_csr(gns3_server_data, vmanage_headers, vmanage_address, 'vmanage')
-                tn.write(b'exit\r\n')
-                tn.read_until(b'#')
-                tn.write(b'vshell\r\n')
-                tn.read_until(b'$')
-                tn.write(b'echo -n "' + vmanage_csr.encode('ascii') + b'\n" > vdevice.csr\r\n')
-                tn.read_until(b'$')
-                tn.write(b"sed '/^$/d' vdevice.csr\n")
-                tn.read_until(b'$')
-                tn.write(
-                    b'openssl x509 -req -in vdevice.csr -CA SDWAN.pem -CAkey SDWAN.key -CAcreateserial -out vdevice.crt -days 2000 -sha256\r\n')
-                tn.read_until(b'$')
-                tn.write(b"cat vdevice.crt\r")
-                tn.read_until(b"cat vdevice.crt\r")
-                vdevice_cert = tn.read_until(b"-----END CERTIFICATE-----")
-                vdevice_cert = vdevice_cert.decode('ascii').split('\r\n', 1)[1]
-                vdevice_cert = vdevice_cert.replace('\r\n', '\n')
-                vmanage_install_cert(gns3_server_data, vmanage_headers, vdevice_cert)
-                vmanage_set_device(gns3_server_data, vmanage_headers, versa_analytics_address, "versa_analytics")
-                vmanage_set_device(gns3_server_data, vmanage_headers, vbond_address, "vbond")
-                vbond_csr = vmanage_generate_csr(gns3_server_data, vmanage_headers, vbond_address, 'vbond')
-                versa_analytics_csr = vmanage_generate_csr(gns3_server_data, vmanage_headers, versa_analytics_address, 'versa_analytics')
-                tn.write(b'exit\r\n')
-                tn.read_until(b'#')
-                tn.write(b'vshell\r\n')
-                tn.read_until(b'$')
-                tn.write(b'echo -n "' + versa_analytics_csr.encode('ascii') + b'\n" > vdevice.csr\r\n')
-                tn.read_until(b'$')
-                tn.write(b"sed '/^$/d' vdevice.csr\n")
-                tn.read_until(b'$')
-                tn.write(
-                    b'openssl x509 -req -in vdevice.csr -CA SDWAN.pem -CAkey SDWAN.key -CAcreateserial -out vdevice.crt -days 2000 -sha256\r\n')
-                tn.read_until(b'$')
-                tn.write(b"cat vdevice.crt\r")
-                tn.read_until(b"cat vdevice.crt\r")
-                vdevice_cert = tn.read_until(b"-----END CERTIFICATE-----")
-                vdevice_cert = vdevice_cert.decode('ascii').split('\r\n', 1)[1]
-                vdevice_cert = vdevice_cert.replace('\r\n', '\n')
-                vmanage_install_cert(gns3_server_data, vmanage_headers, vdevice_cert)
-                tn.write(b'exit\r\n')
-                tn.read_until(b'#')
-                tn.write(b'vshell\r\n')
-                tn.read_until(b'$')
-                tn.write(b'echo -n "' + vbond_csr.encode('ascii') + b'\n" > vdevice.csr\r\n')
-                tn.read_until(b'$')
-                tn.write(b"sed '/^$/d' vdevice.csr\n")
-                tn.read_until(b'$')
-                tn.write(
-                    b'openssl x509 -req -in vdevice.csr -CA SDWAN.pem -CAkey SDWAN.key -CAcreateserial -out vdevice.crt -days 2000 -sha256\r\n')
-                tn.read_until(b'$')
-                tn.write(b"cat vdevice.crt\r")
-                tn.read_until(b"cat vdevice.crt\r")
-                vdevice_cert = tn.read_until(b"-----END CERTIFICATE-----")
-                vdevice_cert = vdevice_cert.decode('ascii').split('\r\n', 1)[1]
-                vdevice_cert = vdevice_cert.replace('\r\n', '\n')
-                vmanage_install_cert(gns3_server_data, vmanage_headers, vdevice_cert)
-                tn.write(b'exit\r\n')
-                tn.read_until(b'#')
-                tn.close()
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vManage API Setup")
     # endregion
     # region Viptela FlexVNF Final Setup
     deployment_step = 'FlexVNF Final Setup'

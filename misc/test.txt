@@ -1,32 +1,13 @@
-./vnms-startup.sh
+change web ui password
 
-#analytics
-auto eth0
-iface eth0 inet static
-address 172.14.2.6
-netmask 255.255.255.0
-gateway 172.14.2.1
-up echo nameserver 192.168.122.1 > /etc/resolv.conf
-auto eth1
-iface eth1 inet static
-address 172.14.4.6
-netmask 255.255.255.0
+create organization
+create wan networks
+create controller template
+create controller
+create site template
+create device
 
-#controller
-auto eth0
-iface eth0 inet static
-address 172.14.2.10
-netmask 255.255.255.0
-gateway 172.14.2.1
-up echo nameserver 192.168.122.1 > /etc/resolv.conf
-
-#newyork
-auto eth0
-iface eth0 inet static
-address 172.14.2.101
-netmask 255.255.255.0
-gateway 172.14.2.1
-
+#create analytics object
 curl -k -X POST \
   -H "Content-Type: application/json" \
   -u 'Administrator:versa123' \
@@ -47,8 +28,7 @@ curl -k -X POST \
         }
     }
 }' \
-  https://172.14.2.2:9182/api/config/nms/provider
-
+  https://{director_ip}:9182/api/config/nms/provider
 
 vi /opt/versa/vnms/scripts/van-cluster-config/van_cluster_install/clustersetup.conf
 
@@ -56,8 +36,63 @@ sudo /opt/versa/vnms/scripts/van-cluster-config/van_cluster_install/van_cluster_
 
 sudo /opt/versa/vnms/scripts/van-cluster-config/van_cluster_install/van_cluster_installer.py --post-setup --gen-vd-cert
 
-sudo /opt/versa/scripts/staging.py -w 0 -n SN101 -c 172.14.5.2 -s 172.14.6.2/30 -g 172.14.6.1 -l SDWAN-Branch@Versa-Demo.com -r Versa-Controller-01-staging@Versa-Demo.com
-sudo /opt/versa/scripts/staging.py -w 0 -n SN102 -c 172.14.5.2 -s 172.14.6.6/30 -g 172.14.6.5 -l SDWAN-Branch@Versa-Demo.com -r Versa-Controller-01-staging@Versa-Demo.com
-sudo /opt/versa/scripts/staging.py -w 0 -n SN103 -c 172.14.5.2 -s 172.14.6.10/30 -g 172.14.6.9 -l SDWAN-Branch@Versa-Demo.com -r Versa-Controller-01-staging@Versa-Demo.com
-sudo /opt/versa/scripts/staging.py -w 0 -n SN104 -c 172.14.5.2 -s 172.14.6.14/30 -g 172.14.6.13 -l SDWAN-Branch@Versa-Demo.com -r Versa-Controller-01-staging@Versa-Demo.com
-sudo /opt/versa/scripts/staging.py -w 0 -n SN105 -c 172.14.5.2 -s 172.14.6.18/30 -g 172.14.6.17 -l SDWAN-Branch@Versa-Demo.com -r Versa-Controller-01-staging@Versa-Demo.com
+#create provider org
+curl -X POST "https://172.14.2.2:9182/nextgen/organization" -H "accept: */*" -H "authorization: Basic QWRtaW5pc3RyYXRvcjp2ZXJzYTEyMw==" -H "Content-Type: application/json" -d "{\"name\": \"Versa-Root\",\"uuid\": \"310f513a-01aa-4e91-9a53-4dae9b324839\",\"subscriptionPlan\": \"Default-All-Services-Plan\",\"id\": 1,\"authType\": \"psk\",\"cpeDeploymentType\": \"SDWAN\",\"vrfsGroups\": [ { \"id\": 1, \"vrfId\": 1, \"name\": \"Versa-Root-LAN-VR\", \"description\": null, \"enable_vpn\": true }],\"analyticsClusters\": [ \"Analytics\"],\"sharedControlPlane\": false,\"dynamicTenantConfig\": { \"inactivityInterval\": 48},\"blockInterRegionRouting\": false}"
+
+#create overlay prefix
+curl -k -X POST \
+  -H "Content-Type: application/json" \
+  -u 'Administrator:versa123' \
+  -d '{"prefix":"10.10.0.0/16","status":{"value":1,"label":"Active"},"is_pool":true}' \
+  https://172.14.2.2:9182/vnms/ipam/overlay/prefixes
+
+#create overlay route
+curl -k -X POST \
+  -H "Content-Type: application/json" \
+  -u 'Administrator:versa123' \
+  -d '{"route":{"description":"Overlay-Route","destination-prefix":"10.10.0.0/16","next-hop-address":"172.14.4.10","outgoing-interface":"eth1"}}' \
+  https://172.14.2.2:9182/api/config/nms/routing-options/static
+
+#create controller workflow
+curl -k -X POST "https://172.14.2.2:9182/vnms/sdwan/workflow/controllers/controller" -H "accept: application/json" -H "authorization: Basic QWRtaW5pc3RyYXRvcjp2ZXJzYTEyMw==" -H "Content-Type: application/json" -d "{ \"versanms.sdwan-controller-workflow\": { \"controllerName\": \"Controller-01\", \"siteId\": 1, \"orgName\": \"Versa-Root\", \"resourceType\": \"Baremetal\", \"stagingController\": true, \"postStagingController\": true, \"baremetalController\": { \"serverIP\": \"172.14.2.10\", \"controllerInterface\": { \"interfaceName\": \"vni-0/1\", \"unitInfoList\": [ { \"networkName\": \"Control-Network\", \"ipv4address\": [ \"172.14.4.10/24\" ], \"ipv4gateway\": \"\", \"ipv6gateway\": \"\", \"ipv4dhcp\": false, \"ipv6dhcp\": false, \"vlanId\": 0, \"wanStaging\": true, \"poolSize\": 256 } ] }, \"wanInterfaces\": [ { \"interfaceName\": \"vni-0/2\", \"unitInfoList\": [ { \"networkName\": \"ISP-1\", \"ipv4address\": [ \"172.14.5.2/30\" ], \"ipv4gateway\": \"172.14.5.1\", \"ipv4dhcp\": false, \"ipv6dhcp\": false, \"vlanId\": 0, \"wanStaging\": true, \"poolSize\": 128, \"transportDomainList\": [ \"Internet\" ] } ] }, { \"interfaceName\": \"vni-0/3\", \"unitInfoList\": [ { \"networkName\": \"ISP-2\", \"ipv4address\": [ \"172.14.5.6/30\" ], \"ipv4gateway\": \"172.14.5.5\", \"ipv4dhcp\": false, \"ipv6dhcp\": false, \"vlanId\": 0, \"wanStaging\": true, \"poolSize\": 128, \"transportDomainList\": [ \"Internet\" ] } ] } ] }, \"locationInfo\": { \"state\": \"CA\", \"country\": \"USA\", \"city\": \"San Jose\", \"longitude\": -121.885252, \"latitude\": 37.33874 }, \"analyticsCluster\": \"Analytics\" }}"
+
+#deploy controller
+curl -k -X POST "https://172.14.2.2:9182/vnms/sdwan/workflow/controllers/controller/deploy/Controller-01" -H "accept: */*" -H "authorization: Basic QWRtaW5pc3RyYXRvcjp2ZXJzYTEyMw==" -H "Content-Type: application/json" -d "{}"
+
+#check task completion status based on the task returned from the deploy controller call
+curl -X GET "https://172.14.2.2:9182/vnms/tasks/task/{task_id}" -H "accept: application/xml" -H "authorization: Basic QWRtaW5pc3RyYXRvcjp2ZXJzYTEyMw=="
+
+#create template for sites
+curl -k -X POST \
+  -H "Content-Type: application/json" \
+  -u 'Administrator:versa123' \
+  -d '{"versanms.sdwan-template-workflow":{"analyticsCluster":"Analytics","bandwidth":"100","licensePeriod":"1","controllers":["Controller-01"],"deviceFirmfactor":6,"deviceType":"full-mesh","diaConfig":{"loadBalance":false},"isStaging":false,"lanInterfaces":[{"interfaceName":"vni-0/2","unitInfo":[{"vlanId":"0","subOrganization":"Versa-Root","vrfName":"Versa-Root-LAN-VR","networkName":"LAN","subUnit":"0","ipv4Static":true,"ipv4Dhcp":false,"ip6Static":false,"ipv6Dhcp":false,"ipv4DhcpServer":false,"dhcpv4Profile":null,"dhcpV4Relay":false,"dhcpV4RelayAddress":null}]}],"providerOrg":{"name":"Versa-Root","nextGenFW":false,"statefulFW":false},"redundantPair":{"enable":false},"routingInstances":[],"siteToSiteTunnels":[],"snmp":{},"solutionTier":"Premier-Elite-SDWAN","splitTunnels":[{"vrfName":"Versa-Root-LAN-VR","wanNetworkName":"ISP-1","dia":true,"gateway":false},{"vrfName":"Versa-Root-LAN-VR","wanNetworkName":"ISP-2","dia":true,"gateway":false}],"subOrgs":[],"templateName":"Edge-Template","templateType":"sdwan-post-staging","wanInterfaces":[{"pppoe":false,"interfaceName":"vni-0/0","unitInfo":[{"vlanId":"0","networkName":"ISP-1","routing":{},"subUnit":"0","ipv4Static":true,"ipv4Dhcp":false,"ip6Static":false,"ipv6Dhcp":false,"transportDomains":["Internet"]}]},{"pppoe":false,"interfaceName":"vni-0/1","unitInfo":[{"vlanId":"0","networkName":"ISP-2","routing":{},"subUnit":"0","ipv4Static":true,"ipv4Dhcp":false,"ip6Static":false,"ipv6Dhcp":false,"transportDomains":["Internet"]}]}],"l2Interfaces":[],"stp":"RSTP"}}' \
+  https://172.14.2.2:9182/vnms/sdwan/workflow/templates/template
+
+#deploy template
+curl -X POST "https://172.14.2.2:9182/vnms/sdwan/workflow/templates/template/deploy/Edge-Template?verifyDiff=true" -H "accept: application/json" -H "authorization: Basic QWRtaW5pc3RyYXRvcjp2ZXJzYTEyMw=="
+
+#create device group
+curl -k -X POST \
+  -H "Content-Type: application/json" \
+  -u 'Administrator:versa123' \
+  -d '{"device-group":{"name":"Site1","dg:organization":"Versa-Root","dg:enable-2factor-auth":false,"dg:ca-config-on-branch-notification":false,"dg:enable-staging-url":false,"template-association":[{"organization":"Versa-Root","category":"DataStore","name":"Versa-Root-DataStore"},{"organization":"Versa-Root","category":"Main","name":"Edge-Template"}],"dg:poststaging-template":"Edge-Template"}}' \
+  https://172.14.2.2:9182/nextgen/deviceGroup
+
+#create site device workflow
+curl -k -X POST \
+  -H "Content-Type: application/json" \
+  -u 'Administrator:versa123' \
+  -d '{"versanms.sdwan-device-workflow":{"deviceName":"NewYork","siteId":"101","orgName":"Versa-Root","serialNumber":"SN101","deviceGroup":"Sites","licensePeriod":1,"deploymentType":"physical","locationInfo":{"state":"New York","country":"US","longitude":"-74.005973","latitude":"40.712775","city":"New York"},"postStagingTemplateInfo":{"templateName":"Edge-Template","templateData":{"device-template-variable":{"template":"Edge-Template","variable-binding":{"attrs":[{"name":"{$v_Site_Id__siteSiteID}","value":"101","isAutogeneratable":true},{"name":"{$v_Chassis_Id__sitesChassisId}","value":"SN101","isAutogeneratable":true},{"name":"{$v_Versa-Root-Control-VR_1_Local_address__vrRouterAddress}","value":"10.10.0.4","isAutogeneratable":true,"isOverwritten":false},{"name":"{$v_longitude__Idlongitude}","value":"-74.005973","isAutogeneratable":true},{"name":"{$v_LAN_IPv4__staticaddress}","value":"172.14.101.1/24","isAutogeneratable":false},{"name":"{$v_Versa-Root_Site_Name__sitesSiteName}","value":"NewYork","isAutogeneratable":true},{"name":"{$v_location__IdLocation}","value":"New York, New York, US","isAutogeneratable":true},{"name":"{$v_ISP-1_IPv4__staticaddress}","value":"172.14.6.2/30","isAutogeneratable":false},{"name":"{$v_ISP-2_IPv4__staticaddress}","value":"172.14.7.2/30","isAutogeneratable":false},{"name":"{$v_tvi-0-2_-_Unit_0_Static_address__tunnelStaticAddress}","value":"10.10.0.5/32","isAutogeneratable":true,"isOverwritten":false},{"name":"{$v_ISP-2-Transport-VR_IPv4__vrHopAddress}","value":"172.14.7.1","isAutogeneratable":false},{"name":"{$v_ISP-1-Transport-VR_IPv4__vrHopAddress}","value":"172.14.6.1","isAutogeneratable":false},{"name":"{$v_latitude__IdLatitude}","value":"40.712775","isAutogeneratable":true},{"name":"{$v_Versa-Root_Controller-01_Local_auth_email_identifier__IKELIdentifier}","value":"NewYork@Versa-Root.com","isAutogeneratable":true},{"name":"{$v_Versa-Root-Control-VR_1_Router_ID__vrRouteId}","value":"10.10.0.4","isAutogeneratable":true,"isOverwritten":false},{"name":"{$v_tvi-0-3_-_Unit_0_Static_address__tunnelStaticAddress}","value":"10.10.0.4/32","isAutogeneratable":true,"isOverwritten":false},{"name":"{$v_identification__IdName}","value":"NewYork","isAutogeneratable":true},{"name":"{$v_Versa-Root_Controller-01_Local_auth_email_key__IKELKey}","value":"EFz2vxM/mRsoaS82d+nCg01/jDE5knE1cl10B6sNWJTBGgnFe+hUFIvi9Kz987fm8PK4MhxFw9j89sGXHm1xKK3ZTFVlouUwAWEuuaFeZBOKanA2joKkumDKUDO2cw19iJDzhQ+/OQIE+bzX/p8rULBDlONmszYBLKWpgsXvT5eqfFo5S1awko+Hk+1kATeBjiyqH9MG+XwDEsKLfdZMGcAVtUfnFQv02e+XZ5qQq9RwopgypCJbPbbULMnMDLeb121PjudYh0SkgLXuY74gt++NuxhmCKP/4c2T99wFTMftquTwjhfrylDeYW2pETx3Hs790EL+fpg/XFgiXS7DaQ==","isAutogeneratable":true}]}},"variableMetadata":[{"variable":"{$v_Site_Id__siteSiteID}","group":"SDWAN","overlay":false,"type":"INTEGER","range":{"start":100,"end":16383}},{"variable":"{$v_Chassis_Id__sitesChassisId}","group":"SDWAN","overlay":false,"type":"STRING"},{"variable":"{$v_Versa-Root-Control-VR_1_Local_address__vrRouterAddress}","group":"Virtual Routers","overlay":true,"type":"IPV4"},{"variable":"{$v_longitude__Idlongitude}","group":"SDWAN","overlay":false,"type":"FLOAT","floatRange":{"start":-180,"end":180}},{"variable":"{$v_LAN_IPv4__staticaddress}","group":"Interfaces","overlay":false,"type":"IPV4_MASK"},{"variable":"{$v_Versa-Root_Site_Name__sitesSiteName}","group":"SDWAN","overlay":false,"type":"STRING"},{"variable":"{$v_location__IdLocation}","group":"SDWAN","overlay":false,"type":"STRING"},{"variable":"{$v_ISP-1_IPv4__staticaddress}","group":"Interfaces","overlay":false,"type":"IPV4_MASK"},{"variable":"{$v_ISP-2_IPv4__staticaddress}","group":"Interfaces","overlay":false,"type":"IPV4_MASK"},{"variable":"{$v_tvi-0-2_-_Unit_0_Static_address__tunnelStaticAddress}","group":"Interfaces","overlay":true,"type":"IPV4_IPV6_MASK"},{"variable":"{$v_ISP-2-Transport-VR_IPv4__vrHopAddress}","group":"Virtual Routers","overlay":false,"type":"IPV4"},{"variable":"{$v_ISP-1-Transport-VR_IPv4__vrHopAddress}","group":"Virtual Routers","overlay":false,"type":"IPV4"},{"variable":"{$v_latitude__IdLatitude}","group":"SDWAN","overlay":false,"type":"FLOAT","floatRange":{"start":-90,"end":90}},{"variable":"{$v_Versa-Root_Controller-01_Local_auth_email_identifier__IKELIdentifier}","group":"IPSEC","overlay":false,"type":"STRING"},{"variable":"{$v_Versa-Root-Control-VR_1_Router_ID__vrRouteId}","group":"Virtual Routers","overlay":true,"type":"IPV4"},{"variable":"{$v_tvi-0-3_-_Unit_0_Static_address__tunnelStaticAddress}","group":"Interfaces","overlay":true,"type":"IPV4_IPV6_MASK"},{"variable":"{$v_identification__IdName}","group":"SDWAN","overlay":false,"type":"STRING"},{"variable":"{$v_Versa-Root_Controller-01_Local_auth_email_key__IKELKey}","group":"IPSEC","overlay":false,"type":"STRING"}]}},"serviceTemplateInfo":{"templateData":{"device-template-variable":[{"device":"NewYork","template":"Versa-Root-DataStore"}]}}}}' \
+  https://172.14.2.2:9182/vnms/sdwan/workflow/devices/device
+
+#deploy site device workflow
+curl -k -X POST "https://172.14.2.2:9182/vnms/sdwan/workflow/devices/device/deploy/NewYork" -H "accept: application/json" -H "authorization: Basic QWRtaW5pc3RyYXRvcjp2ZXJzYTEyMw=="
+
+
+#deploy sites
+sudo /opt/versa/scripts/staging.py -w 0 -n SN101 -c 172.14.5.2 -s 172.14.6.2/30 -g 172.14.6.1 -l SDWAN-Branch@Versa-Root.com -r Controller-01-staging@Versa-Root.com
+sudo /opt/versa/scripts/staging.py -w 0 -n SN102 -c 172.14.5.2 -s 172.14.6.6/30 -g 172.14.6.5 -l SDWAN-Branch@Versa-Root.com -r Controller-01-staging@Versa-Root.com
+sudo /opt/versa/scripts/staging.py -w 0 -n SN103 -c 172.14.5.2 -s 172.14.6.10/30 -g 172.14.6.9 -l SDWAN-Branch@Versa-Root.com -r Controller-01-staging@Versa-Root.com
+sudo /opt/versa/scripts/staging.py -w 0 -n SN104 -c 172.14.5.2 -s 172.14.6.14/30 -g 172.14.6.13 -l SDWAN-Branch@Versa-Root.com -r Controller-01-staging@Versa-Root.com
+sudo /opt/versa/scripts/staging.py -w 0 -n SN105 -c 172.14.5.2 -s 172.14.6.18/30 -g 172.14.6.17 -l SDWAN-Branch@Versa-Root.com -r Controller-01-staging@Versa-Root.com
