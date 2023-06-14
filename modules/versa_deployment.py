@@ -300,7 +300,6 @@ def versa_deploy():
     # region Versa Director Setup Part 1
     deployment_step = 'Starting Nodes'
     wait_time = 2  # minutes
-
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Waiting {wait_time} mins for devices to come up, to resume at {util_resume_time(wait_time)}")
     time.sleep(wait_time * 60)
     deployment_step = 'Versa Director device Setup'
@@ -372,7 +371,13 @@ def versa_deploy():
                 tn.write(b'n\n')
                 tn.read_until(b"Edit list of hosts allowed to access Versa GUI? (y/n)?")
                 tn.write(b'n\n')
-                tn.read_until(b"Restarting Versa Director")
+                tn.read_until(b"Press ENTER to continue")
+                tn.write(b"\r\n")
+                tn.read_until(b"director login:")
+                tn.write(versa_director_username.encode("ascii") + b"\n")
+                tn.read_until(b"Password:")
+                tn.write(versa_old_password.encode("ascii") + b"\n")
+                tn.read_until(b"[Administrator@director: ~] $")
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed Director Device Setup Part 1")
     # endregion
     # region Versa Analytics Device Setup
@@ -422,15 +427,13 @@ def versa_deploy():
                 tn.read_until(b"[root@versa-analytics: admin]#")
                 tn.write(b"ifdown eth0 && ifup eth0 && ifup eth1\n")
                 tn.write(b"exit\n")
-                tn.close()
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed Versa AnalyticsDevice Setup")
     # endregion
-    # region Viptela vBond Setup
+    # region Versa Controller Setup
     deployment_step = 'Versa Controller Device Setup'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting Versa Controller Device Setup")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     versa_interfaces = """auto eth0
-        auto eth0
         iface eth0 inet static
         address 172.14.2.10
         netmask 255.255.255.0
@@ -471,7 +474,6 @@ def versa_deploy():
                 tn.read_until(b"[root@versa-flexvnf: admin]#")
                 tn.write(b"ifdown eth0 && ifup eth0\n")
                 tn.write(b"exit\n")
-                tn.close()
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed Versa Controller Device Setup")
     # endregion
     sys.exit()
@@ -481,7 +483,7 @@ def versa_deploy():
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     abs_path = os.path.abspath(__file__)
     configs_path = os.path.join(os.path.dirname(abs_path), 'configs/versa')
-    file_name = os.path.join(configs_path, 'director_template')
+    clustersetup_file = os.path.join(configs_path, 'clustersetup.conf')
     vdevices = [6, 10]
     for server_ip in server_ips:
         temp_node_name = f'Director'
