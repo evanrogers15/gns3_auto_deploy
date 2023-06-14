@@ -45,6 +45,7 @@ def versa_deploy():
     cloud_node_deploy_data = {"x": 25, "y": -554, "name": "MGMT-Cloud-TAP", "node_type": "cloud",
                               "compute_id": "local", "symbol": ":/symbols/cloud.svg"}
     required_qemu_images = {"versa-director-c19c43c-21.2.3.qcow2", "versa-analytics-67ff6c7-21.2.3.qcow2", "versa-flexvnf-67ff6c7-21.2.3.qcow2"}
+    required_iou_images = {"L3-ADVENTERPRISEK9-M-15.5-2T.bin"}
     required_image_response = 201
     # endregion
     conn = sqlite3.connect(db_path)
@@ -94,6 +95,12 @@ def versa_deploy():
             log_and_update_db(server_name, project_name, deployment_type, 'Failed', 'Image Validation',
                               f"{image} image not on GNS3 Server")
             return 404
+    for image in required_iou_images:
+        response_code = gns3_query_get_image(server_ip, server_port, 'iou', image)
+        if response_code != 201:
+            log_and_update_db(server_name, project_name, deployment_type, 'Failed', 'Image Validation',
+                              f"{image} image not on GNS3 Server")
+            return 404
     gns3_actions_versa_remove_templates(gns3_server_data)
     gns3_set_project(gns3_server_data, new_project_id)
     # endregion
@@ -103,8 +110,7 @@ def versa_deploy():
     versa_director_template_id = gns3_create_template(gns3_server_data, versa_director_template_data)
     versa_analytics_template_id = gns3_create_template(gns3_server_data, versa_analytics_template_data)
     versa_flexvnf_template_id = gns3_create_template(gns3_server_data, versa_flexvnf_template_data)
-    openvswitch_isp_template_id = gns3_create_template(gns3_server_data, openvswitch_isp_template_data)
-    # cisco_iou_template_id = gns3_create_template(gns3_server_data, cisco_l3_router_template_data)
+    cisco_iou_template_id = gns3_create_template(gns3_server_data, cisco_l3_router_template_data)
     network_test_tool_template_id = gns3_create_template(gns3_server_data, network_test_tool_template_data)
     openvswitch_template_id = gns3_create_template(gns3_server_data, openvswitch_cloud_template_data)
     temp_hub_data = generate_temp_hub_data(mgmt_main_switchport_count, mgmt_main_hub_template_name)
@@ -116,6 +122,7 @@ def versa_deploy():
     # endregion
     #  region Setup Dynamic Networking
     flexvnf_deploy_data, client_deploy_data, site_drawing_deploy_data = versa_generate_flexvnf_deploy_data(flexvnf_count)
+    isp_deploy_data = generate_isp_deploy_data(isp_switch_count)
     mgmt_switch_deploy_data = generate_mgmt_switch_deploy_data(mgmt_switch_count)
     # endregion
     # region Deploy GNS3 Nodes
@@ -126,14 +133,24 @@ def versa_deploy():
     versa_analytics_node_id = gns3_create_node(gns3_server_data, new_project_id, versa_analytics_template_id, versa_analytics_deploy_data)
     versa_controller_node_id = gns3_create_node(gns3_server_data, new_project_id, versa_flexvnf_template_id,
                                                versa_controller_deploy_data)
-    isp_ovs_node_id = gns3_create_node(gns3_server_data, new_project_id, openvswitch_isp_template_id, openvswitch_isp_deploy_data)
+    isp_router_node_id = gns3_create_node(gns3_server_data, new_project_id, cisco_iou_template_id,
+                                          isp_router_deploy_data)
     mgmt_main_switch_node_id = gns3_create_node(gns3_server_data, new_project_id, regular_ethernet_hub_template_id,
                                                 main_mgmt_switch_deploy_data)
     versa_control_switch_node_id = gns3_create_node(gns3_server_data, new_project_id, regular_ethernet_hub_template_id,
                                                 versa_control_switch_deploy_data)
     nat_node_id = gns3_create_cloud_node(gns3_server_data, new_project_id, nat_node_deploy_data)
     cloud_node_id = gns3_create_cloud_node(gns3_server_data, new_project_id, cloud_node_deploy_data)
-
+    for i in range(1, isp_switch_count + 1):
+        node_name = f"ISP_{i:03}"
+        matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, node_name)
+        if not matching_nodes:
+            node_id, node_name = gns3_create_node_multi_return(gns3_server_data, new_project_id,
+                                                               openvswitch_template_id,
+                                                               isp_deploy_data[f"isp_{i:03}_deploy_data"])
+            isp_switch_nodes.append({'node_name': node_name, 'node_id': node_id})
+        else:
+            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Node {node_name} already exists in project {project_name}")
     for i in range(1, mgmt_switch_count + 1):
         node_name = f"MGMT_switch_{i:03}"
         matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, node_name)
@@ -156,9 +173,17 @@ def versa_deploy():
     gns3_update_nodes(gns3_server_data, new_project_id, versa_director_node_id, versa_director_deploy_data)
     gns3_update_nodes(gns3_server_data, new_project_id, versa_analytics_node_id, versa_analytics_deploy_data)
     gns3_update_nodes(gns3_server_data, new_project_id, versa_controller_node_id, versa_controller_deploy_data)
-    gns3_update_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, openvswitch_isp_deploy_data)
+    gns3_update_nodes(gns3_server_data, new_project_id, isp_router_node_id, isp_router_deploy_data)
     gns3_update_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, main_mgmt_switch_deploy_data)
     gns3_update_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, deploy_data_z)
+
+    for i in range(1, isp_switch_count + 1):
+        matching_node = isp_switch_nodes[i - 1]
+        if matching_node:
+            node_id = matching_node['node_id']
+            gns3_update_nodes(gns3_server_data, new_project_id, node_id, isp_deploy_data[f"isp_{i:03}_deploy_data"])
+        else:
+            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"No nodes found in project {project_name} for isp_switch_{i}")
 
     for i in range(1, mgmt_switch_count + 1):
         matching_node = mgmt_switch_nodes[i - 1]
@@ -186,9 +211,10 @@ def versa_deploy():
     for port in matching_nodes[0]:
         if port["short_name"] == tap_name:
             mgmt_tap_interface = port['port_number']
-    gns3_connect_nodes(gns3_server_data, new_project_id, nat_node_id, 0, 0, isp_ovs_node_id, 0, 0)
-    gns3_connect_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, 1, 0, versa_controller_node_id, 2, 0)
-    gns3_connect_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, 2, 0, versa_controller_node_id, 3, 0)
+    cloud_isp_node_id = isp_switch_nodes[0]['node_id']
+    gns3_connect_nodes(gns3_server_data, new_project_id, nat_node_id, 0, 0, isp_router_node_id, 0, 0)
+    gns3_connect_nodes(gns3_server_data, new_project_id, cloud_isp_node_id, 1, 0, versa_controller_node_id, 2, 0)
+    gns3_connect_nodes(gns3_server_data, new_project_id, cloud_isp_node_id, 2, 0, versa_controller_node_id, 3, 0)
     if use_tap == 1:
         gns3_connect_nodes(gns3_server_data, new_project_id, cloud_node_id, 0, mgmt_tap_interface,
                            mgmt_main_switch_node_id, 0, 0)
@@ -201,7 +227,11 @@ def versa_deploy():
     mgmt_switch_interface = 1
     switch_adapter_a = 5
     switch_adapter_b = (switchport_count // 2) + 4
+    cloud_isp_node_index = 0
     mgmt_switch_node_index = 0
+    for i in range(isp_switch_count):
+        cloud_isp_node_id = isp_switch_nodes[i]['node_id']
+        gns3_connect_nodes(gns3_server_data, new_project_id, cloud_isp_node_id, 0, 0, isp_router_node_id, 0, i + 1)
     for i in range(mgmt_switch_count):
         first_flexvnf_index = i * 30
         last_flexvnf_index = min((i + 1) * 30, flexvnf_count)
@@ -213,14 +243,16 @@ def versa_deploy():
             flexvnf_node_id = flexvnf_info[j]['node_id']
             gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_switch_node_id, 0, mgmt_switch_interface,
                                flexvnf_node_id, 0, 0)
-            gns3_connect_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, switch_adapter_a, 0, flexvnf_node_id,
+            cloud_isp_node_id = isp_switch_nodes[cloud_isp_node_index]['node_id']
+            gns3_connect_nodes(gns3_server_data, new_project_id, cloud_isp_node_id, switch_adapter_a, 0, flexvnf_node_id,
                                1, 0)
-            gns3_connect_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, switch_adapter_b, 0, flexvnf_node_id,
+            gns3_connect_nodes(gns3_server_data, new_project_id, cloud_isp_node_id, switch_adapter_b, 0, flexvnf_node_id,
                                2, 0)
             switch_adapter_a += 1
             switch_adapter_b += 1
             mgmt_switch_interface += 1
             if (j + 1) % 44 == 0:
+                cloud_isp_node_index += 1
                 switch_adapter_a = 5
                 switch_adapter_b = (switchport_count // 2) + 4
                 mgmt_switch_interface = 1
