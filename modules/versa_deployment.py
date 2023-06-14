@@ -549,161 +549,55 @@ def versa_deploy():
     versa_deploy_device_workflow_2(director_ip)
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, "Completed vManage Device Setup Part 2")
     # endregion
-    sys.exit()
     # region Viptela FlexVNF Final Setup
     deployment_step = 'FlexVNF Final Setup'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
                       f"Starting FlexVNF Certificate setup and deployment into Viptela Environment")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
-    ve = 101
     v = 1
     for server_ip in server_ips:
-        temp_node_name = f'vManage'
-        matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
         flexvnf_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "FlexVNF")
         if matching_nodes:
-            for matching_node in matching_nodes:
-                node_id, console_port, aux = matching_node
+            for flexvnf_node in flexvnf_nodes:
+                node_id, console_port, aux = flexvnf_node
                 log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
                                   f"Logging in to console for node {temp_node_name}")
-                for flexvnf_node in flexvnf_nodes:
-                    flexvnf_id, flexvnf_console, flexvnf_aux = flexvnf_node
-                    node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id',
-                                                               'name', flexvnf_id)
-                    scp_command = f"request execute vpn 512 scp /home/admin/SDWAN.pem admin@172.16.2.{ve}:/home/admin"
-                    scp_2_command = f"request execute vpn 512 scp /home/admin/flexvnf.crt admin@172.16.2.{ve}:/home/admin"
-                    ssh_command = f"request execute vpn 512 ssh admin@172.16.2.{ve}"
-                    ssh_2_command = f"request execute vpn 512 ssh admin@172.16.2.10"
-                    tn = telnetlib.Telnet(server_ip, console_port)
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
-                                      f"Starting FlexVNF Certificate Setup for {node_name[0]} - FlexVNF {v} of {flexvnf_count}")
-                    while True:
-                        tn.write(b"\r\n")
-                        output = tn.read_until(b"login:", timeout=2).decode('ascii')
-                        if '#' in output:
-                            tn.write(b"\r\n")
-                            tn.read_until(b"#")
-                            tn.write(b'vshell\r\n')
-                            break
-                        elif ':~$' in output:
-                            tn.write(b"\r\n")
-                            break
-                        tn.write(viptela_username.encode("ascii") + b"\n")
-                        tn.read_until(b"Password:", timeout=1)
-                        tn.write(versa_old_password.encode("ascii") + b"\n")
-                        output = tn.read_until(b"#", timeout=1).decode('ascii')
-                        if '#' in output:
-                            tn.write(b"\r\n")
-                            tn.read_until(b"#")
-                            tn.write(b'vshell\r\n')
-                            break
-                        log_and_update_db(server_name, project_name, deployment_type, deployment_status,
-                                          deployment_step,
-                                          f"{temp_node_name} not available yet, trying again in 30 seconds")
-                        time.sleep(30)
+                node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id',
+                                                           'name', node_id)
+                if v == 1:
+                    command = f"sudo /opt/versa/scripts/staging.py -w 0 -n SN101 -c 172.14.5.2 -s 172.14.6.2/30 -g 172.14.6.1 -l SDWAN-Branch@Versa-Root.com -r Controller-01-staging@Versa-Root.com"
+                elif v == 2:
+                    command = f"sudo /opt/versa/scripts/staging.py -w 0 -n SN102 -c 172.14.5.2 -s 172.14.6.6/30 -g 172.14.6.5 -l SDWAN-Branch@Versa-Root.com -r Controller-01-staging@Versa-Root.com"
+                else:
+                    sys.exit()
+                tn = telnetlib.Telnet(server_ip, console_port)
+                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                  f"Starting FlexVNF Certificate Setup for {node_name[0]} - FlexVNF {v} of {flexvnf_count}")
+                while True:
                     tn.write(b"\r\n")
-                    tn.read_until(b'$')
-                    tn.write(b'rm -rf flexvnf*\r\n')
-                    tn.read_until(b'$')
-                    tn.write(b'exit\r\n')
-                    # SCP SDWAN.pem to FlexVNF
-                    tn.read_until(b'#')
-                    tn.write(scp_command.encode('ascii') + b"\n")
-                    test_o = tn.read_until(b"?", timeout=2).decode('ascii')
-                    if "fingerprint" in test_o:
-                        tn.write(b'yes\r\n')
-                    else:
-                        tn.write(b"\n")
-                    tn.read_until(b"Password:")
+                    if '[admin@versa-flexvnf: ~] $' in output:
+                        break
+                    tn.read_until(b"versa-flexvnf login:", timeout=1)
+                    tn.write(versa_analytics_username.encode("ascii") + b"\n")
+                    tn.read_until(b"Password:", timeout=5)
                     tn.write(versa_old_password.encode("ascii") + b"\n")
-                    tn.read_until(b'#')
-                    # SSH to FlexVNF
-                    tn.write(ssh_command.encode('ascii') + b"\n")
-                    tn.read_until(b"Password:")
-                    tn.write(versa_old_password.encode("ascii") + b"\n")
-                    tn.read_until(b'#')
-                    tn.write(b'request root-cert-chain install /home/admin/SDWAN.pem\n')
-                    tn.read_until(b'#')
-                    tn.write(b'request csr upload home/admin/flexvnf.csr\n')
-                    tn.read_until(b":")
-                    tn.write(b'sdwan-lab\n')
-                    tn.read_until(b":")
-                    tn.write(b'sdwan-lab\n')
-                    tn.read_until(b'#')
-                    # SCP the FlexVNF.csr to the vManage
-                    tn.write(b'request execute vpn 512 scp /home/admin/flexvnf.csr admin@172.16.2.2:/home/admin\r\n')
-                    test_o = tn.read_until(b"?", timeout=2).decode('ascii')
-                    if "fingerprint" in test_o:
-                        tn.write(b'yes\r\n')
-                    else:
-                        tn.write(b"\n")
-                    tn.read_until(b"Password:")
-                    tn.write(versa_old_password.encode("ascii") + b"\n")
-                    tn.read_until(b'#')
-                    # Drop back to the vManage
-                    tn.write(b'exit\r\n')
-                    tn.read_until(b'vManage#')
-                    tn.write(b'vshell\r\n')
-                    tn.read_until(b'$')
-                    tn.write(
-                        b'openssl x509 -req -in flexvnf.csr -CA SDWAN.pem -CAkey SDWAN.key -CAcreateserial -out flexvnf.crt -days 2000 -sha256\n')
-                    tn.read_until(b'$')
-                    tn.write(b'exit\r\n')
-                    tn.read_until(b'#')
-                    # SCP the FlexVNF.crt to the FlexVNF
-                    tn.write(scp_2_command.encode('ascii') + b"\n")
-                    tn.read_until(b"Password:")
-                    tn.write(versa_old_password.encode("ascii") + b"\n")
-                    tn.read_until(b'#')
-                    # SSH to the FlexVNF to install the new cert
-                    tn.write(ssh_command.encode('ascii') + b"\n")
-                    tn.read_until(b"Password:")
-                    tn.write(versa_old_password.encode("ascii") + b"\n")
-                    tn.read_until(b'#')
-                    while True:
-                        tn.write(b'request certificate install /home/admin/flexvnf.crt\r\n')
-                        tn.read_until(b'#')
-                        tn.write(b'show certificate serial\r\n')
-                        cert_output = tn.read_until(b"#").decode("ascii")
-                        chassis_regex = r"Chassis number: (.+?)\s+serial number:"
-                        serial_regex = r"serial number: ([A-F0-9]+)"
-                        chassis_number = re.search(chassis_regex, cert_output).group(1)
-                        serial_number = re.search(serial_regex, cert_output).group(1)
-                        if chassis_number and serial_number:
-                            break
-                        log_and_update_db(server_name, project_name, deployment_type, deployment_status,
-                                          deployment_step,
-                                          f"{node_name[0]} tried to install certificate too quickly, trying again in 10 seconds ")
-                        time.sleep(10)
-                    tn.write(b'exit\r\n')
-                    tn.read_until(b'#')
-                    flexvnf_install_command = f"request flexvnf add chassis-num {chassis_number} serial-num {serial_number}"
-                    tn.write(ssh_2_command.encode('ascii') + b"\n")
-                    tn.read_until(b"Password:")
-                    tn.write(versa_old_password.encode("ascii") + b"\n")
-                    tn.read_until(b'#')
-                    tn.write(flexvnf_install_command.encode('ascii') + b"\n")
-                    tn.read_until(b'#')
-                    tn.write(b'exit\r\n')
-                    tn.read_until(b'#')
-                    tn.write(flexvnf_install_command.encode('ascii') + b"\n")
-                    tn.read_until(b'#')
-                    ve += 1
+                    output = tn.read_until(b"[admin@versa-flexvnf: ~] $", timeout=5).decode('ascii')
+                    if '[admin@versa-flexvnf: ~] $' in output:
+                        break
                     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
-                                      f"Completed FlexVNF Certificate Setup for {node_name[0]}, Remaining - {flexvnf_count - v}")
-                    tn.close()
-                    v += 1
-    while True:
-        try:
-            auth = Authentication()
-            response = auth.get_jsessionid(gns3_server_data)
-            break
-        except:
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
-                              f'vManage API is yet not available')
-            time.sleep(60)
-    vmanage_headers = vmanage_create_auth(gns3_server_data)
-    vmanage_push_certs(gns3_server_data, vmanage_headers)
+                                      f"{node_name} not available yet, trying again in 30 seconds")
+                    time.sleep(30)
+                tn.write(b"\r\n")
+                tn.read_until(b"[admin@versa-flexvnf: ~] $")
+                tn.write(b'sudo su\r\n')
+                tn.read_until(b"[sudo] password for admin:")
+                tn.write(versa_old_password.encode("ascii") + b"\n")
+                tn.read_until(b"[root@versa-flexvnf: admin]#")
+                tn.write(command.encode('ascii') + b"\r")
+                tn.read_until(b"[root@versa-flexvnf: admin]#")
+                tn.close()
+                v += 1
+
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
                       f"Completed FlexVNF Certificate setup and deployment into Viptela Environment")
     # endregion

@@ -391,7 +391,7 @@ def versa_create_site_device_workflow_2(director_ip):
     }
     auth = ("Administrator", "versa123")
 
-    data = {"versanms.sdwan-device-workflow": {"deviceName": "NewYork", "siteId": "102", "orgName": "Versa-Root",
+    data = {"versanms.sdwan-device-workflow": {"deviceName": "Cairns", "siteId": "102", "orgName": "Versa-Root",
                                                "serialNumber": "SN102", "deviceGroup": "Sites", "licensePeriod": 1,
                                                "deploymentType": "physical",
                                                "locationInfo": {"country": "France",
