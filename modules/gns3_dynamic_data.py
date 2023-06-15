@@ -211,7 +211,7 @@ def generate_versa_interfaces_file(interface_data_1, router_index, interface_dat
             f.write(f'\taddress 172.14.5.9\n')
             f.write(f'\tnetmask 255.255.255.252\n')
         for i in range(5, 49):
-            f.write(f'#{interface_data_2[eth_1]["vedge"]} interface ge0/0\n')
+            f.write(f'#{interface_data_2[eth_1]["flexvnf"]} interface ge0/0\n')
             f.write(f'auto eth{i}\n')
             f.write(f'iface eth{i} inet static\n')
             f.write(f'\taddress {interface_data_2[eth_1]["router_address"]}\n')
@@ -219,7 +219,7 @@ def generate_versa_interfaces_file(interface_data_1, router_index, interface_dat
             f.write('\n')
             eth_1 += 1
         for i in range(51, 95):
-            f.write(f'#{interface_data_3[eth_2]["vedge"]} interface ge0/1\n')
+            f.write(f'#{interface_data_3[eth_2]["flexvnf"]} interface ge0/1\n')
             f.write(f'auto eth{i}\n')
             f.write(f'iface eth{i} inet static\n')
             f.write(f'\taddress {interface_data_3[eth_2]["router_address"]}\n')
