@@ -592,7 +592,7 @@ def versa_deploy():
                         if dictionary_1['flexvnf'] == temp_node_name:
                             vpn_0_ge0_1_ip_address = dictionary_1['flexvnf_address']
                             vpn_0_ge0_1_ip_gateway = dictionary_1['router_address']
-                    flexvnf_hostname = f"{temp_node_name}_{city_data[temp_node_name]['city']}"
+                    flexvnf_hostname = f"{temp_node_name}_{versa_city_data[temp_node_name]['city']}"
                     flexvnf_city = {versa_city_data[temp_node_name]['city']}
                     flexvnf_country = {versa_city_data[temp_node_name]['country']}
                     # (director_ip, vr_1_local_ip, vr_1_route_id, lan_ip, site_name, site_id, device_serial_number, device_country, device_city, isp_1_ip, isp_1_gateway, isp_2_ip, isp_2_gateway, tvi_0_2_ip, tvi_0_3_ip, lattitude, longitude, auth_key)
