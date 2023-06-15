@@ -813,6 +813,6 @@ def versa_deploy_device_workflow(director_ip, site_name):
         print(f"Configuration failed. Error: {str(e)}")
 
 # endregion
-versa_create_site_device_workflow_2('172.14.2.2')
-time.sleep(5)
-versa_deploy_device_workflow_2('172.14.2.2')
+#versa_create_site_device_workflow_2('172.14.2.2')
+#time.sleep(5)
+#versa_deploy_device_workflow_2('172.14.2.2')
