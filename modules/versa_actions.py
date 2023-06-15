@@ -600,6 +600,7 @@ def versa_deploy_device_workflow_2(director_ip):
         print(f"Configuration failed. Error: {str(e)}")
 
 def versa_create_site_device_workflow(director_ip, vr_1_local_ip, vr_1_route_id, lan_ip, site_name, site_id, device_serial_number, device_country, device_city, isp_1_ip, isp_1_gateway, isp_2_ip, isp_2_gateway, tvi_0_2_ip, tvi_0_3_ip, lattitude, longitude, auth_key):
+    print(director_ip, vr_1_local_ip, vr_1_route_id, lan_ip, site_name, site_id, device_serial_number, device_country, device_city, isp_1_ip, isp_1_gateway, isp_2_ip, isp_2_gateway, tvi_0_2_ip, tvi_0_3_ip, lattitude, longitude, auth_key)
     url = f"https://{director_ip}:9182/vnms/sdwan/workflow/devices/device"
     headers = {
         "Content-Type": "application/json"
