@@ -599,8 +599,8 @@ def versa_deploy_device_workflow_2(director_ip):
     except requests.exceptions.RequestException as e:
         print(f"Configuration failed. Error: {str(e)}")
 
-def versa_create_site_device_workflow(director_ip, vr_1_local_ip, vr_1_route_id, lan_ip, site_name, site_id, device_serial_number, device_country, device_city, isp_1_ip, isp_1_gateway, isp_2_ip, isp_2_gateway, tvi_0_2_ip, tvi_0_3_ip, lattitude, longitude):
-    print(director_ip, vr_1_local_ip, vr_1_route_id, lan_ip, site_name, site_id, device_serial_number, device_country, device_city, isp_1_ip, isp_1_gateway, isp_2_ip, isp_2_gateway, tvi_0_2_ip, tvi_0_3_ip, lattitude, longitude)
+def versa_create_site_device_workflow(director_ip, vr_1_local_ip, vr_1_route_id, lan_ip, site_name, site_id, device_serial_number, device_country, device_city, isp_1_ip, isp_1_gateway, isp_2_ip, isp_2_gateway, tvi_0_2_ip, tvi_0_3_ip, latitude, longitude):
+    print(director_ip, vr_1_local_ip, vr_1_route_id, lan_ip, site_name, site_id, device_serial_number, device_country, device_city, isp_1_ip, isp_1_gateway, isp_2_ip, isp_2_gateway, tvi_0_2_ip, tvi_0_3_ip, latitude, longitude)
     url = f"https://{director_ip}:9182/vnms/sdwan/workflow/devices/device"
     headers = {
         "Content-Type": "application/json"
@@ -611,7 +611,7 @@ def versa_create_site_device_workflow(director_ip, vr_1_local_ip, vr_1_route_id,
                                                "serialNumber": device_serial_number, "deviceGroup": "Sites", "licensePeriod": 1,
                                                "deploymentType": "physical",
                                                "locationInfo": {"country": device_country,
-                                                                "longitude": longitude, "latitude": lattitude,
+                                                                "longitude": longitude, "latitude": latitude,
                                                                 "city": device_city},
                                                "postStagingTemplateInfo": {"templateName": "Edge-Template",
                                                                            "templateData": {
@@ -669,7 +669,7 @@ def versa_create_site_device_workflow(director_ip, vr_1_local_ip, vr_1_route_id,
                                                                                                                       "isAutogeneratable": False},
                                                                                                                   {
                                                                                                                       "name": "{$v_latitude__IdLatitude}",
-                                                                                                                      "value": lattitude,
+                                                                                                                      "value": latitude,
                                                                                                                       "isAutogeneratable": True},
                                                                                                                   {
                                                                                                                       "name": "{$v_Versa-Root_Controller-01_Local_auth_email_identifier__IKELIdentifier}",

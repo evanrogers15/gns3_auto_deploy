@@ -582,7 +582,7 @@ def versa_deploy():
                             mgmt_address = flexvnf_lan_object['mgmt_address']
                             mgmt_gateway = flexvnf_lan_object['mgmt_gateway']
                             system_ip = flexvnf_lan_object['system_ip']
-                            site_id = flexvnf_lan_object['site_id']
+                            site_id = f"{flexvnf_lan_object['site_id']}"
                             device_serial_number = f"SN{site_id}"
                     for dictionary_0 in isp_1_overall[isp_index]:
                         if dictionary_0['flexvnf'] == temp_node_name:
