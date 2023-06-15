@@ -991,7 +991,7 @@ def generate_flexvnf_objects(vedge_count, mgmt_base_subnet):
                     'lan_dhcp_pool': f'{router_address}/24',
                     'lan_dhcp_exclude': dhcp_exclude_var,
                     'client_1_address': client_1_address_var,
-                    'vedge': f'vEdge_{i:003}',
+                    'flexvnf': f'FlexVNF_{i:003}',
                     'system_ip': f'{mgmt_base_subnet}.{i + 100}',
                     'mgmt_address': f'{mgmt_base_subnet}.{i + 100}/24',
                     'mgmt_gateway': f'{mgmt_base_subnet}.1',
