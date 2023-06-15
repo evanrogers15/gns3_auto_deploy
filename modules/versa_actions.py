@@ -792,7 +792,8 @@ def versa_create_site_device_workflow(director_ip, vr_1_local_ip, vr_1_route_id,
                                                "serviceTemplateInfo": {"templateData": {"device-template-variable": [
                                                    {"device": {site_name}, "template": "Versa-Root-DataStore"}]}}}}
     try:
-        print(data)
+        json_data = json.dumps(data, ensure_ascii=False)
+        print(json_data)
         response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
         response.raise_for_status()
         print("Configuration successful.")
