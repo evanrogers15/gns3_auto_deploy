@@ -117,6 +117,7 @@ def versa_deploy():
     #  region Setup Dynamic Networking
     flexvnf_deploy_data, client_deploy_data, site_drawing_deploy_data = versa_generate_flexvnf_deploy_data(flexvnf_count)
     mgmt_switch_deploy_data = generate_mgmt_switch_deploy_data(mgmt_switch_count)
+
     # endregion
     # region Deploy GNS3 Nodes
     deployment_step = 'Deploy GNS3 Nodes'
@@ -540,15 +541,107 @@ def versa_deploy():
     time.sleep(5)
     versa_create_device_group(director_ip)
     time.sleep(5)
-    versa_create_site_device_workflow_1(director_ip)
-    time.sleep(5)
-    versa_create_site_device_workflow_2(director_ip)
-    time.sleep(5)
-    versa_deploy_device_workflow_1(director_ip)
-    time.sleep(5)
-    versa_deploy_device_workflow_2(director_ip)
+    #versa_create_site_device_workflow_1(director_ip)
+    #time.sleep(5)
+    #versa_create_site_device_workflow_2(director_ip)
+    #time.sleep(5)
+    #versa_deploy_device_workflow_1(director_ip)
+    #time.sleep(5)
+    #versa_deploy_device_workflow_2(director_ip)
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, "Completed vManage Device Setup Part 2")
     # endregion
+
+    # region Viptela FlexVNF Device Setup
+    deployment_step = 'FlexVNF Device Onboarding'
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting FlexVNF Device Onbaording for {flexvnf_count} FlexVNFs")
+    server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
+    flexvnf_lan_objects = generate_flexvnf_objects(flexvnf_count, '172.14.2')
+    isp_index = 0
+    flexvnf_vr_index = 4
+    for server_ip in server_ips:
+        for i in range(1, flexvnf_count + 1):
+            temp_node_name = f'FlexVNF_{i:003}'
+            matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
+            if matching_nodes:
+                for matching_node in matching_nodes:
+                    node_id, console_port, aux = matching_node
+                    node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id', 'name', node_id)
+                    for flexvnf_lan_object in flexvnf_lan_objects:
+                        if flexvnf_lan_object['flexvnf'] == temp_node_name:
+                            lan_dhcp_pool = flexvnf_lan_object['lan_dhcp_pool']
+                            lan_subnet_address = flexvnf_lan_object['lan_subnet_address']
+                            lan_dhcp_exclude = flexvnf_lan_object['lan_dhcp_exclude']
+                            lan_gateway_address = flexvnf_lan_object['lan_gateway_address']
+                            client_1_address = flexvnf_lan_object['client_1_address']
+                            mgmt_address = flexvnf_lan_object['mgmt_address']
+                            mgmt_gateway = flexvnf_lan_object['mgmt_gateway']
+                            system_ip = flexvnf_lan_object['system_ip']
+                            site_id = flexvnf_lan_object['site_id']
+                            device_serial_number = f"SN{site_id}"
+                    for dictionary_0 in isp_1_overall[isp_index]:
+                        if dictionary_0['flexvnf'] == temp_node_name:
+                            vpn_0_ge0_0_ip_address = dictionary_0['flexvnf_address']
+                            vpn_0_ge0_0_ip_gateway = dictionary_0['router_address']
+                    for dictionary_1 in isp_2_overall[isp_index]:
+                        if dictionary_1['flexvnf'] == temp_node_name:
+                            vpn_0_ge0_1_ip_address = dictionary_1['flexvnf_address']
+                            vpn_0_ge0_1_ip_gateway = dictionary_1['router_address']
+                    flexvnf_hostname = f"{temp_node_name}_{city_data[temp_node_name]['city']}"
+                    flexvnf_city = {versa_city_data[temp_node_name]['city']}
+                    flexvnf_country = {versa_city_data[temp_node_name]['country']}
+                    # (director_ip, vr_1_local_ip, vr_1_route_id, lan_ip, site_name, site_id, device_serial_number, device_country, device_city, isp_1_ip, isp_1_gateway, isp_2_ip, isp_2_gateway, tvi_0_2_ip, tvi_0_3_ip, lattitude, longitude, auth_key)
+                    vr_1_route_id = f'10.10.0.{flexvnf_vr_index}'
+                    vr_1_local_ip = f'10.10.0.{flexvnf_vr_index}/32'
+                    tvi_0_2_ip = f'10.10.0.{flexvnf_vr_index + 1}/32'
+                    tvi_0_3_ip = f'10.10.0.{flexvnf_vr_index}/32'
+                    auth_key = "EFz2vxM/mRsoaS82d+nCg01/jDE5knE1cl10B6sNWJTBGgnFe+hUFIvi9Kz987fm8PK4MhxFw9j89sGXHm1xKK3ZTFVlouUwAWEuuaFeZBOKanA2joKkumDKUDO2cw19iJDzhQ+/OQIE+bzX/p8rULBDlONmszYBLKWpgsXvT5eqfFo5S1awko+Hk+1kATeBjiyqH9MG+XwDEsKLfdZMGcAVtUfnFQv02e+XZ5qQq9RwopgypCJbPbbULMnMDLeb121PjudYh0SkgLXuY74gt++NuxhmCKP/4c2T99wFTMftquTwjhfrylDeYW2pETx3Hs790EL+fpg/XFgiXS7DaQ=="
+                    latitude = versa_city_data[temp_node_name]['latitude']
+                    longitude = versa_city_data[temp_node_name]['longitude']
+                    onboard_command = f"sudo /opt/versa/scripts/staging.py -w 0 -n {device_serial_number} -c 172.14.5.2 -s {vpn_0_ge0_0_ip_address} -g {vpn_0_ge0_0_ip_gateway} -l SDWAN-Branch@Versa-Root.com -r Controller-01-staging@Versa-Root.com"
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting FlexVNF Device Onboarding for {node_name[0]} - FlexVNF {i} of {flexvnf_count}")
+                    versa_create_site_device_workflow(director_ip, vr_1_local_ip, vr_1_route_id, lan_gateway_address, flexvnf_hostname, site_id, device_serial_number, flexvnf_country, flexvnf_city, vpn_0_ge0_0_ip_address, vpn_0_ge0_0_ip_gateway, vpn_0_ge0_1_ip_address, vpn_0_ge0_1_ip_gateway, tvi_0_2_ip, tvi_0_3_ip, latitude, longitude, auth_key)
+                    time.sleep(10)
+                    versa_deploy_device_workflow(director_ip, flexvnf_hostname)
+                    time.sleep(10)
+                    tn = telnetlib.Telnet(server_ip, console_port)
+                    tn.write(b"\r\n")
+                    while True:
+                        tn.write(b"\r\n")
+                        tn.write(b"\r\n")
+                        if '[admin@versa-flexvnf: ~] $' in output:
+                            break
+                        tn.read_until(b"versa-flexvnf login:", timeout=1)
+                        tn.write(versa_analytics_username.encode("ascii") + b"\n")
+                        tn.read_until(b"Password:", timeout=5)
+                        tn.write(versa_old_password.encode("ascii") + b"\n")
+                        output = tn.read_until(b"[admin@versa-flexvnf: ~] $", timeout=5).decode('ascii')
+                        if '[admin@versa-flexvnf: ~] $' in output:
+                            break
+                        log_and_update_db(server_name, project_name, deployment_type, deployment_status,
+                                          deployment_step,
+                                          f"{node_name} not available yet, trying again in 30 seconds")
+                        time.sleep(30)
+                    tn.write(b"\r\n")
+                    tn.read_until(b"[admin@versa-flexvnf: ~] $")
+                    tn.write(b'sudo su\r\n')
+                    tn.read_until(b"[sudo] password for admin:")
+                    tn.write(versa_old_password.encode("ascii") + b"\n")
+                    tn.read_until(b"[root@versa-flexvnf: admin]#")
+                    tn.write(onboard_command.encode('ascii') + b"\r")
+                    tn.read_until(b"[root@versa-flexvnf: admin]#")
+                    #tn.close()
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed FlexVNF Device Onboarding for {temp_node_name}, Remaining - {flexvnf_count - i}")
+                    if i % 44 == 0 and i != 0:
+                        isp_index += 1
+                    flexvnf_vr_index += 2
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed FlexVNF Device Onboarding for {flexvnf_count} FlexVNF devices")
+    # endregion
+    end_time = time.time()
+    total_time = (end_time - start_time) / 60
+    deployment_step = 'Complete'
+    deployment_status = 'Complete'
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Total time for GNS3 Lab Deployment with {flexvnf_count} FlexVNF Devices: {total_time:.2f} minutes")
+    sys.exit()
     # region Viptela FlexVNF Final Setup
     deployment_step = 'FlexVNF Final Setup'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
@@ -601,115 +694,6 @@ def versa_deploy():
 
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
                       f"Completed FlexVNF Certificate setup and deployment into Viptela Environment")
-    # endregion
-
-    end_time = time.time()
-    total_time = (end_time - start_time) / 60
-    deployment_step = 'Complete'
-    deployment_status = 'Complete'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Total time for GNS3 Lab Deployment with {flexvnf_count} FlexVNF Devices: {total_time:.2f} minutes")
-    sys.exit()
-    # region Viptela FlexVNF Device Setup
-    deployment_step = 'FlexVNF Device Setup'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting FlexVNF Device Setup for {flexvnf_count} FlexVNFs")
-    server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
-    abs_path = os.path.abspath(__file__)
-    configs_path = os.path.join(os.path.dirname(abs_path), 'configs/viptela')
-    file_name = os.path.join(configs_path, 'flexvnf_cloud_site_template')
-    flexvnf_lan_objects = generate_vedge_objects(flexvnf_count, '172.14.2')
-    isp_index = 0
-    for server_ip in server_ips:
-        for i in range(1, flexvnf_count + 1):
-            temp_node_name = f'FlexVNF_{i:003}'
-            matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
-            if matching_nodes:
-                for matching_node in matching_nodes:
-                    node_id, console_port, aux = matching_node
-                    node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id', 'name', node_id)
-                    for flexvnf_lan_object in flexvnf_lan_objects:
-                        if flexvnf_lan_object['flexvnf'] == temp_node_name:
-                            lan_dhcp_pool = flexvnf_lan_object['lan_dhcp_pool']
-                            lan_subnet_address = flexvnf_lan_object['lan_subnet_address']
-                            lan_dhcp_exclude = flexvnf_lan_object['lan_dhcp_exclude']
-                            lan_gateway_address = flexvnf_lan_object['lan_gateway_address']
-                            client_1_address = flexvnf_lan_object['client_1_address']
-                            mgmt_address = flexvnf_lan_object['mgmt_address']
-                            mgmt_gateway = flexvnf_lan_object['mgmt_gateway']
-                            system_ip = flexvnf_lan_object['system_ip']
-                            site_id = flexvnf_lan_object['site_id']
-                    for dictionary_0 in isp_1_overall[isp_index]:
-                        if dictionary_0['flexvnf'] == temp_node_name:
-                            vpn_0_ge0_0_ip_address = dictionary_0['flexvnf_address']
-                            vpn_0_ge0_0_ip_gateway = dictionary_0['router_address']
-                    for dictionary_1 in isp_2_overall[isp_index]:
-                        if dictionary_1['flexvnf'] == temp_node_name:
-                            vpn_0_ge0_1_ip_address = dictionary_1['flexvnf_address']
-                            vpn_0_ge0_1_ip_gateway = dictionary_1['router_address']
-                    flexvnf_hostname = f"{temp_node_name}_{city_data[temp_node_name]['city']}"
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting FlexVNF Device Setup for {node_name[0]} - FlexVNF {i} of {flexvnf_count}")
-                    tn = telnetlib.Telnet(server_ip, console_port)
-                    while True:
-                        tn.write(b"\r\n")
-                        output = tn.read_until(b"login:", timeout=1).decode('ascii')
-                        if 'flexvnf#' in output:
-                            tn.write(b"\r\n")
-                            break
-                        tn.write(viptela_username.encode("ascii") + b"\n")
-                        tn.read_until(b"Password:")
-                        tn.write(versa_old_password.encode("ascii") + b"\n")
-                        output = tn.read_until(b"Password:", timeout=5).decode('ascii')
-                        if 'Login incorrect' in output:
-                            tn.read_until(b"login:", timeout=1)
-                            tn.write(viptela_username.encode("ascii") + b"\n")
-                            tn.read_until(b"Password:", timeout=1)
-                            tn.write(versa_old_password.encode("ascii") + b"\n")
-                            tn.write(b"\r\n")
-                            break
-                        elif 'Welcome' in output:
-                            tn.write(versa_old_password.encode("ascii") + b"\n")
-                            tn.read_until(b"password:", timeout=2)
-                            tn.write(versa_old_password.encode("ascii") + b"\n")
-                            tn.write(b"\r\n")
-                            break
-                        log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"{temp_node_name} not available yet, trying again in 30 seconds")
-                        time.sleep(30)
-                    tn.write(b"\r\n")
-                    tn.read_until(b"#")
-                    with open(file_name, 'r') as f:
-                        lines = f.readlines()
-                        log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Sending configuration commands to {node_name[0]}")
-                        for line in lines:
-                            formatted_line = line.format(
-                                flexvnf_hostname=flexvnf_hostname,
-                                latitude=city_data[temp_node_name]['latitude'],
-                                longitude=city_data[temp_node_name]['longitude'],
-                                system_ip=system_ip,
-                                site_id=site_id,
-                                org_name=org_name,
-                                vbond_address=vbond_address,
-                                vpn_0_ge0_0_ip_address=vpn_0_ge0_0_ip_address,
-                                vpn_0_ge0_0_ip_gateway=vpn_0_ge0_0_ip_gateway,
-                                vpn_0_ge0_1_ip_address=vpn_0_ge0_1_ip_address,
-                                vpn_0_ge0_1_ip_gateway=vpn_0_ge0_1_ip_gateway,
-                                vpn_1_ge0_2_ip_address=lan_dhcp_pool,
-                                dhcp_pool=lan_subnet_address,
-                                dhcp_exclude=lan_dhcp_exclude,
-                                dhcp_gateway=lan_gateway_address,
-                                client_1_address=client_1_address,
-                                vpn_512_eth0_ip_address=mgmt_address,
-                                vpn_512_eth0_ip_gateway=mgmt_gateway
-                            )
-                            tn.write(formatted_line.encode('ascii') + b"\n")
-                            tn.read_until(b"#")
-                    tn.write(b"\r\n")
-                    output = tn.read_until(b"Commit complete.").decode('ascii')
-                    tn.write(b"exit\r")
-                    tn.read_until(b"exit")
-                    tn.close()
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed FlexVNF Device Setup for {temp_node_name}, Remaining - {flexvnf_count - i}")
-                    if i % 44 == 0 and i != 0:
-                        isp_index += 1
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed FlexVNF Device Setup for {flexvnf_count} FlexVNF devices")
     # endregion
     # region Validation
     client_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "Client")

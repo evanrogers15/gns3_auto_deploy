@@ -968,6 +968,40 @@ def versa_generate_flexvnf_deploy_data(flexvnf_count):
                 "x": drawing_x, "y": drawing_y, "z": 0}
     return deploy_data, client_deploy_data, site_drawing_deploy_data
 
+def generate_flexvnf_objects(vedge_count, mgmt_base_subnet):
+    subnet_mask = 24
+    k = 101
+    networks = []
+    for i in range(1, vedge_count + 1):
+        base_subnet = f'172.14.{k}.0/24'
+        network = ipaddress.IPv4Network(base_subnet)
+        subnets_64 = list(network.subnets(new_prefix=subnet_mask))
+        for subnet in subnets_64:
+            if subnet.prefixlen == subnet_mask:
+                router_address = str(subnet.network_address + 1)
+                vedge_address = str(subnet.network_address + 2)
+                subnet_address_full = str(
+                    ipaddress.IPv4Interface(str(subnet.network_address) + '/' + str(subnet_mask)).netmask)
+                subnet_address_var = str(subnet.network_address) + '/' + str(subnet_mask)
+                dhcp_exclude_var = str(subnet.network_address + 1) + '-' + str(subnet.network_address + 50)
+                client_1_address_var = str(subnet.network_address + 51)
+                network_dict = {
+                    'lan_subnet_address': subnet_address_var,
+                    'lan_gateway_address': router_address,
+                    'lan_dhcp_pool': f'{router_address}/24',
+                    'lan_dhcp_exclude': dhcp_exclude_var,
+                    'client_1_address': client_1_address_var,
+                    'vedge': f'vEdge_{i:003}',
+                    'system_ip': f'{mgmt_base_subnet}.{i + 100}',
+                    'mgmt_address': f'{mgmt_base_subnet}.{i + 100}/24',
+                    'mgmt_gateway': f'{mgmt_base_subnet}.1',
+                    'site_id': k,
+                    'org_name': 'sdwan-lab'
+                }
+            networks.append(network_dict)
+            k += 1
+    # logging.info(networks)
+    return networks
 def generate_mgmt_switch_deploy_data_old(num_nodes):
     deploy_data = {}
     e = 1

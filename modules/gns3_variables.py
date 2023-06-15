@@ -293,16 +293,16 @@ oa_city_data = {
 }
 
 versa_city_data = {
-"FlexVNF_001": {"city": "NewYork", "latitude": 40.712776, "longitude": -74.005974},
-"FlexVNF_002": {"city": "Cairns", "latitude": -16.920334, "longitude": 145.770889},
-"FlexVNF_003": {"city": "London", "latitude": 51.507351, "longitude": -0.127758},
-"FlexVNF_004": {"city": "Stockholm", "latitude": 59.329323, "longitude": 18.068581},
-"FlexVNF_005": {"city": "Pune", "latitude": 18.520430, "longitude": 73.856743},
-"FlexVNF_006": {"city": "Hamburg", "latitude": 53.551086, "longitude": 9.993682},
-"FlexVNF_007": {"city": "RiodeJaneiro", "latitude": -22.9068, "longitude": -43.1729},
-"FlexVNF_008": {"city": "Rome", "latitude": 41.902782, "longitude": 12.496366},
-"FlexVNF_009": {"city": "Copenhagen", "latitude": 55.676097, "longitude": 12.568337},
-"FlexVNF_010": {"city": "SaoPaulo", "latitude": -23.5505, "longitude": -46.6333},
+"FlexVNF_001": {"city": "NewYork", "country": "US", "latitude": 40.712776, "longitude": -74.005974},
+"FlexVNF_002": {"city": "Cairns", "country": "FR", "latitude": -16.920334, "longitude": 145.770889},
+"FlexVNF_003": {"city": "London", "country": "FR", "latitude": 51.507351, "longitude": -0.127758},
+"FlexVNF_004": {"city": "Stockholm", "country": "SE", "latitude": 59.329323, "longitude": 18.068581},
+"FlexVNF_005": {"city": "Pune", "country": "IN", "latitude": 18.520430, "longitude": 73.856743},
+"FlexVNF_006": {"city": "Hamburg", "country": "DE", "latitude": 53.551086, "longitude": 9.993682},
+"FlexVNF_007": {"city": "RiodeJaneiro", "country": "BR", "latitude": -22.9068, "longitude": -43.1729},
+"FlexVNF_008": {"city": "Rome", "country": "IT", "latitude": 41.902782, "longitude": 12.496366},
+"FlexVNF_009": {"city": "Copenhagen", "country": "DK", "latitude": 55.676097, "longitude": 12.568337},
+"FlexVNF_010": {"city": "SaoPaulo", "country": "BR", "latitude": -23.5505, "longitude": -46.6333},
 }
 
 city_data = {

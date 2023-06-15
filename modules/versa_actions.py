@@ -602,7 +602,7 @@ def versa_deploy_device_workflow_2(director_ip):
     except requests.exceptions.RequestException as e:
         print(f"Configuration failed. Error: {str(e)}")
 
-def versa_create_site_device_workflow(director_ip, vr_1_local_ip, vr_1_route_id, lan_ip, site_name, site_id, serial_number, device_country, device_city, device_state, isp_1_ip, isp_1_gateway, isp_2_ip, isp_2_gateway, tvi_0_2_ip, tvi_0_3_ip, lattitude, longitude, auth_key):
+def versa_create_site_device_workflow(director_ip, vr_1_local_ip, vr_1_route_id, lan_ip, site_name, site_id, device_serial_number, device_country, device_city, isp_1_ip, isp_1_gateway, isp_2_ip, isp_2_gateway, tvi_0_2_ip, tvi_0_3_ip, lattitude, longitude, auth_key):
     url = f"https://{director_ip}:9182/vnms/sdwan/workflow/devices/device"
     headers = {
         "Content-Type": "application/json"
@@ -610,7 +610,7 @@ def versa_create_site_device_workflow(director_ip, vr_1_local_ip, vr_1_route_id,
     auth = ("Administrator", "versa123")
 
     data = {"versanms.sdwan-device-workflow": {"deviceName": site_name, "siteId": site_id, "orgName": "Versa-Root",
-                                               "serialNumber": serial_number, "deviceGroup": "Sites", "licensePeriod": 1,
+                                               "serialNumber": device_serial_number, "deviceGroup": "Sites", "licensePeriod": 1,
                                                "deploymentType": "physical",
                                                "locationInfo": {"country": device_country,
                                                                 "longitude": longitude, "latitude": lattitude,
@@ -625,7 +625,7 @@ def versa_create_site_device_workflow(director_ip, vr_1_local_ip, vr_1_route_id,
                                                                                                                       "isAutogeneratable": True},
                                                                                                                   {
                                                                                                                       "name": "{$v_Chassis_Id__sitesChassisId}",
-                                                                                                                      "value": serial_number,
+                                                                                                                      "value": device_serial_number,
                                                                                                                       "isAutogeneratable": True},
                                                                                                                   {
                                                                                                                       "name": "{$v_Versa-Root-Control-VR_1_Local_address__vrRouterAddress}",
@@ -646,7 +646,7 @@ def versa_create_site_device_workflow(director_ip, vr_1_local_ip, vr_1_route_id,
                                                                                                                       "isAutogeneratable": True},
                                                                                                                   {
                                                                                                                       "name": "{$v_location__IdLocation}",
-                                                                                                                      "value": f"{device_city}, {device_state}, {device_country}",
+                                                                                                                      "value": f"{device_city}, {device_country}",
                                                                                                                       "isAutogeneratable": True},
                                                                                                                   {
                                                                                                                       "name": "{$v_ISP-1_IPv4__staticaddress}",
@@ -795,7 +795,22 @@ def versa_create_site_device_workflow(director_ip, vr_1_local_ip, vr_1_route_id,
                                                                                                         "overlay": False,
                                                                                                         "type": "STRING"}]}},
                                                "serviceTemplateInfo": {"templateData": {"device-template-variable": [
-                                                   {"device": "Cairns", "template": "Versa-Root-DataStore"}]}}}}
+                                                   {"device": {site_name}, "template": "Versa-Root-DataStore"}]}}}}
+    try:
+        response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
+        response.raise_for_status()
+        print("Configuration successful.")
+    except requests.exceptions.RequestException as e:
+        print(f"Configuration failed. Error: {str(e)}")
+
+def versa_deploy_device_workflow(director_ip, site_name):
+    url = f"https://{director_ip}:9182/vnms/sdwan/workflow/devices/device/deploy/{site_name}"
+    headers = {
+        "Content-Type": "application/json"
+    }
+    auth = ("Administrator", "versa123")
+
+    data = {}
     try:
         response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
         response.raise_for_status()
