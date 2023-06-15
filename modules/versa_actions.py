@@ -457,7 +457,7 @@ def versa_create_site_device_workflow_2(director_ip):
                                                                                                                       "isAutogeneratable": True},
                                                                                                                   {
                                                                                                                       "name": "{$v_Versa-Root_Controller-01_Local_auth_email_identifier__IKELIdentifier}",
-                                                                                                                      "value": "NewYork@Versa-Root.com",
+                                                                                                                      "value": "Cairns@Versa-Root.com",
                                                                                                                       "isAutogeneratable": True},
                                                                                                                   {
                                                                                                                       "name": "{$v_Versa-Root-Control-VR_1_Router_ID__vrRouteId}",
