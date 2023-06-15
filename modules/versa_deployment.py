@@ -552,7 +552,7 @@ def versa_deploy():
     # region Viptela FlexVNF Final Setup
     deployment_step = 'FlexVNF Final Setup'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
-                      f"Starting FlexVNF Certificate setup and deployment into Viptela Environment")
+                      f"Starting FlexVNF deivce onboarding")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     v = 1
     for server_ip in server_ips:
@@ -561,7 +561,7 @@ def versa_deploy():
             for flexvnf_node in flexvnf_nodes:
                 node_id, console_port, aux = flexvnf_node
                 log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
-                                  f"Logging in to console for node {temp_node_name}")
+                                  f"Logging in to console for node {node_name}")
                 node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id',
                                                            'name', node_id)
                 if v == 1:
@@ -572,7 +572,7 @@ def versa_deploy():
                     sys.exit()
                 tn = telnetlib.Telnet(server_ip, console_port)
                 log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
-                                  f"Starting FlexVNF Certificate Setup for {node_name[0]} - FlexVNF {v} of {flexvnf_count}")
+                                  f"Starting FlexVNF Onboarding for {node_name[0]} - FlexVNF {v} of {flexvnf_count}")
                 while True:
                     tn.write(b"\r\n")
                     if '[admin@versa-flexvnf: ~] $' in output:
