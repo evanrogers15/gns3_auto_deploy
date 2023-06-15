@@ -573,6 +573,7 @@ def versa_deploy():
                 tn = telnetlib.Telnet(server_ip, console_port)
                 log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
                                   f"Starting FlexVNF Onboarding for {node_name[0]} - FlexVNF {v} of {flexvnf_count}")
+                tn.write(b"\r\n")
                 while True:
                     tn.write(b"\r\n")
                     if '[admin@versa-flexvnf: ~] $' in output:
@@ -601,6 +602,12 @@ def versa_deploy():
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
                       f"Completed FlexVNF Certificate setup and deployment into Viptela Environment")
     # endregion
+
+    end_time = time.time()
+    total_time = (end_time - start_time) / 60
+    deployment_step = 'Complete'
+    deployment_status = 'Complete'
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Total time for GNS3 Lab Deployment with {flexvnf_count} FlexVNF Devices: {total_time:.2f} minutes")
     sys.exit()
     # region Viptela FlexVNF Device Setup
     deployment_step = 'FlexVNF Device Setup'
@@ -746,10 +753,5 @@ def versa_deploy():
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed deployment validation for project {project_name}")
     # endregion
 
-    end_time = time.time()
-    total_time = (end_time - start_time) / 60
-    deployment_step = 'Complete'
-    deployment_status = 'Complete'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Total time for GNS3 Lab Deployment with {flexvnf_count} FlexVNF Devices: {total_time:.2f} minutes")
     # endregion
 

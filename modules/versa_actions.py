@@ -395,7 +395,7 @@ def versa_create_site_device_workflow_2(director_ip):
                                                "serialNumber": "SN102", "deviceGroup": "Sites", "licensePeriod": 1,
                                                "deploymentType": "physical",
                                                "locationInfo": {"country": "France",
-                                                                "longitude": "-16.920348", "latitude": "145.770953",
+                                                                "longitude": "145.770953", "latitude": "-16.920348",
                                                                 "city": "Cairns"},
                                                "postStagingTemplateInfo": {"templateName": "Edge-Template",
                                                                            "templateData": {
@@ -416,7 +416,7 @@ def versa_create_site_device_workflow_2(director_ip):
                                                                                                                       "isOverwritten": False},
                                                                                                                   {
                                                                                                                       "name": "{$v_longitude__Idlongitude}",
-                                                                                                                      "value": "-16.920348",
+                                                                                                                      "longitude": "145.770953",
                                                                                                                       "isAutogeneratable": True},
                                                                                                                   {
                                                                                                                       "name": "{$v_LAN_IPv4__staticaddress}",
@@ -453,7 +453,7 @@ def versa_create_site_device_workflow_2(director_ip):
                                                                                                                       "isAutogeneratable": False},
                                                                                                                   {
                                                                                                                       "name": "{$v_latitude__IdLatitude}",
-                                                                                                                      "value": "145.770953",
+                                                                                                                      "latitude": "-16.920348",
                                                                                                                       "isAutogeneratable": True},
                                                                                                                   {
                                                                                                                       "name": "{$v_Versa-Root_Controller-01_Local_auth_email_identifier__IKELIdentifier}",
@@ -475,7 +475,7 @@ def versa_create_site_device_workflow_2(director_ip):
                                                                                                                       "isAutogeneratable": True},
                                                                                                                   {
                                                                                                                       "name": "{$v_Versa-Root_Controller-01_Local_auth_email_key__IKELKey}",
-                                                                                                                      "value": "EFz2vxM/mRsoaS82d+nCg01/jDE5knE1cl10B6sNWJTBGgnFe+hUFIvi9Kz987fm8PK4MhxFw9j89sGXHm1xKK3ZTFVlouUwAWEuuaFeZBOKanA2joKkumDKUDO2cw19iJDzhQ+/OQIE+bzX/p8rULBDlONmszYBLKWpgsXvT5eqfFo5S1awko+Hk+1kATeBjiyqH9MG+XwDEsKLfdZMGcAVtUfnFQv02e+XZ5qQq9RwopgypCJbPbbULMnMDLeb121PjudYh0SkgLXuY74gt++NuxhmCKP/4c2T99wFTMftquTwjhfrylDeYW2pETx3Hs790EL+fpg/XFgiXS7DaQ==",
+                                                                                                                      "value": "UY2JBtddHpOv2TTbSdP3yNciGksrktUI1wbZASc1ZUt98LDnuKVbPYMUu4uo3cc1bvMei4+wQJkVpRl38lk2L36Qkq5ymjkaez7vRszInf7JGLLpxI8gVATu6fWiOUVZ2YII5hKLeBAc6cz0Ess7U/wKGGVZx/Iy1dlhzbmE8eEMZ1xaV8/NiNuyItZxJP0r/4hvijuA2V4PKcl6aSQqXnOWITHJA0o8BwRSaW4Dl5HhLopHntz74gPFD06qX+LUla+Dno7HGZzuW3BB4Vr0hyeAOzhMPC7HZCBIL4HtqJo2drThAVFQfSJqrNI1gbbJAEWVs7h/HHjIv04zlcqvyw==",
                                                                                                                       "isAutogeneratable": True}]}},
                                                                                "variableMetadata": [{
                                                                                                         "variable": "{$v_Site_Id__siteSiteID}",
@@ -582,8 +582,10 @@ def versa_create_site_device_workflow_2(director_ip):
         response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
         response.raise_for_status()
         print("Configuration successful.")
+        print(response)
     except requests.exceptions.RequestException as e:
         print(f"Configuration failed. Error: {str(e)}")
+        print(response)
 
 def versa_deploy_device_workflow_2(director_ip):
     url = f"https://{director_ip}:9182/vnms/sdwan/workflow/devices/device/deploy/Cairns"
@@ -600,7 +602,7 @@ def versa_deploy_device_workflow_2(director_ip):
     except requests.exceptions.RequestException as e:
         print(f"Configuration failed. Error: {str(e)}")
 
-def versa_create_site_device_workflow(director_ip, vr_1_local_ip, vr_1_route_id, lan_ip, site_name, site_id, serial_number, location, device_country, device_city, device_state, isp_1_ip, isp_1_gateway, isp_2_ip, isp_2_gateway, tvi_0_2_ip, tvi_0_3_ip, lattitude, longitude, auth_key):
+def versa_create_site_device_workflow(director_ip, vr_1_local_ip, vr_1_route_id, lan_ip, site_name, site_id, serial_number, device_country, device_city, device_state, isp_1_ip, isp_1_gateway, isp_2_ip, isp_2_gateway, tvi_0_2_ip, tvi_0_3_ip, lattitude, longitude, auth_key):
     url = f"https://{director_ip}:9182/vnms/sdwan/workflow/devices/device"
     headers = {
         "Content-Type": "application/json"
@@ -802,3 +804,4 @@ def versa_create_site_device_workflow(director_ip, vr_1_local_ip, vr_1_route_id,
         print(f"Configuration failed. Error: {str(e)}")
 
 # endregion
+versa_create_site_device_workflow_2('172.14.2.2')
