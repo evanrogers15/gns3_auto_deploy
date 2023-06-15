@@ -585,11 +585,11 @@ def versa_deploy():
                             site_id = flexvnf_lan_object['site_id']
                             device_serial_number = f"SN{site_id}"
                     for dictionary_0 in isp_1_overall[isp_index]:
-                        if dictionary_0['flexvnf'] == node_name:
+                        if dictionary_0['flexvnf'] == temp_node_name:
                             vpn_0_ge0_0_ip_address = dictionary_0['flexvnf_address']
                             vpn_0_ge0_0_ip_gateway = dictionary_0['router_address']
                     for dictionary_1 in isp_2_overall[isp_index]:
-                        if dictionary_1['flexvnf'] == node_name:
+                        if dictionary_1['flexvnf'] == temp_node_name:
                             vpn_0_ge0_1_ip_address = dictionary_1['flexvnf_address']
                             vpn_0_ge0_1_ip_gateway = dictionary_1['router_address']
                     flexvnf_hostname = f"{temp_node_name}_{city_data[temp_node_name]['city']}"
