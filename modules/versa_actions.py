@@ -473,10 +473,7 @@ def versa_create_site_device_workflow_2(director_ip):
                                                                                                                       "name": "{$v_identification__IdName}",
                                                                                                                       "value": "Cairns",
                                                                                                                       "isAutogeneratable": True},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_Versa-Root_Controller-01_Local_auth_email_key__IKELKey}",
-                                                                                                                      "value": "UY2JBtddHpOv2TTbSdP3yNciGksrktUI1wbZASc1ZUt98LDnuKVbPYMUu4uo3cc1bvMei4+wQJkVpRl38lk2L36Qkq5ymjkaez7vRszInf7JGLLpxI8gVATu6fWiOUVZ2YII5hKLeBAc6cz0Ess7U/wKGGVZx/Iy1dlhzbmE8eEMZ1xaV8/NiNuyItZxJP0r/4hvijuA2V4PKcl6aSQqXnOWITHJA0o8BwRSaW4Dl5HhLopHntz74gPFD06qX+LUla+Dno7HGZzuW3BB4Vr0hyeAOzhMPC7HZCBIL4HtqJo2drThAVFQfSJqrNI1gbbJAEWVs7h/HHjIv04zlcqvyw==",
-                                                                                                                      "isAutogeneratable": True}]}},
+                                                                                                                  ]}},
                                                                                "variableMetadata": [{
                                                                                                         "variable": "{$v_Site_Id__siteSiteID}",
                                                                                                         "group": "SDWAN",
@@ -691,10 +688,7 @@ def versa_create_site_device_workflow(director_ip, vr_1_local_ip, vr_1_route_id,
                                                                                                                       "name": "{$v_identification__IdName}",
                                                                                                                       "value": site_name,
                                                                                                                       "isAutogeneratable": True},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_Versa-Root_Controller-01_Local_auth_email_key__IKELKey}",
-                                                                                                                      "value": auth_key,
-                                                                                                                      "isAutogeneratable": True}]}},
+                                                                                                                  ]}},
                                                                                "variableMetadata": [{
                                                                                                         "variable": "{$v_Site_Id__siteSiteID}",
                                                                                                         "group": "SDWAN",
@@ -819,4 +813,6 @@ def versa_deploy_device_workflow(director_ip, site_name):
         print(f"Configuration failed. Error: {str(e)}")
 
 # endregion
-#versa_create_site_device_workflow_2('172.14.2.2')
+versa_create_site_device_workflow_2('172.14.2.2')
+time.sleep(5)
+versa_deploy_device_workflow_2('172.14.2.2')
