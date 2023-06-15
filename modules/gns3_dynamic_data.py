@@ -63,7 +63,7 @@ def generate_versa_network_objects(base_subnet, subnet_mask, vedge_index=1):
                 'subnet_mask': str(subnet.prefixlen),
                 'subnet_address': subnet_address,
                 'router_address': router_address,
-                'vedge_address': subnet_address_long,
+                'flexvnf_address': subnet_address_long,
                 'isp_switch_address': vedge_address,
                 'flexvnf': f'FlexVNF_{vedge_index:003}'
             }
