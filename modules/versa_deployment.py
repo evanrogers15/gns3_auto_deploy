@@ -248,9 +248,9 @@ def versa_deploy():
             flexvnf_isp_1_base_subnet = f'172.14.{starting_subnet}.0/24'
             flexvnf_isp_2_base_subnet = f'172.14.{starting_subnet + 1}.0/24'
             temp_file_name = f'cloud_isp_switch_{switch_index}_interfaces'
-            isp_router_objects = generate_network_objects(isp_router_base_subnet, 30)
-            isp_switch_1_objects = generate_network_objects(flexvnf_isp_1_base_subnet, 30, flexvnf_index)
-            isp_switch_2_objects = generate_network_objects(flexvnf_isp_2_base_subnet, 30, flexvnf_index)
+            isp_router_objects = generate_versa_network_objects(isp_router_base_subnet, 30)
+            isp_switch_1_objects = generate_versa_network_objects(flexvnf_isp_1_base_subnet, 30, flexvnf_index)
+            isp_switch_2_objects = generate_versa_network_objects(flexvnf_isp_2_base_subnet, 30, flexvnf_index)
             isp_1_overall.append(isp_switch_1_objects)
             isp_2_overall.append(isp_switch_2_objects)
             starting_subnet += 2
@@ -523,11 +523,17 @@ def versa_deploy():
                 tn.read_until(b"root@director:/home/Administrator#")
                 tn.write(b"cd /opt/versa/vnms/scripts/van-cluster-config/van_cluster_install\r\n")
                 tn.read_until(b"root@director:")
+                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                  f"Starting VAN Cluster Install")
                 tn.write(b"./van_cluster_installer.py --force\n")
                 tn.read_until(b"VAN CLUSTER INSTALL COMPLETED")
+                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                  f"Starting Post Install VAN Cluster Setup")
                 tn.write(b"./van_cluster_installer.py --post-setup --gen-vd-cert\r\n")
                 tn.read_until(b"VAN CLUSTER POST-SETUP PROCEDURES COMPLETED")
                 time.sleep(30)
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Starting Director API Tasks")
     versa_create_provider_org(director_ip)
     versa_create_overlay_prefix(director_ip)
     versa_create_overlay_route(director_ip)
@@ -579,11 +585,11 @@ def versa_deploy():
                             site_id = flexvnf_lan_object['site_id']
                             device_serial_number = f"SN{site_id}"
                     for dictionary_0 in isp_1_overall[isp_index]:
-                        if dictionary_0['flexvnf'] == temp_node_name:
+                        if dictionary_0['flexvnf'] == node_name:
                             vpn_0_ge0_0_ip_address = dictionary_0['flexvnf_address']
                             vpn_0_ge0_0_ip_gateway = dictionary_0['router_address']
                     for dictionary_1 in isp_2_overall[isp_index]:
-                        if dictionary_1['flexvnf'] == temp_node_name:
+                        if dictionary_1['flexvnf'] == node_name:
                             vpn_0_ge0_1_ip_address = dictionary_1['flexvnf_address']
                             vpn_0_ge0_1_ip_gateway = dictionary_1['router_address']
                     flexvnf_hostname = f"{temp_node_name}_{city_data[temp_node_name]['city']}"

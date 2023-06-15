@@ -44,6 +44,34 @@ def generate_network_objects(base_subnet, subnet_mask, vedge_index=1):
             switch_limit += 1
     return networks
 
+def generate_versa_network_objects(base_subnet, subnet_mask, vedge_index=1):
+    network = ipaddress.IPv4Network(base_subnet)
+    subnets_64 = list(network.subnets(new_prefix=subnet_mask))
+    networks = []
+    switch_limit = 1
+    for subnet in subnets_64:
+        if subnet.prefixlen == subnet_mask:
+            if switch_limit == 45:
+                break
+            router_address = str(subnet.network_address + 1)
+            vedge_address = str(subnet.network_address + 2)
+            subnet_address = str(
+                ipaddress.IPv4Interface(str(subnet.network_address) + '/' + str(subnet_mask)).netmask)
+            subnet_address_long = str(vedge_address) + '/' + str(subnet_mask)
+            network_dict = {
+                'subnet': str(subnet.network_address),
+                'subnet_mask': str(subnet.prefixlen),
+                'subnet_address': subnet_address,
+                'router_address': router_address,
+                'vedge_address': subnet_address_long,
+                'isp_switch_address': vedge_address,
+                'flexvnf': f'FlexVNF_{vedge_index:003}'
+            }
+            networks.append(network_dict)
+            vedge_index += 1
+            switch_limit += 1
+    return networks
+
 def generate_client_interfaces_file(filename_temp, ip=None):
     abs_path = os.path.abspath(__file__)
     configs_path = os.path.join(os.path.dirname(abs_path), 'configs/')
