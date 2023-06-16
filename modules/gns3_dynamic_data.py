@@ -65,7 +65,7 @@ def generate_versa_network_objects(base_subnet, subnet_mask, vedge_index=1):
                 'router_address': router_address,
                 'flexvnf_address': subnet_address_long,
                 'isp_switch_address': vedge_address,
-                'flexvnf': f'FlexVNF_{vedge_index:003}'
+                'flexvnf': f'FlexVNF-{vedge_index:003}'
             }
             networks.append(network_dict)
             vedge_index += 1
@@ -808,8 +808,8 @@ def versa_generate_flexvnf_deploy_data(flexvnf_count):
         y = -107
         y_s = -107
         for i in range(1, flexvnf_count + 1):
-            temp_name = f"FlexVNF_{i:03}"
-            name = f"FlexVNF_{i:03}_{versa_city_data[temp_name]['city']}"
+            temp_name = f"FlexVNF-{i:03}"
+            name = f"FlexVNF-{i:03}-{versa_city_data[temp_name]['city']}"
             client_name = f"Site_{i:03}_Client"
             if i == 1:
                 x = x_o
@@ -871,8 +871,8 @@ def versa_generate_flexvnf_deploy_data(flexvnf_count):
         y = -107
         y_s = -107
         for i in range(1, flexvnf_count + 1):
-            temp_name = f"FlexVNF_{i:03}"
-            name = f"FlexVNF_{i:03}_{versa_city_data[temp_name]['city']}"
+            temp_name = f"FlexVNF-{i:03}"
+            name = f"FlexVNF-{i:03}-{versa_city_data[temp_name]['city']}"
             client_name = f"Site_{i:03}_Client"
             if i == 1:
                 x = x_o
@@ -932,8 +932,8 @@ def versa_generate_flexvnf_deploy_data(flexvnf_count):
                 "x": drawing_x, "y": drawing_y, "z": 0}
     else:
         for i in range(1, flexvnf_count + 1):
-            temp_name = f"FlexVNF_{i:03}"
-            name = f"FlexVNF_{i:03}_{versa_city_data[temp_name]['city']}"
+            temp_name = f"FlexVNF-{i:03}"
+            name = f"FlexVNF-{i:03}-{versa_city_data[temp_name]['city']}"
             client_name = f"Site_{i:03}_Client"
             if i == 1:
                 x = x_o
@@ -1019,7 +1019,7 @@ def generate_flexvnf_objects(vedge_count, mgmt_base_subnet):
                     'lan_dhcp_pool': f'{router_address}/24',
                     'lan_dhcp_exclude': dhcp_exclude_var,
                     'client_1_address': client_1_address_var,
-                    'flexvnf': f'FlexVNF_{i:003}',
+                    'flexvnf': f'FlexVNF-{i:003}',
                     'system_ip': f'{mgmt_base_subnet}.{i + 100}',
                     'mgmt_address': f'{mgmt_base_subnet}.{i + 100}/24',
                     'mgmt_gateway': f'{mgmt_base_subnet}.1',

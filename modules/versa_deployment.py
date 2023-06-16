@@ -146,7 +146,7 @@ def versa_deploy():
         else:
             log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Node {node_name} already exists in project {project_name}")
     for i in range(1, flexvnf_count + 1):
-        node_name = f"FlexVNF_{i:03}"
+        node_name = f"FlexVNF-{i:03}"
         matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, node_name)
         if not matching_nodes:
             node_id, node_name = gns3_create_node_multi_return(gns3_server_data, new_project_id, versa_flexvnf_template_id,
@@ -566,7 +566,7 @@ def versa_deploy():
     flexvnf_vr_index = 4
     for server_ip in server_ips:
         for i in range(1, flexvnf_count + 1):
-            temp_node_name = f'FlexVNF_{i:003}'
+            temp_node_name = f'FlexVNF-{i:003}'
             matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
             if matching_nodes:
                 for matching_node in matching_nodes:
@@ -595,18 +595,16 @@ def versa_deploy():
                     flexvnf_hostname = f"{temp_node_name}_{versa_city_data[temp_node_name]['city']}"
                     flexvnf_city = versa_city_data[temp_node_name]['city']
                     flexvnf_country = versa_city_data[temp_node_name]['country']
-                    print(flexvnf_city)
-                    print(flexvnf_country)
-                    vr_1_route_id = f'10.10.0.{flexvnf_vr_index}'
-                    vr_1_local_ip = f'10.10.0.{flexvnf_vr_index}/32'
+                    lan_gateway_address = f'{lan_gateway_address}/24'
+                    vr_1_route_ip = f'10.10.0.{flexvnf_vr_index}'
+                    #vr_1_local_ip = f'10.10.0.{flexvnf_vr_index}/32'
                     tvi_0_2_ip = f'10.10.0.{flexvnf_vr_index + 1}/32'
                     tvi_0_3_ip = f'10.10.0.{flexvnf_vr_index}/32'
-                    auth_key = "EFz2vxM/mRsoaS82d+nCg01/jDE5knE1cl10B6sNWJTBGgnFe+hUFIvi9Kz987fm8PK4MhxFw9j89sGXHm1xKK3ZTFVlouUwAWEuuaFeZBOKanA2joKkumDKUDO2cw19iJDzhQ+/OQIE+bzX/p8rULBDlONmszYBLKWpgsXvT5eqfFo5S1awko+Hk+1kATeBjiyqH9MG+XwDEsKLfdZMGcAVtUfnFQv02e+XZ5qQq9RwopgypCJbPbbULMnMDLeb121PjudYh0SkgLXuY74gt++NuxhmCKP/4c2T99wFTMftquTwjhfrylDeYW2pETx3Hs790EL+fpg/XFgiXS7DaQ=="
                     latitude = versa_city_data[temp_node_name]['latitude']
                     longitude = versa_city_data[temp_node_name]['longitude']
                     onboard_command = f"sudo /opt/versa/scripts/staging.py -w 0 -n {device_serial_number} -c 172.14.5.2 -s {vpn_0_ge0_0_ip_address} -g {vpn_0_ge0_0_ip_gateway} -l SDWAN-Branch@Versa-Root.com -r Controller-01-staging@Versa-Root.com"
                     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting FlexVNF Device Onboarding for {node_name[0]} - FlexVNF {i} of {flexvnf_count}")
-                    versa_create_site_device_workflow(director_ip, vr_1_local_ip, vr_1_route_id, lan_gateway_address, flexvnf_hostname, site_id, device_serial_number, flexvnf_country, flexvnf_city, vpn_0_ge0_0_ip_address, vpn_0_ge0_0_ip_gateway, vpn_0_ge0_1_ip_address, vpn_0_ge0_1_ip_gateway, tvi_0_2_ip, tvi_0_3_ip, latitude, longitude)
+                    versa_create_site_device_workflow(director_ip, vr_1_route_ip, lan_gateway_address, flexvnf_hostname, site_id, device_serial_number, flexvnf_country, flexvnf_city, vpn_0_ge0_0_ip_address, vpn_0_ge0_0_ip_gateway, vpn_0_ge0_1_ip_address, vpn_0_ge0_1_ip_gateway, tvi_0_2_ip, tvi_0_3_ip, latitude, longitude)
                     time.sleep(10)
                     versa_deploy_device_workflow(director_ip, flexvnf_hostname)
                     time.sleep(10)
@@ -715,7 +713,7 @@ def versa_deploy():
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     for server_ip in server_ips:
         temp_node_name = f'Client_001'
-        flexvnf_nodes = f'FlexVNF_'
+        flexvnf_nodes = f'FlexVNF-'
         matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
         client_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, flexvnf_nodes)
         client_ip = 101
