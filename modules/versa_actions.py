@@ -600,7 +600,7 @@ def versa_deploy_device_workflow_2(director_ip):
         print(f"Configuration failed. Error: {str(e)}")
 
 def versa_create_site_device_workflow_old(director_ip, vr_1_local_ip, vr_1_route_id, lan_ip, site_name, site_id, device_serial_number, device_country, device_city, isp_1_ip, isp_1_gateway, isp_2_ip, isp_2_gateway, tvi_0_2_ip, tvi_0_3_ip, latitude, longitude):
-    print(director_ip, vr_1_local_ip, vr_1_route_id, lan_ip, site_name, site_id, device_serial_number, device_country, device_city, isp_1_ip, isp_1_gateway, isp_2_ip, isp_2_gateway, tvi_0_2_ip, tvi_0_3_ip, latitude, longitude)
+    # print(director_ip, vr_1_local_ip, vr_1_route_id, lan_ip, site_name, site_id, device_serial_number, device_country, device_city, isp_1_ip, isp_1_gateway, isp_2_ip, isp_2_gateway, tvi_0_2_ip, tvi_0_3_ip, latitude, longitude)
     url = f"https://{director_ip}:9182/vnms/sdwan/workflow/devices/device"
     headers = {
         "Content-Type": "application/json"
@@ -792,8 +792,6 @@ def versa_create_site_device_workflow_old(director_ip, vr_1_local_ip, vr_1_route
                                                "serviceTemplateInfo": {"templateData": {"device-template-variable": [
                                                    {"device": {site_name}, "template": "Versa-Root-DataStore"}]}}}}
     try:
-        json_data = json.dumps(data, ensure_ascii=False)
-        print(json_data)
         response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
         response.raise_for_status()
         print("Configuration successful.")

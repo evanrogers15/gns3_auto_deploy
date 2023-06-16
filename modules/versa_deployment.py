@@ -610,9 +610,9 @@ def versa_deploy():
                     tn.write(b"\r\n")
                     while True:
                         tn.write(b"\r\n")
-                        tn.read_until(b"versa-flexvnf login:", timeout=1)
-                        if '[admin@versa-flexvnf: ~] $' in output:
-                            break
+                        tn.read_until(b"versa-flexvnf login:", timeout=2)
+                        #if '[admin@versa-flexvnf: ~] $' in output:
+                        #    break
                         tn.write(versa_analytics_username.encode("ascii") + b"\n")
                         tn.read_until(b"Password:", timeout=5)
                         tn.write(versa_old_password.encode("ascii") + b"\n")
