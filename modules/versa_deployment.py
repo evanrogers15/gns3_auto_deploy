@@ -592,7 +592,7 @@ def versa_deploy():
                         if dictionary_1['flexvnf'] == temp_node_name:
                             vpn_0_ge0_1_ip_address = dictionary_1['flexvnf_address']
                             vpn_0_ge0_1_ip_gateway = dictionary_1['router_address']
-                    flexvnf_hostname = f"{temp_node_name}_{versa_city_data[temp_node_name]['city']}"
+                    flexvnf_hostname = f"{temp_node_name}-{versa_city_data[temp_node_name]['city']}"
                     flexvnf_city = versa_city_data[temp_node_name]['city']
                     flexvnf_country = versa_city_data[temp_node_name]['country']
                     vr_1_route_ip = f'10.10.0.{flexvnf_vr_index}'
@@ -633,7 +633,7 @@ def versa_deploy():
                     tn.read_until(b"[root@versa-flexvnf: admin]#")
                     tn.write(onboard_command.encode('ascii') + b"\r")
                     tn.read_until(b"[root@versa-flexvnf: admin]#")
-                    #tn.close()
+                    tn.close()
                     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed FlexVNF Device Onboarding for {temp_node_name}, Remaining - {flexvnf_count - i}")
                     if i % 44 == 0 and i != 0:
                         isp_index += 1
