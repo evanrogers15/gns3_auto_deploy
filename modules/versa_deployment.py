@@ -556,7 +556,6 @@ def versa_deploy():
     #versa_deploy_device_workflow_2(director_ip)
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, "Completed vManage Device Setup Part 2")
     # endregion
-
     # region Viptela FlexVNF Device Setup
     deployment_step = 'FlexVNF Device Onboarding'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting FlexVNF Device Onbaording for {flexvnf_count} FlexVNFs")
@@ -611,7 +610,7 @@ def versa_deploy():
                     tn.write(b"\r\n")
                     while True:
                         tn.write(b"\r\n")
-                        tn.write(b"\r\n")
+                        tn.read_until(b"versa-flexvnf login:", timeout=1)
                         if '[admin@versa-flexvnf: ~] $' in output:
                             break
                         tn.read_until(b"versa-flexvnf login:", timeout=1)
@@ -740,6 +739,5 @@ def versa_deploy():
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Successful connection to {successful_site} of {len(client_nodes)} Sites")
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed deployment validation for project {project_name}")
     # endregion
-
     # endregion
 
