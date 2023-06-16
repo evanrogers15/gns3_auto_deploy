@@ -595,7 +595,6 @@ def versa_deploy():
                     flexvnf_hostname = f"{temp_node_name}_{versa_city_data[temp_node_name]['city']}"
                     flexvnf_city = versa_city_data[temp_node_name]['city']
                     flexvnf_country = versa_city_data[temp_node_name]['country']
-                    lan_gateway_address = f'{lan_gateway_address}/24'
                     vr_1_route_ip = f'10.10.0.{flexvnf_vr_index}'
                     #vr_1_local_ip = f'10.10.0.{flexvnf_vr_index}/32'
                     tvi_0_2_ip = f'10.10.0.{flexvnf_vr_index + 1}/32'
@@ -604,7 +603,7 @@ def versa_deploy():
                     longitude = versa_city_data[temp_node_name]['longitude']
                     onboard_command = f"sudo /opt/versa/scripts/staging.py -w 0 -n {device_serial_number} -c 172.14.5.2 -s {vpn_0_ge0_0_ip_address} -g {vpn_0_ge0_0_ip_gateway} -l SDWAN-Branch@Versa-Root.com -r Controller-01-staging@Versa-Root.com"
                     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting FlexVNF Device Onboarding for {node_name[0]} - FlexVNF {i} of {flexvnf_count}")
-                    versa_create_site_device_workflow(director_ip, vr_1_route_ip, lan_gateway_address, flexvnf_hostname, site_id, device_serial_number, flexvnf_country, flexvnf_city, vpn_0_ge0_0_ip_address, vpn_0_ge0_0_ip_gateway, vpn_0_ge0_1_ip_address, vpn_0_ge0_1_ip_gateway, tvi_0_2_ip, tvi_0_3_ip, latitude, longitude)
+                    versa_create_site_device_workflow(director_ip, vr_1_route_ip, lan_dhcp_pool, flexvnf_hostname, site_id, device_serial_number, flexvnf_country, flexvnf_city, vpn_0_ge0_0_ip_address, vpn_0_ge0_0_ip_gateway, vpn_0_ge0_1_ip_address, vpn_0_ge0_1_ip_gateway, tvi_0_2_ip, tvi_0_3_ip, latitude, longitude)
                     time.sleep(10)
                     versa_deploy_device_workflow(director_ip, flexvnf_hostname)
                     time.sleep(10)
