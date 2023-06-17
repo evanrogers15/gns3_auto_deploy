@@ -595,7 +595,6 @@ def versa_deploy():
                     flexvnf_city = versa_city_data[temp_node_name]['city']
                     flexvnf_country = versa_city_data[temp_node_name]['country']
                     vr_1_route_ip = f'10.10.0.{flexvnf_vr_index}'
-                    #vr_1_local_ip = f'10.10.0.{flexvnf_vr_index}/32'
                     tvi_0_2_ip = f'10.10.0.{flexvnf_vr_index + 1}/32'
                     tvi_0_3_ip = f'10.10.0.{flexvnf_vr_index}/32'
                     latitude = versa_city_data[temp_node_name]['latitude']
@@ -611,8 +610,6 @@ def versa_deploy():
                     while True:
                         tn.write(b"\r\n")
                         tn.read_until(b"versa-flexvnf login:", timeout=2)
-                        #if '[admin@versa-flexvnf: ~] $' in output:
-                        #    break
                         tn.write(versa_analytics_username.encode("ascii") + b"\n")
                         tn.read_until(b"Password:", timeout=5)
                         tn.write(versa_old_password.encode("ascii") + b"\n")
