@@ -102,12 +102,10 @@ def viptela_mgmt_deploy():
     vmanage_template_id = gns3_create_template(gns3_server_data, viptela_vmanage_template_data)
     vbond_template_id = gns3_create_template(gns3_server_data, viptela_vbond_template_data)
     vsmart_template_id = gns3_create_template(gns3_server_data, viptela_vsmart_template_data)
-    openvswitch_isp_template_id = gns3_create_template(gns3_server_data, openvswitch_isp_template_data)
     temp_hub_data = generate_temp_hub_data(mgmt_main_switchport_count, mgmt_main_hub_template_name)
     regular_ethernet_hub_template_id = gns3_create_template(gns3_server_data, temp_hub_data)
     temp_hub_data = generate_temp_hub_data(mgmt_switchport_count, mgmt_hub_template_name)
     hub_template_id = gns3_create_template(gns3_server_data, temp_hub_data)
-    nat_node_template_id = gns3_query_get_template_id(server_ip, server_port, "NAT")
     cloud_node_template_id = gns3_query_get_template_id(server_ip, server_port, "Cloud")
     # endregion
     # region Deploy GNS3 Nodes
@@ -116,19 +114,15 @@ def viptela_mgmt_deploy():
     vmanage_node_id = gns3_create_node(gns3_server_data, new_project_id, vmanage_template_id, vmanage_deploy_data)
     vsmart_node_id = gns3_create_node(gns3_server_data, new_project_id, vsmart_template_id, vsmart_deploy_data)
     vbond_node_id = gns3_create_node(gns3_server_data, new_project_id, vbond_template_id, vbond_deploy_data)
-    isp_ovs_node_id = gns3_create_node(gns3_server_data, new_project_id, openvswitch_isp_template_id, openvswitch_isp_deploy_data)
     mgmt_main_switch_node_id = gns3_create_node(gns3_server_data, new_project_id, regular_ethernet_hub_template_id,
                                                 main_mgmt_switch_deploy_data)
     isp_switch_node_id = gns3_create_node(gns3_server_data, new_project_id, regular_ethernet_hub_template_id,
                                                 isp_switch_deploy_data)
-    nat_node_id = gns3_create_cloud_node(gns3_server_data, new_project_id, nat_node_deploy_data)
-    mgmt_cloud_node_id = gns3_create_cloud_node(gns3_server_data, new_project_id, cloud_node_deploy_data)
-    isp_cloud_node_id = gns3_create_cloud_node(gns3_server_data, new_project_id, cloud_node_deploy_data)
+    cloud_node_id = gns3_create_cloud_node(gns3_server_data, new_project_id, cloud_node_deploy_data)
 
     gns3_update_nodes(gns3_server_data, new_project_id, vmanage_node_id, vmanage_deploy_data)
     gns3_update_nodes(gns3_server_data, new_project_id, vsmart_node_id, vsmart_deploy_data)
     gns3_update_nodes(gns3_server_data, new_project_id, vbond_node_id, vbond_deploy_data)
-    gns3_update_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, openvswitch_isp_deploy_data)
     gns3_update_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, main_mgmt_switch_deploy_data)
     gns3_update_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, deploy_data_z)
     gns3_update_nodes(gns3_server_data, new_project_id, isp_switch_node_id, isp_switch_deploy_data)
@@ -149,9 +143,9 @@ def viptela_mgmt_deploy():
     gns3_connect_nodes(gns3_server_data, new_project_id, isp_switch_node_id, 2, 0, vsmart_node_id, 1, 0)
     gns3_connect_nodes(gns3_server_data, new_project_id, isp_switch_node_id, 3, 0, vbond_node_id, 1, 0)
     if use_tap == 1:
-        gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_cloud_node_id, 0, mgmt_tap_interface,
+        gns3_connect_nodes(gns3_server_data, new_project_id, cloud_node_id, 0, mgmt_tap_interface,
                            mgmt_main_switch_node_id, 0, 0)
-        gns3_connect_nodes(gns3_server_data, new_project_id, isp_cloud_node_id, 0, isp_tap_interface,
+        gns3_connect_nodes(gns3_server_data, new_project_id, cloud_node_id, 0, isp_tap_interface,
                            isp_switch_node_id, 0, 0)
     gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, 1, vmanage_node_id, 0, 0)
     gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, 2, vsmart_node_id, 0, 0)
