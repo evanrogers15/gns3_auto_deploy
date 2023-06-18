@@ -6,8 +6,6 @@ import logging.handlers
 from werkzeug.utils import secure_filename
 
 from modules.gns3_query import *
-from modules.viptela_deployment import *
-from modules.viptela_large_scale_deployment import *
 from modules.viptela_mgmt_deployment import *
 from modules.gns3_actions_old import *
 from modules.gns3_variables import *
@@ -181,7 +179,7 @@ def viptela_deploy_full():
         return make_response(jsonify({'message': 'Deployment is already in progress'}), 400)
 
     # Start a new thread for deployment
-    running_thread = threading.Thread(target=scale_viptela_deploy, args=())
+    running_thread = threading.Thread(target=viptela_mgmt_deploy, args=())
     running_thread.start()
 
     return jsonify({'success': True})
