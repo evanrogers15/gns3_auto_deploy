@@ -61,16 +61,17 @@ def scale_viptela_deploy():
         project_name = row[7]
         new_project_id = row[8]
         vedge_count = row[9]
-        tap_name = row[10]
+        mgmt_tap_name = row[10]
         vmanage_api_ip = row[11]
-    if tap_name == 'none':
+    if mgmt_tap_name == 'none':
         use_tap = 0
     else:
         use_tap = 1
-
+    isp_tap_name = 'tap4'
+    mgmt_tap_name = 'tap5'
     gns3_server_data = [{"GNS3 Server": server_ip, "Server Name": server_name, "Server Port": server_port,
                     "vManage API IP": vmanage_api_ip, "Project Name": project_name, "Project ID": new_project_id,
-                    "Tap Name": tap_name,
+                    "Tap Name": mgmt_tap_name,
                     "Site Count": vedge_count, "Use Tap": use_tap, "Deployment Type": deployment_type, "Deployment Status": deployment_status, "Deployment Step": deployment_step}]
     isp_switch_count = (vedge_count // 40) + 1
     mgmt_switch_count = (vedge_count // 30) + 1
@@ -118,8 +119,11 @@ def scale_viptela_deploy():
     isp_ovs_node_id = gns3_create_node(gns3_server_data, new_project_id, openvswitch_isp_template_id, openvswitch_isp_deploy_data)
     mgmt_main_switch_node_id = gns3_create_node(gns3_server_data, new_project_id, regular_ethernet_hub_template_id,
                                                 main_mgmt_switch_deploy_data)
+    isp_switch_node_id = gns3_create_node(gns3_server_data, new_project_id, regular_ethernet_hub_template_id,
+                                                isp_switch_deploy_data)
     nat_node_id = gns3_create_cloud_node(gns3_server_data, new_project_id, nat_node_deploy_data)
-    cloud_node_id = gns3_create_cloud_node(gns3_server_data, new_project_id, cloud_node_deploy_data)
+    mgmt_cloud_node_id = gns3_create_cloud_node(gns3_server_data, new_project_id, cloud_node_deploy_data)
+    isp_cloud_node_id = gns3_create_cloud_node(gns3_server_data, new_project_id, cloud_node_deploy_data)
 
     gns3_update_nodes(gns3_server_data, new_project_id, vmanage_node_id, vmanage_deploy_data)
     gns3_update_nodes(gns3_server_data, new_project_id, vsmart_node_id, vsmart_deploy_data)
@@ -127,6 +131,8 @@ def scale_viptela_deploy():
     gns3_update_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, openvswitch_isp_deploy_data)
     gns3_update_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, main_mgmt_switch_deploy_data)
     gns3_update_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, deploy_data_z)
+    gns3_update_nodes(gns3_server_data, new_project_id, isp_switch_node_id, isp_switch_deploy_data)
+    gns3_update_nodes(gns3_server_data, new_project_id, isp_switch_node_id, deploy_data_z)
     # endregion
     # region Connect GNS3 Lab Nodes
     deployment_step = 'Connect GNS3 Nodes'
@@ -134,15 +140,19 @@ def scale_viptela_deploy():
     matching_nodes = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'name', 'ports', 'MGMT-Cloud-TAP')
     mgmt_tap_interface = 0
     for port in matching_nodes[0]:
-        if port["short_name"] == tap_name:
+        if port["short_name"] == mgmt_tap_name:
             mgmt_tap_interface = port['port_number']
-    gns3_connect_nodes(gns3_server_data, new_project_id, nat_node_id, 0, 0, isp_ovs_node_id, 0, 0)
-    gns3_connect_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, 1, 0, vmanage_node_id, 1, 0)
-    gns3_connect_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, 2, 0, vsmart_node_id, 1, 0)
-    gns3_connect_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, 3, 0, vbond_node_id, 1, 0)
+    for port in matching_nodes[0]:
+        if port["short_name"] == isp_tap_name:
+            isp_tap_interface = port['port_number']
+    gns3_connect_nodes(gns3_server_data, new_project_id, isp_switch_node_id, 1, 0, vmanage_node_id, 1, 0)
+    gns3_connect_nodes(gns3_server_data, new_project_id, isp_switch_node_id, 2, 0, vsmart_node_id, 1, 0)
+    gns3_connect_nodes(gns3_server_data, new_project_id, isp_switch_node_id, 3, 0, vbond_node_id, 1, 0)
     if use_tap == 1:
-        gns3_connect_nodes(gns3_server_data, new_project_id, cloud_node_id, 0, mgmt_tap_interface,
+        gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_cloud_node_id, 0, mgmt_tap_interface,
                            mgmt_main_switch_node_id, 0, 0)
+        gns3_connect_nodes(gns3_server_data, new_project_id, isp_cloud_node_id, 0, isp_tap_interface,
+                           isp_switch_node_id, 0, 0)
     gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, 1, vmanage_node_id, 0, 0)
     gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, 2, vsmart_node_id, 0, 0)
     gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, 3, vbond_node_id, 0, 0)
@@ -156,33 +166,6 @@ def scale_viptela_deploy():
     #for drawing_data in viptela_drawing_data:
     #    gns3_create_drawing(gns3_server_data, new_project_id, viptela_drawing_data[f'drawing_{drawing_index:02}'])
     #    drawing_index += 1
-    # endregion
-    # region Deploy GNS3 Node Config Files
-    deployment_step = 'Node Configs'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting Node Config Creation")
-    matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "Cloud_ISP")
-    starting_subnet = 6
-    router_ip = 0
-    switch_index = 0
-    vedge_index = 1
-    if matching_nodes:
-        for matching_node in matching_nodes:
-            node_id = matching_node[0]
-            vedge_isp_1_base_subnet = f'10.0.0.0/24'
-            vedge_isp_2_base_subnet = f'172.16.{starting_subnet + 1}.0/24'
-            temp_file_name = f'cloud_isp_switch_{switch_index}_interfaces'
-            isp_switch_1_objects = generate_network_objects(vedge_isp_1_base_subnet, 30, vedge_index)
-            isp_switch_2_objects = generate_network_objects(vedge_isp_2_base_subnet, 30, vedge_index)
-            isp_1_overall.append(isp_switch_1_objects)
-            isp_2_overall.append(isp_switch_2_objects)
-            starting_subnet += 2
-            switch_index += 1
-            generate_interfaces_file_new(isp_switch_1_objects, isp_switch_2_objects,
-                                     temp_file_name)
-            router_ip += 1
-            gns3_upload_file_to_node(gns3_server_data, new_project_id, node_id, "etc/network/interfaces",
-                                     temp_file_name)
-            vedge_index += 44
     # endregion
     # region Start All GNS3 Nodes
     deployment_step = 'Starting Nodes'
@@ -280,13 +263,13 @@ def scale_viptela_deploy():
                             hostname=temp_node_name,
                             latitude='40.758701',
                             longitude='-111.876183',
-                            system_ip='172.16.2.6',
+                            system_ip='172.16.240.3',
                             org_name=org_name,
                             vbond_address=vbond_address,
-                            vpn_0_eth1_ip_address='172.16.4.6/30',
-                            vpn_0_eth1_ip_gateway='172.16.4.5',
-                            vpn_512_eth0_ip_address='172.16.2.6/24',
-                            vpn_512_eth0_ip_gateway='172.16.2.1'
+                            vpn_0_eth1_ip_address='10.0.0.3/24',
+                            vpn_0_eth1_ip_gateway='10.0.0.1',
+                            vpn_512_eth0_ip_address='172.16.240.3/24',
+                            vpn_512_eth0_ip_gateway='172.16.240.1'
                         )
                         tn.write(formatted_line.encode('ascii') + b"\n")
                         tn.read_until(b"#")
@@ -352,13 +335,13 @@ def scale_viptela_deploy():
                             hostname=temp_node_name,
                             latitude='40.758701',
                             longitude='-111.876183',
-                            system_ip='172.16.2.10',
+                            system_ip='172.16.240.4',
                             org_name=org_name,
                             vbond_address=vbond_address,
-                            vpn_0_eth1_ip_address='172.16.4.10/30',
-                            vpn_0_eth1_ip_gateway='172.16.4.9',
-                            vpn_512_eth0_ip_address='172.16.2.10/24',
-                            vpn_512_eth0_ip_gateway='172.16.2.1'
+                            vpn_0_eth1_ip_address='10.0.0.4/24',
+                            vpn_0_eth1_ip_gateway='10.0.0.1',
+                            vpn_512_eth0_ip_address='172.16.240.4/24',
+                            vpn_512_eth0_ip_gateway='172.16.240.1'
                         )
                         tn.write(formatted_line.encode('ascii') + b"\n")
                         tn.read_until(b"#")
@@ -379,7 +362,7 @@ def scale_viptela_deploy():
     abs_path = os.path.abspath(__file__)
     configs_path = os.path.join(os.path.dirname(abs_path), 'configs/viptela')
     file_name = os.path.join(configs_path, 'vmanage_template')
-    vdevices = [6, 10]
+    vdevices = [2, 3]
     for server_ip in server_ips:
         temp_node_name = f'vManage'
         matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
@@ -415,13 +398,13 @@ def scale_viptela_deploy():
                             hostname=temp_node_name,
                             latitude='40.758701',
                             longitude='-111.876183',
-                            system_ip='172.16.2.2',
+                            system_ip='172.16.240.2',
                             org_name=org_name,
                             vbond_address=vbond_address,
-                            vpn_0_eth1_ip_address='172.16.4.2/30',
-                            vpn_0_eth1_ip_gateway='172.16.4.1',
-                            vpn_512_eth0_ip_address='172.16.2.2/24',
-                            vpn_512_eth0_ip_gateway='172.16.2.1'
+                            vpn_0_eth1_ip_address='10.0.0.2/24',
+                            vpn_0_eth1_ip_gateway='10.0.0.1',
+                            vpn_512_eth0_ip_address='172.16.240.2/24',
+                            vpn_512_eth0_ip_gateway='172.16.240.1'
                         )
                         tn.write(formatted_line.encode('ascii') + b"\n")
                         tn.read_until(b"#")

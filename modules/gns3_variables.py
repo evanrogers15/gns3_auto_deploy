@@ -20,11 +20,6 @@ vmanage_address = '172.16.2.2'
 vsmart_address = '172.16.4.6'
 switchport_count = 95
 
-versa_director_username = 'Administrator'
-versa_old_password = "versa123"
-versa_analytics_username = "admin"
-versa_flexvnf_username = "admin"
-
 mgmt_switchport_count = 45
 mgmt_main_switchport_count = 30
 # endregion
@@ -58,15 +53,8 @@ vedge_template_name = 'vEdge'
 open_vswitch_cloud_template_name = 'Open_vSwitch_Cloud'
 open_vswitch_isp_template_name = 'Open_vSwitch_ISP'
 network_test_tool_template_name = 'Network_Test_Tool'
-cisco_l3_router_template_name = 'Cisco IOU L3 155-2T'
 mgmt_hub_template_name = 'MGMT_Hub'
 mgmt_main_hub_template_name = 'Main-MGMT-Switch'
-arista_veos_template_name = 'arista_switch'
-arista_ceos_template_name = 'arista_ceos'
-fortinet_fortigate_template_name = 'Fortigate 7.0.5'
-versa_director_template_name = 'Versa Director 21.2.3'
-versa_analytics_template_name = 'Versa Analytics 21.2.3'
-versa_flexvnf_template_name = 'Versa FlexVNF 21.2.3'
 # region Viptela Template Data
 viptela_vmanage_template_data = {"compute_id": "local", "cpus": 16, "adapters": 6,
                                  "symbol": ":/symbols/affinity/circle/blue/server_cluster.svg",
@@ -116,57 +104,7 @@ network_test_tool_template_data = {"compute_id": "local", "adapters": 2, "catego
                                    "image": "evanrogers719/network_test_tool:latest",
                                    "name": network_test_tool_template_name, "symbol": ":/symbols/docker_guest.svg",
                                    "template_type": "docker"}
-cisco_l3_router_template_data = {"compute_id": "local", "path": "L3-ADVENTERPRISEK9-M-15.5-2T.bin", "nvram": 256,
-                                 "ram": 512, "symbol": ":/symbols/classic/router.svg", "template_type": "iou",
-                                 "use_default_iou_values": True, "ethernet_adapters": 2, "serial_adapters": 0,
-                                 "name": cisco_l3_router_template_name,
-                                 "startup_config": "iou_l3_base_startup-config.txt"}
-fortinet_fortigate_template_data = {"compute_id": "local", "cpus": 4, "adapters": 10, "adapter_type": "e1000",
-                                    "qemu_path": "/usr/bin/qemu-system-x86_64",
-                                    "hda_disk_image": "FGT_VM64_KVM-v7.0.5.F-FORTINET.out.kvm.qcow2",
-                                    "hdb_disk_image": "empty30G.qcow2", "name": fortinet_fortigate_template_name,
-                                    "ram": 2048, "template_type": "qemu", "hda_disk_interface": "virtio",
-                                    "hdb_disk_interface": "virtio"}
-arista_veos_template_data = {"compute_id": "local", "cpus": 2, "adapters": 20, "adapter_type": "e1000",
-                             "qemu_path": "/usr/bin/qemu-system-x86_64", "hda_disk_image": "cdrom.iso",
-                             "hdb_disk_image": "vEOS-lab-4.28.0F.qcow2",
-                             "name": arista_veos_template_name,
-                             "ram": 2048, "template_type": "qemu", "hda_disk_interface": "ide",
-                             "hdb_disk_interface": "ide", "options": "-cpu host"}
-arista_ceos_old_template_data = {"compute_id": "local", "adapters": 20, "category": "router",
-                                 "image": "ceosimage:4.26.0.1F", "name": arista_ceos_template_name,
-                                 "symbol": ":/symbols/classic/multilayer_switch.svg", "template_type": "docker",
-                                 "usage": "By default all interfaces are connected to the br0",
-                                 "start_command": "/sbin/init systemd.setenv=INTFTYPE=eth systemd.setenv=ETBA=1 systemd.setenv=SKIP_ZEROTOUCH_BARRIER_IN_SYSDBINIT=1 systemd.setenv=CEOS=1 systemd.setenv=EOS_PLATFORM=ceoslab systemd.setenv=container=docker",
-                                 "environment": "INTFTYPE=eth\nETBA=1 \nSKIP_ZEROTOUCH_BARRIER_IN_SYSDBINIT=1 \nCEOS=1 \nEOS_PLATFORM=ceoslab \ncontainer=docker\nMAPETH0=1\nMGMTINF=eth0", }
-
-arista_ceos_template_data = {"compute_id": "local", "adapters": 20, "category": "router",
-                             "image": "ceosimage:4.28.6.1M", "name": arista_ceos_template_name,
-                             "symbol": ":/symbols/classic/multilayer_switch.svg", "template_type": "docker",
-                             "usage": "By default all interfaces are connected to the br0",
-                             "start_command": "/sbin/init systemd.setenv=INTFTYPE=eth systemd.setenv=ETBA=1 systemd.setenv=SKIP_ZEROTOUCH_BARRIER_IN_SYSDBINIT=1 systemd.setenv=CEOS=1 systemd.setenv=EOS_PLATFORM=ceoslab systemd.setenv=container=docker",
-                             "environment": "INTFTYPE=eth\nETBA=1 \nSKIP_ZEROTOUCH_BARRIER_IN_SYSDBINIT=1 \nCEOS=1 \nEOS_PLATFORM=ceoslab \ncontainer=docker\nMAPETH0=1\nMGMTINF=eth0", }
 # endregion
-versa_director_template_data = {"compute_id": "local", "cpus": 16, "adapters": 6,
-                                 "symbol": ":/symbols/affinity/circle/blue/server_cluster.svg",
-                                 "adapter_type": "virtio-net-pci", "qemu_path": "/usr/bin/qemu-system-x86_64",
-                                 "hda_disk_image": "versa-director-c19c43c-21.2.3.qcow2",
-                                 "name": versa_director_template_name, "ram": 16384,
-                                 "template_type": "qemu", "hda_disk_interface": "virtio",
-                                 "options": "-cpu host -smp 2,maxcpus=2"}
-versa_analytics_template_data = {"compute_id": "local", "cpus": 6, "adapters": 6,
-                                "symbol": ":/symbols/affinity/circle/blue/interconnect.svg",
-                                "adapter_type": "virtio-net-pci", "qemu_path": "/usr/bin/qemu-system-x86_64",
-                                "hda_disk_image": "versa-analytics-67ff6c7-21.2.3.qcow2",
-                                "name": versa_analytics_template_name, "ram": 16384, "template_type": "qemu",
-                                "hda_disk_interface": "virtio", "options": "-cpu host"}
-versa_flexvnf_template_data = {"compute_id": "local", "cpus": 1, "adapters": 6,
-                               "symbol": ":/symbols/affinity/circle/blue/isdn.svg", "adapter_type": "virtio-net-pci",
-                               "qemu_path": "/usr/bin/qemu-system-x86_64",
-                               "hda_disk_image": "versa-flexvnf-67ff6c7-21.2.3.qcow2",
-                               "name": versa_flexvnf_template_name, "ram": 4096, "template_type": "qemu",
-                               "hda_disk_interface": "virtio", "options": "-cpu host -smp 2,maxcpus=2"}
-
 
 vmanage_deploy_data = {"x": -107, "y": 570, "name": "vManage"}
 vsmart_deploy_data = {"x": -182, "y": 495, "name": "vSmart"}
@@ -176,6 +114,7 @@ cloud_node_deploy_data = {"x": -154, "y": -247, "name": "MGMT-Cloud-TAP", "node_
                           "compute_id": "local", "symbol": ":/symbols/cloud.svg"}
 openvswitch_isp_deploy_data = {"x": -154, "y": -51, "name": "Cloud_ISP_01"}
 main_mgmt_switch_deploy_data = {"x": 60, "y": -313, "name": "Main_MGMT-switch"}
+isp_switch_deploy_data = {"x": 60, "y": -200, "name": "ISP-switch"}
 nat_node_deploy_data = {"x": -154, "y": -554, "name": "Internet", "node_type": "nat", "compute_id": "local",
                         "symbol": ":/symbols/cloud.svg"}
 
@@ -188,28 +127,6 @@ big_block_deploy_data = {
     "svg": "<svg height=\"1500\" width=\"3681\"><rect fill=\"#ffffff\" fill-opacity=\"1.0\" height=\"1500\" stroke=\"#000000\" stroke-width=\"2\" width=\"3681\" /></svg>",
     "x": -1950, "y": -630, "z": -1}
 
-arista_deploy_data = {
-    "arista_01_deploy_data": {"x": -323, "y": -219, "name": "arista-spine1"},
-    "arista_02_deploy_data": {"x": -23, "y": -219, "name": "arista-spine2"},
-    "arista_03_deploy_data": {"x": -558, "y": 79, "name": "arista-leaf1"},
-    "arista_04_deploy_data": {"x": -323, "y": 79, "name": "arista-leaf2"},
-    "arista_05_deploy_data": {"x": -23, "y": 79, "name": "arista-leaf3"},
-    "arista_06_deploy_data": {"x": 200, "y": 79, "name": "arista-leaf4"},
-    "arista_07_deploy_data": {"x": 500, "y": 79, "name": "arista-leaf5"}
-}
-arista_2 = {
-    "arista_07_deploy_data": {"x": -25, "y": -23, "name": "arista-leaf5"},
-    "arista_08_deploy_data": {"x": -550, "y": 276, "name": "arista-leaf6"},
-    "arista_09_deploy_data": {"x": -325, "y": 276, "name": "arista-leaf7"},
-    "arista_10_deploy_data": {"x": -25, "y": 276, "name": "arista-leaf8"},
-}
-client_deploy_data = {
-    "client_01_deploy_data": {"x": -555, "y": 373, "name": "Client-1"},
-    "client_02_deploy_data": {"x": -330, "y": 373, "name": "Client-2"},
-    "client_03_deploy_data": {"x": -30, "y": 373, "name": "Client-3"},
-    "client_04_deploy_data": {"x": 200, "y": 373, "name": "Client-4"},
-    "client_05_deploy_data": {"x": 494, "y": 373, "name": "Client-5"},
-}
 local_switch_deploy_data = {
     "switch_01_deploy_data": {"x": -445, "y": 237, "name": "switch-1"},
     "switch_02_deploy_data": {"x": 83, "y": 237, "name": "switch-2"},

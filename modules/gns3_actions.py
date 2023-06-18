@@ -362,7 +362,6 @@ def gns3_set_project(gns3_server_data, project_id):
         log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Update project settings for {project_name}")
         return project_id
 
-
 def gns3_actions_upload_images(gns3_server_data):
     for root, dirs, files in os.walk("images/"):
         for file_name in files:
@@ -645,4 +644,3 @@ def gns3_change_node_state(server, port, project_id, node_id, state):
         return False
     return True
 # endregion
- # J~t}l\oWhK~hLDR
