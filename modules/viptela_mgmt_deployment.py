@@ -17,7 +17,7 @@ from modules.gns3_variables import *
 from modules.gns3_dynamic_data import *
 from modules.gns3_query import *
 
-def scale_viptela_deploy():
+def viptela_mgmt_deploy():
     # region Variables
     vmanage_headers = {}
     lan_subnet_address = ''
