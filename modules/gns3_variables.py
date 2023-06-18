@@ -15,9 +15,14 @@ viptela_username = 'admin'
 viptela_old_password = "admin"
 viptela_password = 'PW4netops'
 org_name = 'sdwan-lab'
-vbond_address = '172.16.4.10'
-vmanage_address = '172.16.2.2'
-vsmart_address = '172.16.4.6'
+
+vmanage_address = '10.0.0.2'
+vmanage_mgmt_address = '172.16.240.2'
+vsmart_address = '10.0.0.3'
+vsmart_mgmt_address = '172.16.240.3'
+vbond_address = '10.0.0.4'
+vbond_mgmt_address = '172.16.240.4'
+
 switchport_count = 95
 
 mgmt_switchport_count = 45
@@ -106,34 +111,21 @@ network_test_tool_template_data = {"compute_id": "local", "adapters": 2, "catego
                                    "template_type": "docker"}
 # endregion
 
-vmanage_deploy_data = {"x": -107, "y": 570, "name": "vManage"}
-vsmart_deploy_data = {"x": -182, "y": 495, "name": "vSmart"}
-vbond_deploy_data = {"x": -32, "y": 495, "name": "vBond"}
-isp_router_deploy_data = {"x": -108, "y": -247, "name": "ISP-Router"}
-cloud_node_deploy_data = {"x": -154, "y": -247, "name": "MGMT-Cloud-TAP", "node_type": "cloud",
+vmanage_deploy_data = {"x": -30, "y": 45, "name": "vManage"}
+vsmart_deploy_data = {"x": -180, "y": -105, "name": "vSmart"}
+vbond_deploy_data = {"x": 120, "y": -105, "name": "vBond"}
+cloud_node_deploy_data = {"x": -79.5, "y": -485, "name": "MGMT-Cloud-TAP", "node_type": "cloud",
                           "compute_id": "local", "symbol": ":/symbols/cloud.svg"}
 openvswitch_isp_deploy_data = {"x": -154, "y": -51, "name": "Cloud_ISP_01"}
-main_mgmt_switch_deploy_data = {"x": 60, "y": -313, "name": "Main_MGMT-switch"}
-isp_switch_deploy_data = {"x": 60, "y": -200, "name": "ISP-switch"}
+main_mgmt_switch_deploy_data = {"x": -261, "y": -316, "name": "Main_MGMT-switch"}
+isp_switch_deploy_data = {"x": 189, "y": -316, "name": "ISP-switch"}
 nat_node_deploy_data = {"x": -154, "y": -554, "name": "Internet", "node_type": "nat", "compute_id": "local",
                         "symbol": ":/symbols/cloud.svg"}
-
-versa_director_deploy_data = {"x": 5, "y": 495, "name": "Versa_Director"}
-versa_analytics_deploy_data = {"x": -190, "y": 495, "name": "Versa_Analytics"}
-versa_controller_deploy_data = {"x": -100, "y": 317, "name": "Versa_Controller"}
-versa_control_switch_deploy_data = {"x": -103, "y": 422, "name": "Control_Network"}
 
 big_block_deploy_data = {
     "svg": "<svg height=\"1500\" width=\"3681\"><rect fill=\"#ffffff\" fill-opacity=\"1.0\" height=\"1500\" stroke=\"#000000\" stroke-width=\"2\" width=\"3681\" /></svg>",
     "x": -1950, "y": -630, "z": -1}
 
-local_switch_deploy_data = {
-    "switch_01_deploy_data": {"x": -445, "y": 237, "name": "switch-1"},
-    "switch_02_deploy_data": {"x": 83, "y": 237, "name": "switch-2"},
-    "switch_03_deploy_data": {"x": 491, "y": 237, "name": "switch-3"},
-    "switch_04_deploy_data": {"x": 199, "y": 237, "name": "switch-4"},
-    "switch_05_deploy_data": {"x": 499, "y": 237, "name": "switch-5"},
-}
 drawing_deploy_data = {
     "drawing_01": {
         "svg": "<svg width=\"374.71428571428567\" height=\"146.57142857142856\"><ellipse cx=\"187\" rx=\"188\" cy=\"73\" ry=\"74\" fill=\"#00fdff\" fill-opacity=\"0.20602731364919508\" stroke-width=\"2\" stroke=\"#000000\" /></svg>",

@@ -104,9 +104,6 @@ def viptela_mgmt_deploy():
     vsmart_template_id = gns3_create_template(gns3_server_data, viptela_vsmart_template_data)
     temp_hub_data = generate_temp_hub_data(mgmt_main_switchport_count, mgmt_main_hub_template_name)
     regular_ethernet_hub_template_id = gns3_create_template(gns3_server_data, temp_hub_data)
-    temp_hub_data = generate_temp_hub_data(mgmt_switchport_count, mgmt_hub_template_name)
-    hub_template_id = gns3_create_template(gns3_server_data, temp_hub_data)
-    cloud_node_template_id = gns3_query_get_template_id(server_ip, server_port, "Cloud")
     # endregion
     # region Deploy GNS3 Nodes
     deployment_step = 'Deploy GNS3 Nodes'
@@ -416,7 +413,7 @@ def viptela_mgmt_deploy():
                 tn.write(b'exit\r\n')
                 tn.read_until(b'#')
                 for vdevice in vdevices:
-                    scp_command = f"request execute vpn 512 scp /home/admin/SDWAN.pem admin@172.16.2.{vdevice}:/home/admin"
+                    scp_command = f"request execute vpn 512 scp /home/admin/SDWAN.pem admin@172.16.240.{vdevice}:/home/admin"
                     tn.write(scp_command.encode('ascii') + b"\r")
                     test_o = tn.read_until(b"?", timeout=2).decode('ascii')
                     if "fingerprint" in test_o:
@@ -486,7 +483,7 @@ def viptela_mgmt_deploy():
                 vmanage_set_cert(gns3_server_data, vmanage_headers, vmanage_root_cert)
                 vmanage_sync_rootcertchain(gns3_server_data, vmanage_headers)
                 vmanage_set_vbond(gns3_server_data, vmanage_headers)
-                vmanage_csr = vmanage_generate_csr(gns3_server_data, vmanage_headers, vmanage_address, 'vmanage')
+                vmanage_csr = vmanage_generate_csr(gns3_server_data, vmanage_headers, vmanage_mgmt_address, 'vmanage')
                 tn.write(b'exit\r\n')
                 tn.read_until(b'#')
                 tn.write(b'vshell\r\n')
@@ -504,10 +501,10 @@ def viptela_mgmt_deploy():
                 vdevice_cert = vdevice_cert.decode('ascii').split('\r\n', 1)[1]
                 vdevice_cert = vdevice_cert.replace('\r\n', '\n')
                 vmanage_install_cert(gns3_server_data, vmanage_headers, vdevice_cert)
-                vmanage_set_device(gns3_server_data, vmanage_headers, vsmart_address, "vsmart")
-                vmanage_set_device(gns3_server_data, vmanage_headers, vbond_address, "vbond")
-                vbond_csr = vmanage_generate_csr(gns3_server_data, vmanage_headers, vbond_address, 'vbond')
-                vsmart_csr = vmanage_generate_csr(gns3_server_data, vmanage_headers, vsmart_address, 'vsmart')
+                vmanage_set_device(gns3_server_data, vmanage_headers, vsmart_mgmt_address, "vsmart")
+                vmanage_set_device(gns3_server_data, vmanage_headers, vbond_mgmt_address, "vbond")
+                vbond_csr = vmanage_generate_csr(gns3_server_data, vmanage_headers, vbond_mgmt_address, 'vbond')
+                vsmart_csr = vmanage_generate_csr(gns3_server_data, vmanage_headers, vsmart_mgmt_address, 'vsmart')
                 tn.write(b'exit\r\n')
                 tn.read_until(b'#')
                 tn.write(b'vshell\r\n')
