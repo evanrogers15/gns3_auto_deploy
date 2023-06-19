@@ -68,7 +68,9 @@ def viptela_vedge_deploy():
     else:
         use_tap = 1
     isp_tap_name = 'tap6'
+    mgmt_tap_name = 'tap7'
     vmanage_api_ip = '10.0.0.2'
+
     gns3_server_data = [{"GNS3 Server": server_ip, "Server Name": server_name, "Server Port": server_port,
                     "vManage API IP": vmanage_api_ip, "Project Name": project_name, "Project ID": new_project_id,
                     "Tap Name": tap_name,
@@ -85,6 +87,15 @@ def viptela_vedge_deploy():
         c.execute(
             "INSERT INTO deployments (server_name, server_ip, project_name) VALUES (?, ?, ?)", (server_ip, server_name, project_name))
         conn.commit()
+    gns3_viptela_management_server_ip = '192.168.122.1'
+    mgmt_project_name = 'v_mgmt'
+    mgmt_projects = gns3_query_get_projects(gns3_viptela_management_server_ip, server_port)
+    matching_projects = [project for project in mgmt_projects if project['name'] == mgmt_project_name]
+    mgmt_project_id = matching_projects[0]['project_id']
+    temp_node_name = f'vManage'
+    matching_nodes = gns3_query_find_nodes_by_name(gns3_viptela_management_server_ip, server_port, mgmt_project_id, temp_node_name)
+    for matching_node in matching_nodes:
+        vmanage_node_id, vmanage_console_port, vmanage_aux = matching_node
 
     gns3_actions_upload_images(gns3_server_data)
     for image in required_qemu_images:
@@ -169,7 +180,7 @@ def viptela_vedge_deploy():
     matching_nodes = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'name', 'ports', 'MGMT-Cloud-TAP')
     mgmt_tap_interface = 0
     for port in matching_nodes[0]:
-        if port["short_name"] == tap_name:
+        if port["short_name"] == mgmt_tap_name:
             mgmt_tap_interface = port['port_number']
     for port in matching_nodes[0]:
         if port["short_name"] == isp_tap_name:
@@ -391,134 +402,130 @@ def viptela_vedge_deploy():
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     ve = 101
     v = 1
+
     for server_ip in server_ips:
-        temp_node_name = f'vManage'
-        matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
         vedge_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "vEdge")
-        if matching_nodes:
-            for matching_node in matching_nodes:
-                node_id, console_port, aux = matching_node
-                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Logging in to console for node {temp_node_name}")
-                for vedge_node in vedge_nodes:
-                    vedge_id, vedge_console, vedge_aux = vedge_node
-                    node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id', 'name', vedge_id)
-                    scp_command = f"request execute vpn 512 scp /home/admin/SDWAN.pem admin@172.16.2.{ve}:/home/admin"
-                    scp_2_command = f"request execute vpn 512 scp /home/admin/vedge.crt admin@172.16.2.{ve}:/home/admin"
-                    ssh_command = f"request execute vpn 512 ssh admin@172.16.2.{ve}"
-                    ssh_2_command = f"request execute vpn 512 ssh admin@172.16.2.10"
-                    tn = telnetlib.Telnet(server_ip, console_port)
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vEdge Certificate Setup for {node_name[0]} - vEdge {v} of {vedge_count}")
-                    while True:
-                        tn.write(b"\r\n")
-                        output = tn.read_until(b"login:", timeout=2).decode('ascii')
-                        if '#' in output:
-                            tn.write(b"\r\n")
-                            tn.read_until(b"#")
-                            tn.write(b'vshell\r\n')
-                            break
-                        elif ':~$' in output:
-                            tn.write(b"\r\n")
-                            break
-                        tn.write(viptela_username.encode("ascii") + b"\n")
-                        tn.read_until(b"Password:", timeout=1)
-                        tn.write(viptela_password.encode("ascii") + b"\n")
-                        output = tn.read_until(b"#", timeout=1).decode('ascii')
-                        if '#' in output:
-                            tn.write(b"\r\n")
-                            tn.read_until(b"#")
-                            tn.write(b'vshell\r\n')
-                            break
-                        log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"{temp_node_name} not available yet, trying again in 30 seconds")
-                        time.sleep(30)
+        log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Logging in to console for node {temp_node_name}")
+        for vedge_node in vedge_nodes:
+            vedge_id, vedge_console, vedge_aux = vedge_node
+            node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id', 'name', vedge_id)
+            scp_command = f"request execute vpn 512 scp /home/admin/SDWAN.pem admin@172.16.241.{ve}:/home/admin"
+            scp_2_command = f"request execute vpn 512 scp /home/admin/vedge.crt admin@172.16.241.{ve}:/home/admin"
+            ssh_command = f"request execute vpn 512 ssh admin@172.16.241.{ve}"
+            ssh_2_command = f"request execute vpn 512 ssh admin@{vbond_mgmt_address}"
+            tn = telnetlib.Telnet(gns3_viptela_management_server_ip, vmanage_console_port)
+            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vEdge Certificate Setup for {node_name[0]} - vEdge {v} of {vedge_count}")
+            while True:
+                tn.write(b"\r\n")
+                output = tn.read_until(b"login:", timeout=2).decode('ascii')
+                if '#' in output:
                     tn.write(b"\r\n")
-                    tn.read_until(b'$')
-                    tn.write(b'rm -rf vedge*\r\n')
-                    tn.read_until(b'$')
-                    tn.write(b'exit\r\n')
-                    # SCP SDWAN.pem to vEdge
-                    tn.read_until(b'#')
-                    tn.write(scp_command.encode('ascii') + b"\n")
-                    test_o = tn.read_until(b"?", timeout=2).decode('ascii')
-                    if "fingerprint" in test_o:
-                        tn.write(b'yes\r\n')
-                    else:
-                        tn.write(b"\n")
-                    tn.read_until(b"Password:")
-                    tn.write(viptela_password.encode("ascii") + b"\n")
-                    tn.read_until(b'#')
-                    # SSH to vEdge
-                    tn.write(ssh_command.encode('ascii') + b"\n")
-                    tn.read_until(b"Password:")
-                    tn.write(viptela_password.encode("ascii") + b"\n")
-                    tn.read_until(b'#')
-                    tn.write(b'request root-cert-chain install /home/admin/SDWAN.pem\n')
-                    tn.read_until(b'#')
-                    tn.write(b'request csr upload home/admin/vedge.csr\n')
-                    tn.read_until(b":")
-                    tn.write(b'sdwan-lab\n')
-                    tn.read_until(b":")
-                    tn.write(b'sdwan-lab\n')
-                    tn.read_until(b'#')
-                    # SCP the vEdge.csr to the vManage
-                    tn.write(b'request execute vpn 512 scp /home/admin/vedge.csr admin@172.16.2.2:/home/admin\r\n')
-                    test_o = tn.read_until(b"?", timeout=2).decode('ascii')
-                    if "fingerprint" in test_o:
-                        tn.write(b'yes\r\n')
-                    else:
-                        tn.write(b"\n")
-                    tn.read_until(b"Password:")
-                    tn.write(viptela_password.encode("ascii") + b"\n")
-                    tn.read_until(b'#')
-                    # Drop back to the vManage
-                    tn.write(b'exit\r\n')
-                    tn.read_until(b'vManage#')
+                    tn.read_until(b"#")
                     tn.write(b'vshell\r\n')
-                    tn.read_until(b'$')
-                    tn.write(
-                        b'openssl x509 -req -in vedge.csr -CA SDWAN.pem -CAkey SDWAN.key -CAcreateserial -out vedge.crt -days 2000 -sha256\n')
-                    tn.read_until(b'$')
-                    tn.write(b'exit\r\n')
-                    tn.read_until(b'#')
-                    # SCP the vEdge.crt to the vEdge
-                    tn.write(scp_2_command.encode('ascii') + b"\n")
-                    tn.read_until(b"Password:")
-                    tn.write(viptela_password.encode("ascii") + b"\n")
-                    tn.read_until(b'#')
-                    # SSH to the vEdge to install the new cert
-                    tn.write(ssh_command.encode('ascii') + b"\n")
-                    tn.read_until(b"Password:")
-                    tn.write(viptela_password.encode("ascii") + b"\n")
-                    tn.read_until(b'#')
-                    while True:
-                        tn.write(b'request certificate install /home/admin/vedge.crt\r\n')
-                        tn.read_until(b'#')
-                        tn.write(b'show certificate serial\r\n')
-                        cert_output = tn.read_until(b"#").decode("ascii")
-                        chassis_regex = r"Chassis number: (.+?)\s+serial number:"
-                        serial_regex = r"serial number: ([A-F0-9]+)"
-                        chassis_number = re.search(chassis_regex, cert_output).group(1)
-                        serial_number = re.search(serial_regex, cert_output).group(1)
-                        if chassis_number and serial_number:
-                            break
-                        log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"{node_name[0]} tried to install certificate too quickly, trying again in 10 seconds ")
-                        time.sleep(10)
-                    tn.write(b'exit\r\n')
-                    tn.read_until(b'#')
-                    vedge_install_command = f"request vedge add chassis-num {chassis_number} serial-num {serial_number}"
-                    tn.write(ssh_2_command.encode('ascii') + b"\n")
-                    tn.read_until(b"Password:")
-                    tn.write(viptela_password.encode("ascii") + b"\n")
-                    tn.read_until(b'#')
-                    tn.write(vedge_install_command.encode('ascii') + b"\n")
-                    tn.read_until(b'#')
-                    tn.write(b'exit\r\n')
-                    tn.read_until(b'#')
-                    tn.write(vedge_install_command.encode('ascii') + b"\n")
-                    tn.read_until(b'#')
-                    ve += 1
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vEdge Certificate Setup for {node_name[0]}, Remaining - {vedge_count - v}")
-                    tn.close()
-                    v += 1
+                    break
+                elif ':~$' in output:
+                    tn.write(b"\r\n")
+                    break
+                tn.write(viptela_username.encode("ascii") + b"\n")
+                tn.read_until(b"Password:", timeout=1)
+                tn.write(viptela_password.encode("ascii") + b"\n")
+                output = tn.read_until(b"#", timeout=1).decode('ascii')
+                if '#' in output:
+                    tn.write(b"\r\n")
+                    tn.read_until(b"#")
+                    tn.write(b'vshell\r\n')
+                    break
+                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"{temp_node_name} not available yet, trying again in 30 seconds")
+                time.sleep(30)
+            tn.write(b"\r\n")
+            tn.read_until(b'$')
+            tn.write(b'rm -rf vedge*\r\n')
+            tn.read_until(b'$')
+            tn.write(b'exit\r\n')
+            # SCP SDWAN.pem to vEdge
+            tn.read_until(b'#')
+            tn.write(scp_command.encode('ascii') + b"\n")
+            test_o = tn.read_until(b"?", timeout=2).decode('ascii')
+            if "fingerprint" in test_o:
+                tn.write(b'yes\r\n')
+            else:
+                tn.write(b"\n")
+            tn.read_until(b"Password:")
+            tn.write(viptela_password.encode("ascii") + b"\n")
+            tn.read_until(b'#')
+            # SSH to vEdge
+            tn.write(ssh_command.encode('ascii') + b"\n")
+            tn.read_until(b"Password:")
+            tn.write(viptela_password.encode("ascii") + b"\n")
+            tn.read_until(b'#')
+            tn.write(b'request root-cert-chain install /home/admin/SDWAN.pem\n')
+            tn.read_until(b'#')
+            tn.write(b'request csr upload home/admin/vedge.csr\n')
+            tn.read_until(b":")
+            tn.write(b'sdwan-lab\n')
+            tn.read_until(b":")
+            tn.write(b'sdwan-lab\n')
+            tn.read_until(b'#')
+            # SCP the vEdge.csr to the vManage
+            tn.write(b'request execute vpn 512 scp /home/admin/vedge.csr admin@172.16.2.2:/home/admin\r\n')
+            test_o = tn.read_until(b"?", timeout=2).decode('ascii')
+            if "fingerprint" in test_o:
+                tn.write(b'yes\r\n')
+            else:
+                tn.write(b"\n")
+            tn.read_until(b"Password:")
+            tn.write(viptela_password.encode("ascii") + b"\n")
+            tn.read_until(b'#')
+            # Drop back to the vManage
+            tn.write(b'exit\r\n')
+            tn.read_until(b'vManage#')
+            tn.write(b'vshell\r\n')
+            tn.read_until(b'$')
+            tn.write(
+                b'openssl x509 -req -in vedge.csr -CA SDWAN.pem -CAkey SDWAN.key -CAcreateserial -out vedge.crt -days 2000 -sha256\n')
+            tn.read_until(b'$')
+            tn.write(b'exit\r\n')
+            tn.read_until(b'#')
+            # SCP the vEdge.crt to the vEdge
+            tn.write(scp_2_command.encode('ascii') + b"\n")
+            tn.read_until(b"Password:")
+            tn.write(viptela_password.encode("ascii") + b"\n")
+            tn.read_until(b'#')
+            # SSH to the vEdge to install the new cert
+            tn.write(ssh_command.encode('ascii') + b"\n")
+            tn.read_until(b"Password:")
+            tn.write(viptela_password.encode("ascii") + b"\n")
+            tn.read_until(b'#')
+            while True:
+                tn.write(b'request certificate install /home/admin/vedge.crt\r\n')
+                tn.read_until(b'#')
+                tn.write(b'show certificate serial\r\n')
+                cert_output = tn.read_until(b"#").decode("ascii")
+                chassis_regex = r"Chassis number: (.+?)\s+serial number:"
+                serial_regex = r"serial number: ([A-F0-9]+)"
+                chassis_number = re.search(chassis_regex, cert_output).group(1)
+                serial_number = re.search(serial_regex, cert_output).group(1)
+                if chassis_number and serial_number:
+                    break
+                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"{node_name[0]} tried to install certificate too quickly, trying again in 10 seconds ")
+                time.sleep(10)
+            tn.write(b'exit\r\n')
+            tn.read_until(b'#')
+            vedge_install_command = f"request vedge add chassis-num {chassis_number} serial-num {serial_number}"
+            tn.write(ssh_2_command.encode('ascii') + b"\n")
+            tn.read_until(b"Password:")
+            tn.write(viptela_password.encode("ascii") + b"\n")
+            tn.read_until(b'#')
+            tn.write(vedge_install_command.encode('ascii') + b"\n")
+            tn.read_until(b'#')
+            tn.write(b'exit\r\n')
+            tn.read_until(b'#')
+            tn.write(vedge_install_command.encode('ascii') + b"\n")
+            tn.read_until(b'#')
+            ve += 1
+            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vEdge Certificate Setup for {node_name[0]}, Remaining - {vedge_count - v}")
+            tn.close()
+            v += 1
     while True:
         try:
             auth = Authentication()
