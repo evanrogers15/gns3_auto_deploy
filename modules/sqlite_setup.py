@@ -22,7 +22,8 @@ CREATE TABLE IF NOT EXISTS config (
     project_name TEXT,
     project_id TEXT,
     site_count INTEGER,
-    tap_name TEXT,
+    isp_tap_name TEXT,
+    mgmt_tap_name TEXT,
     vmanage_api_ip TEXT
 );
 ''')

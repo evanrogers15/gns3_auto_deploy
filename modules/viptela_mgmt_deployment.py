@@ -38,7 +38,7 @@ def viptela_mgmt_deploy():
     vedge_nodes = []
     vmanage_root_cert = ""
     configure_mgmt_tap = 0
-    deployment_type = 'viptela'
+    deployment_type = 'viptela_vedge'
     deployment_status = 'running'
     deployment_step = '- Action - '
     cloud_node_deploy_data = {"x": -79.5, "y": -485, "name": "MGMT-Cloud-TAP", "node_type": "cloud",
@@ -61,20 +61,20 @@ def viptela_mgmt_deploy():
         project_name = row[7]
         new_project_id = row[8]
         vedge_count = row[9]
-        mgmt_tap_name = row[10]
-        vmanage_api_ip = row[11]
+        isp_tap_name = row[10]
+        mgmt_tap_name = row[11]
+        vmanage_api_ip = row[12]
     if mgmt_tap_name == 'none':
         use_tap = 0
     else:
         use_tap = 1
-    isp_tap_name = 'tap4'
-    mgmt_tap_name = 'tap5'
+    #isp_tap_name = 'tap1'
+    #mgmt_tap_name = 'tap2'
+    #server_ip = '35.243.247.74'
     gns3_server_data = [{"GNS3 Server": server_ip, "Server Name": server_name, "Server Port": server_port,
                     "vManage API IP": vmanage_api_ip, "Project Name": project_name, "Project ID": new_project_id,
-                    "Tap Name": mgmt_tap_name,
+                    "ISP Tap Name": isp_tap_name, "MGMT Tap Name": mgmt_tap_name,
                     "Site Count": vedge_count, "Use Tap": use_tap, "Deployment Type": deployment_type, "Deployment Status": deployment_status, "Deployment Step": deployment_step}]
-    isp_switch_count = (vedge_count // 40) + 1
-    mgmt_switch_count = (vedge_count // 30) + 1
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
     c.execute("DELETE FROM deployments")

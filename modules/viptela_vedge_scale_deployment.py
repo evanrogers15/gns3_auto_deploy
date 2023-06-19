@@ -38,7 +38,7 @@ def viptela_vedge_deploy():
     vedge_nodes = []
     vmanage_root_cert = ""
     configure_mgmt_tap = 0
-    deployment_type = 'viptela_mgmt'
+    deployment_type = 'viptela'
     deployment_status = 'running'
     deployment_step = '- Action - '
     cloud_node_deploy_data = {"x": 25, "y": -554, "name": "MGMT-Cloud-TAP", "node_type": "cloud",
@@ -61,26 +61,25 @@ def viptela_vedge_deploy():
         project_name = row[7]
         new_project_id = row[8]
         vedge_count = row[9]
-        isp_tap_name = row[10]
-        mgmt_tap_name = row[11]
-        vmanage_api_ip = row[12]
-    if isp_tap_name == 'none':
+        tap_name = row[10]
+        vmanage_api_ip = row[11]
+    if tap_name == 'none':
         use_tap = 0
     else:
         use_tap = 1
-    #isp_tap_name = 'tap1'
-    #mgmt_tap_name = 'tap2'
-    #vmanage_api_ip = '10.0.0.2'
+    isp_tap_name = 'tap6'
+    mgmt_tap_name = 'tap7'
+    vmanage_api_ip = '10.0.0.2'
 
     gns3_server_data = [{"GNS3 Server": server_ip, "Server Name": server_name, "Server Port": server_port,
                     "vManage API IP": vmanage_api_ip, "Project Name": project_name, "Project ID": new_project_id,
-                    "ISP Tap Name": isp_tap_name, "MGMT Tap Name": mgmt_tap_name,
+                    "Tap Name": tap_name,
                     "Site Count": vedge_count, "Use Tap": use_tap, "Deployment Type": deployment_type, "Deployment Status": deployment_status, "Deployment Step": deployment_step}]
     isp_switch_count = (vedge_count // 40) + 1
     mgmt_switch_count = (vedge_count // 30) + 1
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
-    #c.execute("DELETE FROM deployments")
+    c.execute("DELETE FROM deployments")
     c.execute("SELECT COUNT(*) FROM deployments")
     count = c.fetchone()[0]
     if count == 0:
@@ -88,8 +87,8 @@ def viptela_vedge_deploy():
         c.execute(
             "INSERT INTO deployments (server_name, server_ip, project_name) VALUES (?, ?, ?)", (server_ip, server_name, project_name))
         conn.commit()
-    gns3_viptela_management_server_ip = '10.142.0.134'
-    mgmt_project_name = 'viptela_mgmt'
+    gns3_viptela_management_server_ip = '192.168.122.1'
+    mgmt_project_name = 'v_mgmt'
     mgmt_projects = gns3_query_get_projects(gns3_viptela_management_server_ip, server_port)
     matching_projects = [project for project in mgmt_projects if project['name'] == mgmt_project_name]
     mgmt_project_id = matching_projects[0]['project_id']
@@ -338,9 +337,9 @@ def viptela_vedge_deploy():
                     while True:
                         tn.write(b"\r\n")
                         output = tn.read_until(b"login:", timeout=1).decode('ascii')
-                        # if 'vedge#' in output:
-                        #    tn.write(b"\r\n")
-                        #    break
+                        if 'vedge#' in output:
+                            tn.write(b"\r\n")
+                            break
                         tn.write(viptela_username.encode("ascii") + b"\n")
                         tn.read_until(b"Password:", timeout=2)
                         tn.write(viptela_old_password.encode("ascii") + b"\n")

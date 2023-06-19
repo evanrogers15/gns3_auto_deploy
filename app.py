@@ -67,6 +67,41 @@ def update_config():
     conn.close()
     return jsonify({'success': True})
 
+@app.route('/api/config_scale', methods=['POST'])
+def update_config_scale():
+    req_data = request.get_json()
+    if not req_data:
+        return jsonify({'error': 'Request data is empty or None.'}), 400
+    server_ip = req_data.get('server_ip')
+    if not server_ip:
+        return jsonify({'error': 'Server IP is missing.'}), 400
+    server_port = req_data.get('server_port')
+    new_project_name = req_data.get('project_name')
+    vmanage_api_ip = req_data.get('vmanage_api_ip')
+    site_count = req_data.get('site_count')
+    isp_tap_name = req_data.get('isp_tap_name')
+    mgmt_tap_name = req_data.get('mgmt_tap_name')
+    projects = gns3_query_get_projects(server_ip, server_port)
+    server_name = gns3_query_get_computes_name(server_ip, server_port)
+    if new_project_name not in [project['name'] for project in projects]:
+        project_id = gns3_create_project(server_ip, server_port, new_project_name)
+    else:
+        matching_projects = [project for project in projects if project['name'] == new_project_name]
+        project_id = matching_projects[0]['project_id']
+        gns3_delete_project_static(server_ip, server_port, new_project_name, project_id)
+        project_id = gns3_create_project(server_ip, server_port, new_project_name)
+    projects = gns3_query_get_projects(server_ip, server_port)
+    project_names = [project['name'] for project in projects]
+    project_ids = [project['project_id'] for project in projects]
+    project_status = [project['status'] for project in projects]
+    conn = sqlite3.connect(db_path)
+    c = conn.cursor()
+    c.execute("DELETE FROM config")
+    c.execute("INSERT INTO config (server_ip, server_port, server_name, project_list, project_names, project_status, project_name, project_id, vmanage_api_ip, site_count, isp_tap_name, mgmt_tap_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (server_ip, server_port, server_name, json.dumps(project_ids), json.dumps(project_names), json.dumps(project_status), new_project_name, project_id, vmanage_api_ip, site_count, isp_tap_name, mgmt_tap_name))
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True})
+
 @app.route('/api/demo_config', methods=['POST'])
 def update_confign():
     req_data = request.get_json()
