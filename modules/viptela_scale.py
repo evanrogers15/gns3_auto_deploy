@@ -46,4 +46,4 @@ def start_scale_deploy():
     # set_config(gns3_sites_01_server_ip, gns3_sites_01_server_port, gns3_sites_01_project_name, vmanage_address, gns3_sites_01_site_count, gns3_isp_tap_name, gns3_mgmt_tap_name)
     viptela_vedge_deploy()
 
-start_scale_deploy()
+#start_scale_deploy()
