@@ -267,6 +267,7 @@ def viptela_vedge_deploy():
     # region Start All GNS3 Nodes
     deployment_step = 'Starting Nodes'
     gns3_start_all_nodes(gns3_server_data, new_project_id)
+    time.sleep(120)
     # endregion
     # region Deploy Site Clients in Lab
     deployment_step = 'Deploy Site Clients'
@@ -467,7 +468,7 @@ def viptela_vedge_deploy():
             tn.write(b'sdwan-lab\n')
             tn.read_until(b'#')
             # SCP the vEdge.csr to the vManage
-            tn.write(b'request execute vpn 512 scp /home/admin/vedge.csr admin@172.16.2.2:/home/admin\r\n')
+            tn.write(b'request execute vpn 512 scp /home/admin/vedge.csr admin@172.16.240.2:/home/admin\r\n')
             test_o = tn.read_until(b"?", timeout=2).decode('ascii')
             if "fingerprint" in test_o:
                 tn.write(b'yes\r\n')
