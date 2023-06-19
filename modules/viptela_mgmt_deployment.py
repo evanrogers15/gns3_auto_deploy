@@ -41,7 +41,7 @@ def viptela_mgmt_deploy():
     deployment_type = 'viptela_vedge'
     deployment_status = 'running'
     deployment_step = '- Action - '
-    cloud_node_deploy_data = {"x": -79.5, "y": -485, "name": "MGMT-Cloud-TAP", "node_type": "cloud",
+    cloud_node_deploy_data = {"x": -79, "y": -485, "name": "MGMT-Cloud-TAP", "node_type": "cloud",
                               "compute_id": "local", "symbol": ":/symbols/cloud.svg"}
     required_qemu_images = {"viptela-vmanage-li-20.10.1-genericx86-64.qcow2", "empty30G.qcow2", "viptela-smart-li-20.10.1-genericx86-64.qcow2", "viptela-edge-20.10.1-genericx86-64.qcow2"}
     required_image_response = 201

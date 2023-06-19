@@ -39,11 +39,11 @@ def gns3_get_image(gns3_server_data, image_type, filename):
                 return 201
     return 200
 
-required_qemu_images = {"viptela-vmanage-li-20.10.1-genericx86-64.qcow2", "empty30G.qcow2", "viptela-smart-li-20.10.1-genericx86-64.qcow2", "viptela-edge-20.10.1-genericx86-64.qcow2",}
-required_iou_images = {"L3-ADVENTERPRISEK9-M-15.5-2T.bin"}
+required_qemu_images = {"viptela-vmanage-li-20.10.1-genericx86-64.qcow2", "viptela-smart-li-20.10.1-genericx86-64.qcow2", "viptela-edge-20.10.1-genericx86-64.qcow2",}
+#required_iou_images = {"L3-ADVENTERPRISEK9-M-15.5-2T.bin"}
 
-for image in required_iou_images:
-    gns3_get_image(gns3_server_data, 'iou', image)
+#for image in required_iou_images:
+#    gns3_get_image(gns3_server_data, 'iou', image)
 
 for image in required_qemu_images:
     gns3_get_image(gns3_server_data, 'qemu', image)
