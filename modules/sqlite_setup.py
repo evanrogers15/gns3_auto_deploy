@@ -11,7 +11,7 @@ conn = sqlite3.connect(DB_PATH)
 
 # Create the config table
 conn.execute('''
-CREATE TABLE IF NOT EXISTS config (
+CREATE TABLE IF NOT EXISTS mgmt_config (
     id INTEGER PRIMARY KEY,
     server_name TEXT,
     server_ip TEXT,
@@ -27,6 +27,26 @@ CREATE TABLE IF NOT EXISTS config (
     vmanage_api_ip TEXT
 );
 ''')
+
+# Create the config table
+conn.execute('''
+CREATE TABLE IF NOT EXISTS sites_config (
+    id INTEGER PRIMARY KEY,
+    server_name TEXT,
+    server_ip TEXT,
+    server_port INTEGER,
+    project_list TEXT,
+    project_names TEXT,
+    project_status TEXT,
+    project_name TEXT,
+    project_id TEXT,
+    site_count INTEGER,
+    isp_tap_name TEXT,
+    mgmt_tap_name TEXT,
+    vmanage_api_ip TEXT
+);
+''')
+
 # Create the projects table
 conn.execute('''
 CREATE TABLE IF NOT EXISTS projects (

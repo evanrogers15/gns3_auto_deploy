@@ -38,7 +38,7 @@ def viptela_mgmt_deploy():
     vedge_nodes = []
     vmanage_root_cert = ""
     configure_mgmt_tap = 0
-    deployment_type = 'viptela_vedge'
+    deployment_type = 'viptela_mgmt'
     deployment_status = 'running'
     deployment_step = '- Action - '
     cloud_node_deploy_data = {"x": -79, "y": -485, "name": "MGMT-Cloud-TAP", "node_type": "cloud",
@@ -51,7 +51,7 @@ def viptela_mgmt_deploy():
     # region GNS3 Lab Setup
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
-    c.execute("SELECT * FROM config")
+    c.execute("SELECT * FROM mgmt_config")
     row = c.fetchone()
     conn.close()
     if row:

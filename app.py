@@ -11,6 +11,7 @@ from modules.viptela_vedge_deployment import *
 from modules.gns3_actions_old import *
 from modules.gns3_variables import *
 from modules.use_cases import *
+from modules.viptela_scale import *
 
 
 app = Flask(__name__)
@@ -28,6 +29,10 @@ def demo_sdwan_deploy_render():
 @app.route('/vedge')
 def scale_sdwan_deploy_render():
     return render_template('scale_create_sdwan.html')
+
+@app.route('/scale')
+def scale_sdwan_render():
+    return render_template('scale_create.html')
 
 @app.route('/admin')
 def adminPage():
@@ -72,32 +77,59 @@ def update_config_scale():
     req_data = request.get_json()
     if not req_data:
         return jsonify({'error': 'Request data is empty or None.'}), 400
-    server_ip = req_data.get('server_ip')
-    if not server_ip:
-        return jsonify({'error': 'Server IP is missing.'}), 400
+    gns3_mgmt_server_ip = req_data.get('gns3_mgmt_server_ip')
+    if not gns3_mgmt_server_ip:
+        return jsonify({'error': 'MGMT Server IP is missing.'}), 400
+    gns3_sites_01_server_ip = req_data.get('gns3_sites_01_server_ip')
+    if not gns3_sites_01_server_ip:
+        return jsonify({'error': 'Sites Server IP is missing.'}), 400
     server_port = req_data.get('server_port')
-    new_project_name = req_data.get('project_name')
+    gns3_mgmt_project_name = req_data.get('gns3_mgmt_project_name')
+    gns3_sites_project_name = req_data.get('gns3_sites_project_name')
     vmanage_api_ip = req_data.get('vmanage_api_ip')
     site_count = req_data.get('site_count')
     isp_tap_name = req_data.get('isp_tap_name')
     mgmt_tap_name = req_data.get('mgmt_tap_name')
-    projects = gns3_query_get_projects(server_ip, server_port)
-    server_name = gns3_query_get_computes_name(server_ip, server_port)
-    if new_project_name not in [project['name'] for project in projects]:
-        project_id = gns3_create_project(server_ip, server_port, new_project_name)
+    projects = gns3_query_get_projects(gns3_mgmt_server_ip, server_port)
+    mgmt_server_name = gns3_query_get_computes_name(gns3_mgmt_server_ip, server_port)
+    if gns3_mgmt_project_name not in [project['name'] for project in projects]:
+        mgmt_project_id = gns3_create_project(gns3_mgmt_server_ip, server_port, gns3_mgmt_project_name)
     else:
-        matching_projects = [project for project in projects if project['name'] == new_project_name]
+        matching_projects = [project for project in projects if project['name'] == gns3_mgmt_project_name]
         project_id = matching_projects[0]['project_id']
-        gns3_delete_project_static(server_ip, server_port, new_project_name, project_id)
-        project_id = gns3_create_project(server_ip, server_port, new_project_name)
-    projects = gns3_query_get_projects(server_ip, server_port)
-    project_names = [project['name'] for project in projects]
-    project_ids = [project['project_id'] for project in projects]
-    project_status = [project['status'] for project in projects]
+        gns3_delete_project_static(gns3_mgmt_server_ip, server_port, gns3_mgmt_project_name, project_id)
+        mgmt_project_id = gns3_create_project(gns3_mgmt_server_ip, server_port, gns3_mgmt_project_name)
+    mgmt_projects = gns3_query_get_projects(gns3_mgmt_server_ip, server_port)
+    mgmt_project_names = [project['name'] for project in mgmt_projects]
+    mgmt_project_ids = [project['project_id'] for project in mgmt_projects]
+    mgmt_project_status = [project['status'] for project in mgmt_projects]
+
+    projects = gns3_query_get_projects(gns3_sites_01_server_ip, server_port)
+    sites_01_server_name = gns3_query_get_computes_name(gns3_sites_01_server_ip, server_port)
+    if gns3_sites_project_name not in [project['name'] for project in projects]:
+        sites_01_project_id = gns3_create_project(gns3_sites_01_server_ip, server_port, gns3_sites_project_name)
+    else:
+        matching_projects = [project for project in projects if project['name'] == gns3_sites_project_name]
+        project_id = matching_projects[0]['project_id']
+        gns3_delete_project_static(gns3_sites_01_server_ip, server_port, gns3_sites_project_name, project_id)
+        sites_01_project_id = gns3_create_project(gns3_sites_01_server_ip, server_port, gns3_sites_project_name)
+    sites_projects = gns3_query_get_projects(gns3_sites_01_server_ip, server_port)
+    sites_01_project_names = [project['name'] for project in sites_projects]
+    sites_01_project_ids = [project['project_id'] for project in sites_projects]
+    sites_01_project_status = [project['status'] for project in sites_projects]
+
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
-    c.execute("DELETE FROM config")
-    c.execute("INSERT INTO config (server_ip, server_port, server_name, project_list, project_names, project_status, project_name, project_id, vmanage_api_ip, site_count, isp_tap_name, mgmt_tap_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (server_ip, server_port, server_name, json.dumps(project_ids), json.dumps(project_names), json.dumps(project_status), new_project_name, project_id, vmanage_api_ip, site_count, isp_tap_name, mgmt_tap_name))
+    c.execute("DELETE FROM mgmt_config")
+    c.execute("INSERT INTO mgmt_config (server_ip, server_port, server_name, project_list, project_names, project_status, project_name, project_id, vmanage_api_ip, site_count, isp_tap_name, mgmt_tap_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (gns3_mgmt_server_ip, server_port, mgmt_server_name, json.dumps(mgmt_project_ids), json.dumps(mgmt_project_names), json.dumps(mgmt_project_status), gns3_mgmt_project_name, mgmt_project_id, vmanage_api_ip, site_count, isp_tap_name, mgmt_tap_name))
+    conn.commit()
+    c = conn.cursor()
+    c.execute("DELETE FROM sites_config")
+    c.execute(
+        "INSERT INTO sites_config (server_ip, server_port, server_name, project_list, project_names, project_status, project_name, project_id, vmanage_api_ip, site_count, isp_tap_name, mgmt_tap_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (gns3_sites_01_server_ip, server_port, sites_01_server_name, json.dumps(sites_01_project_ids), json.dumps(sites_01_project_names),
+         json.dumps(sites_01_project_status), gns3_sites_project_name, sites_01_project_id, vmanage_api_ip, site_count, isp_tap_name,
+         mgmt_tap_name))
     conn.commit()
     conn.close()
     return jsonify({'success': True})
@@ -229,6 +261,19 @@ def viptela_deploy_vedge_full():
 
     # Start a new thread for deployment
     running_thread = threading.Thread(target=viptela_vedge_deploy, args=())
+    running_thread.start()
+
+    return jsonify({'success': True})
+
+@app.route('/api/tasks/start_viptela_scale_deploy', methods=['PUT'])
+def viptela_scale_deploy():
+    global running_thread
+    # Check if a thread is already running
+    if running_thread is not None and running_thread.is_alive():
+        return make_response(jsonify({'message': 'Deployment is already in progress'}), 400)
+
+    # Start a new thread for deployment
+    running_thread = threading.Thread(target=start_scale_deploy, args=())
     running_thread.start()
 
     return jsonify({'success': True})

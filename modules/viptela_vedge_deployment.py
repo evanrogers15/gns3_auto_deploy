@@ -51,7 +51,7 @@ def viptela_vedge_deploy():
     conn = sqlite3.connect(db_path)
     start_time = time.time()
     c = conn.cursor()
-    c.execute("SELECT * FROM config")
+    c.execute("SELECT * FROM sites_config")
     row = c.fetchone()
     conn.close()
     if row:

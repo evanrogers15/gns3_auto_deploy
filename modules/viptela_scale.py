@@ -41,9 +41,9 @@ def set_config(server_ip, server_port, new_project_name, vmanage_api_ip, site_co
     conn.close()
 
 def start_scale_deploy():
-    set_config(gns3_mgmt_server_ip, gns3_mgmt_server_port, gns3_mgmt_project_name, vmanage_address, gns3_sites_01_site_count, gns3_isp_tap_name, gns3_mgmt_tap_name)
+    # set_config(gns3_mgmt_server_ip, gns3_mgmt_server_port, gns3_mgmt_project_name, vmanage_address, gns3_sites_01_site_count, gns3_isp_tap_name, gns3_mgmt_tap_name)
     viptela_mgmt_deploy()
-    set_config(gns3_sites_01_server_ip, gns3_sites_01_server_port, gns3_sites_01_project_name, vmanage_address, gns3_sites_01_site_count, gns3_isp_tap_name, gns3_mgmt_tap_name)
+    # set_config(gns3_sites_01_server_ip, gns3_sites_01_server_port, gns3_sites_01_project_name, vmanage_address, gns3_sites_01_site_count, gns3_isp_tap_name, gns3_mgmt_tap_name)
     viptela_vedge_deploy()
 
 start_scale_deploy()
