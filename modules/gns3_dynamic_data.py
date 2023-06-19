@@ -117,13 +117,13 @@ def generate_interfaces_file_new(interface_data_2, interface_data_3, filename_te
         f.write(f'#{filename}\n')
         f.write('auto eth0\n')
         f.write('iface eth0 inet static\n')
-        f.write(f'\taddress 192.168.122.250\n')
+        f.write(f'\taddress 172.16.230.2\n')
         f.write(f'\tnetmask 255.255.255.0\n')
-        f.write(f'\tgateway 192.168.122.1\n')
+        f.write(f'\tgateway 172.16.230.1.1\n')
         f.write('\tup echo nameserver 192.168.122.1 > /etc/resolv.conf\n\n')
         f.write('auto eth1\n')
         f.write('iface eth1 inet static\n')
-        if filename_temp == "cloud_isp_switch_0_interfaces":
+        if filename_temp == "cloud_isp_switch_0_interfaces_mgmt":
             f.write(f'\taddress 172.16.4.1\n')
             f.write(f'\tnetmask 255.255.255.252\n')
             f.write('auto eth2\n')

@@ -67,7 +67,8 @@ def viptela_vedge_deploy():
         use_tap = 0
     else:
         use_tap = 1
-
+    isp_tap_name = 'tap6'
+    vmanage_api_ip = '10.0.0.2'
     gns3_server_data = [{"GNS3 Server": server_ip, "Server Name": server_name, "Server Port": server_port,
                     "vManage API IP": vmanage_api_ip, "Project Name": project_name, "Project ID": new_project_id,
                     "Tap Name": tap_name,
@@ -100,7 +101,7 @@ def viptela_vedge_deploy():
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, "Starting Template Creation")
     vedge_template_id = gns3_create_template(gns3_server_data, viptela_vedge_template_data)
     network_test_tool_template_id = gns3_create_template(gns3_server_data, network_test_tool_template_data)
-    openvswitch_isp_template_id = gns3_create_template(gns3_server_data, openvswitch_isp_template_data)
+    openvswitch_isp_template_id = gns3_create_template(gns3_server_data, openvswitch_cloud_template_data)
     temp_hub_data = generate_temp_hub_data(mgmt_main_switchport_count, mgmt_main_hub_template_name)
     regular_ethernet_hub_template_id = gns3_create_template(gns3_server_data, temp_hub_data)
     temp_hub_data = generate_temp_hub_data(mgmt_switchport_count, mgmt_hub_template_name)
@@ -170,9 +171,14 @@ def viptela_vedge_deploy():
     for port in matching_nodes[0]:
         if port["short_name"] == tap_name:
             mgmt_tap_interface = port['port_number']
+    for port in matching_nodes[0]:
+        if port["short_name"] == isp_tap_name:
+            isp_tap_interface = port['port_number']
     if use_tap == 1:
         gns3_connect_nodes(gns3_server_data, new_project_id, cloud_node_id, 0, mgmt_tap_interface,
                            mgmt_main_switch_node_id, 0, 0)
+        gns3_connect_nodes(gns3_server_data, new_project_id, cloud_node_id, 0, isp_tap_interface,
+                           isp_ovs_node_id, 0, 0)
     mgmt_switch_interface = 1
     switch_adapter_a = 5
     switch_adapter_b = (switchport_count // 2) + 4
