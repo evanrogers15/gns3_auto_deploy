@@ -7,6 +7,7 @@ from werkzeug.utils import secure_filename
 
 from modules.gns3_query import *
 from modules.viptela_mgmt_deployment import *
+from modules.viptela_vedge_deployment import *
 from modules.gns3_actions_old import *
 from modules.gns3_variables import *
 from modules.use_cases import *
@@ -24,7 +25,7 @@ def index_render():
 def demo_sdwan_deploy_render():
     return render_template('demo_create_sdwan.html')
 
-@app.route('/scale')
+@app.route('/vedge')
 def scale_sdwan_deploy_render():
     return render_template('scale_create_sdwan.html')
 
@@ -180,6 +181,19 @@ def viptela_deploy_full():
 
     # Start a new thread for deployment
     running_thread = threading.Thread(target=viptela_mgmt_deploy, args=())
+    running_thread.start()
+
+    return jsonify({'success': True})
+
+@app.route('/api/tasks/start_viptela_vedge_deploy', methods=['PUT'])
+def viptela_deploy_vedge_full():
+    global running_thread
+    # Check if a thread is already running
+    if running_thread is not None and running_thread.is_alive():
+        return make_response(jsonify({'message': 'Deployment is already in progress'}), 400)
+
+    # Start a new thread for deployment
+    running_thread = threading.Thread(target=viptela_vedge_deploy, args=())
     running_thread.start()
 
     return jsonify({'success': True})

@@ -17,7 +17,7 @@ from modules.gns3_variables import *
 from modules.gns3_dynamic_data import *
 from modules.gns3_query import *
 
-def scale_viptela_deploy():
+def viptela_vedge_deploy():
     # region Variables
     vmanage_headers = {}
     lan_subnet_address = ''
@@ -217,16 +217,15 @@ def scale_viptela_deploy():
     deployment_step = 'Node Configs'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting Node Config Creation")
     matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "Cloud_ISP")
-    starting_subnet = 6
+    starting_subnet = 1
     router_ip = 0
     switch_index = 0
     vedge_index = 1
     if matching_nodes:
         for matching_node in matching_nodes:
             node_id = matching_node[0]
-            isp_router_base_subnet = '172.16.5.0/24'
-            vedge_isp_1_base_subnet = f'172.16.{starting_subnet}.0/24'
-            vedge_isp_2_base_subnet = f'172.16.{starting_subnet + 1}.0/24'
+            vedge_isp_1_base_subnet = f'10.1.{starting_subnet}.0/24'
+            vedge_isp_2_base_subnet = f'10.1.{starting_subnet + 1}.0/24'
             temp_file_name = f'cloud_isp_switch_{switch_index}_interfaces'
             # isp_router_objects = generate_network_objects(isp_router_base_subnet, 30)
             isp_switch_1_objects = generate_network_objects(vedge_isp_1_base_subnet, 30, vedge_index)
@@ -285,7 +284,7 @@ def scale_viptela_deploy():
     abs_path = os.path.abspath(__file__)
     configs_path = os.path.join(os.path.dirname(abs_path), 'configs/viptela')
     file_name = os.path.join(configs_path, 'vedge_cloud_site_template')
-    vedge_lan_objects = generate_vedge_objects(vedge_count, '172.16.2')
+    vedge_lan_objects = generate_vedge_objects(vedge_count, '172.16.241')
     isp_index = 0
     for server_ip in server_ips:
         for i in range(1, vedge_count + 1):
