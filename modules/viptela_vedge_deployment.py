@@ -340,7 +340,7 @@ def viptela_vedge_deploy():
                             tn.write(b"\r\n")
                             break
                         tn.write(viptela_username.encode("ascii") + b"\n")
-                        tn.read_until(b"Password:")
+                        tn.read_until(b"Password:", timeout=2)
                         tn.write(viptela_old_password.encode("ascii") + b"\n")
                         output = tn.read_until(b"Password:", timeout=5).decode('ascii')
                         if 'Login incorrect' in output:
