@@ -155,7 +155,7 @@ def viptela_vedge_scale_deploy(server_ip, server_port, project_name, vmanage_api
         else:
             log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"No nodes found in project {project_name} for MGMT_switch_{i}")
 
-    for i in range(vedge_index, vedge_index + vedge_count + 1):
+    for i in range(vedge_index, vedge_index + vedge_count - 1):
         matching_node = vedge_info[i - 1]
         if matching_node:
             node_id = matching_node['node_id']
