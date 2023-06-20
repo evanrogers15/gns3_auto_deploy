@@ -68,9 +68,6 @@ def viptela_mgmt_deploy():
         use_tap = 0
     else:
         use_tap = 1
-    #isp_tap_name = 'tap1'
-    #mgmt_tap_name = 'tap2'
-    #server_ip = '35.243.247.74'
     gns3_server_data = [{"GNS3 Server": server_ip, "Server Name": server_name, "Server Port": server_port,
                     "vManage API IP": vmanage_api_ip, "Project Name": project_name, "Project ID": new_project_id,
                     "ISP Tap Name": isp_tap_name, "MGMT Tap Name": mgmt_tap_name,

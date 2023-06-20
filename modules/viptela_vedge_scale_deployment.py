@@ -17,7 +17,7 @@ from modules.gns3_variables import *
 from modules.gns3_dynamic_data import *
 from modules.gns3_query import *
 
-def viptela_vedge_deploy():
+def viptela_vedge_scale_deploy(server_ip, server_port, project_name, vmanage_api_ip, isp_tap_name, mgmt_tap_name, vedge_index, site_id, subnet_index, server_index):
     # region Variables
     vmanage_headers = {}
     lan_subnet_address = ''
@@ -25,7 +25,6 @@ def viptela_vedge_deploy():
     lan_dhcp_exclude = ''
     lan_dhcp_pool = ''
     system_ip = ''
-    site_id = 0
     mgmt_address = ''
     mgmt_gateway = ''
     vedge_info = []
@@ -38,7 +37,7 @@ def viptela_vedge_deploy():
     vedge_nodes = []
     vmanage_root_cert = ""
     configure_mgmt_tap = 0
-    deployment_type = 'viptela'
+    deployment_type = 'viptela_vedge'
     deployment_status = 'running'
     deployment_step = '- Action - '
     cloud_node_deploy_data = {"x": 25, "y": -554, "name": "MGMT-Cloud-TAP", "node_type": "cloud",
@@ -48,38 +47,28 @@ def viptela_vedge_deploy():
     # endregion
     # region Runtime
     # region GNS3 Lab Setup
-    conn = sqlite3.connect(db_path)
     start_time = time.time()
-    c = conn.cursor()
-    c.execute("SELECT * FROM config")
-    row = c.fetchone()
-    conn.close()
-    if row:
-        server_name = row[1]
-        server_ip = row[2]
-        server_port = row[3]
-        project_name = row[7]
-        new_project_id = row[8]
-        vedge_count = row[9]
-        tap_name = row[10]
-        vmanage_api_ip = row[11]
-    if tap_name == 'none':
-        use_tap = 0
+    use_tap = 1
+    vedge_count = 45
+    vedge_mgmt_subnet = f"172.16.2{40 + server_index}"
+    projects = gns3_query_get_projects(server_ip, server_port)
+    server_name = gns3_query_get_computes_name(server_ip, server_port)
+    if project_name not in [project['name'] for project in projects]:
+        project_id = gns3_create_project(server_ip, server_port, project_name)
     else:
-        use_tap = 1
-    isp_tap_name = 'tap6'
-    mgmt_tap_name = 'tap7'
-    vmanage_api_ip = '10.0.0.2'
+        matching_projects = [project for project in projects if project['name'] == project_name]
+        project_id = matching_projects[0]['project_id']
+        gns3_delete_project_static(server_ip, server_port, project_name, project_id)
+        project_id = gns3_create_project(server_ip, server_port, project_name)
 
     gns3_server_data = [{"GNS3 Server": server_ip, "Server Name": server_name, "Server Port": server_port,
-                    "vManage API IP": vmanage_api_ip, "Project Name": project_name, "Project ID": new_project_id,
-                    "Tap Name": tap_name,
+                    "vManage API IP": vmanage_api_ip, "Project Name": project_name, "Project ID": project_id,
+                    "ISP Tap Name": isp_tap_name, "MGMT Tap Name": mgmt_tap_name,
                     "Site Count": vedge_count, "Use Tap": use_tap, "Deployment Type": deployment_type, "Deployment Status": deployment_status, "Deployment Step": deployment_step}]
-    isp_switch_count = (vedge_count // 40) + 1
-    mgmt_switch_count = (vedge_count // 30) + 1
+    mgmt_switch_count = (vedge_count // 50)
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
-    c.execute("DELETE FROM deployments")
+    #c.execute("DELETE FROM deployments")
     c.execute("SELECT COUNT(*) FROM deployments")
     count = c.fetchone()[0]
     if count == 0:
@@ -87,8 +76,8 @@ def viptela_vedge_deploy():
         c.execute(
             "INSERT INTO deployments (server_name, server_ip, project_name) VALUES (?, ?, ?)", (server_ip, server_name, project_name))
         conn.commit()
-    gns3_viptela_management_server_ip = '192.168.122.1'
-    mgmt_project_name = 'v_mgmt'
+    gns3_viptela_management_server_ip = '10.142.0.134'
+    mgmt_project_name = 'viptela_mgmt'
     mgmt_projects = gns3_query_get_projects(gns3_viptela_management_server_ip, server_port)
     matching_projects = [project for project in mgmt_projects if project['name'] == mgmt_project_name]
     mgmt_project_id = matching_projects[0]['project_id']
@@ -105,7 +94,7 @@ def viptela_vedge_deploy():
                               f"{image} image not on GNS3 Server")
             return 404
     gns3_actions_remove_templates(gns3_server_data)
-    gns3_set_project(gns3_server_data, new_project_id)
+    gns3_set_project(gns3_server_data, project_id)
     # endregion
     # region Create GNS3 Templates
     deployment_step = 'Creating Templates'
@@ -121,63 +110,63 @@ def viptela_vedge_deploy():
     cloud_node_template_id = gns3_query_get_template_id(server_ip, server_port, "Cloud")
     # endregion
     #  region Setup Dynamic Networking
-    vedge_deploy_data, client_deploy_data, site_drawing_deploy_data = generate_vedge_deploy_data(vedge_count)
+    vedge_deploy_data, client_deploy_data, site_drawing_deploy_data = generate_scale_vedge_deploy_data(vedge_count, vedge_index)
     mgmt_switch_deploy_data = generate_mgmt_switch_deploy_data(mgmt_switch_count)
     # endregion
     # region Deploy GNS3 Nodes
     deployment_step = 'Deploy GNS3 Nodes'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting Node Deployment")
-    isp_ovs_node_id = gns3_create_node(gns3_server_data, new_project_id, openvswitch_isp_template_id, openvswitch_isp_deploy_data)
-    mgmt_main_switch_node_id = gns3_create_node(gns3_server_data, new_project_id, regular_ethernet_hub_template_id,
+    isp_ovs_node_id = gns3_create_node(gns3_server_data, project_id, openvswitch_isp_template_id, openvswitch_isp_deploy_data)
+    mgmt_main_switch_node_id = gns3_create_node(gns3_server_data, project_id, regular_ethernet_hub_template_id,
                                                 main_mgmt_switch_deploy_data)
-    nat_node_id = gns3_create_cloud_node(gns3_server_data, new_project_id, nat_node_deploy_data)
-    cloud_node_id = gns3_create_cloud_node(gns3_server_data, new_project_id, cloud_node_deploy_data)
+    nat_node_id = gns3_create_cloud_node(gns3_server_data, project_id, nat_node_deploy_data)
+    cloud_node_id = gns3_create_cloud_node(gns3_server_data, project_id, cloud_node_deploy_data)
 
     for i in range(1, mgmt_switch_count + 1):
         node_name = f"MGMT_switch_{i:03}"
-        matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, node_name)
+        matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, project_id, node_name)
         if not matching_nodes:
-            node_id, node_name = gns3_create_node_multi_return(gns3_server_data, new_project_id, hub_template_id,
+            node_id, node_name = gns3_create_node_multi_return(gns3_server_data, project_id, hub_template_id,
                                                                mgmt_switch_deploy_data[
                                                                    f"mgmt_switch_{i:03}_deploy_data"])
             mgmt_switch_nodes.append({'node_name': node_name, 'node_id': node_id})
         else:
             log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Node {node_name} already exists in project {project_name}")
-    for i in range(1, vedge_count + 1):
+    for i in range(vedge_index, vedge_index + vedge_count):
         node_name = f"vEdge_{i:03}"
-        matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, node_name)
+        matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, project_id, node_name)
         if not matching_nodes:
-            node_id, node_name = gns3_create_node_multi_return(gns3_server_data, new_project_id, vedge_template_id,
+            node_id, node_name = gns3_create_node_multi_return(gns3_server_data, project_id, vedge_template_id,
                                                                vedge_deploy_data[f"vedge_{i:03}_deploy_data"])
             vedge_info.append({'node_name': node_name, 'node_id': node_id})
         else:
             log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Node {node_name} already exists in project {project_name}")
-    gns3_update_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, openvswitch_isp_deploy_data)
-    gns3_update_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, main_mgmt_switch_deploy_data)
-    gns3_update_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, deploy_data_z)
+    gns3_update_nodes(gns3_server_data, project_id, isp_ovs_node_id, openvswitch_isp_deploy_data)
+    gns3_update_nodes(gns3_server_data, project_id, mgmt_main_switch_node_id, main_mgmt_switch_deploy_data)
+    gns3_update_nodes(gns3_server_data, project_id, mgmt_main_switch_node_id, deploy_data_z)
 
     for i in range(1, mgmt_switch_count + 1):
         matching_node = mgmt_switch_nodes[i - 1]
         if matching_node:
             node_id = matching_node['node_id']
-            gns3_update_nodes(gns3_server_data, new_project_id, node_id,
+            gns3_update_nodes(gns3_server_data, project_id, node_id,
                               mgmt_switch_deploy_data[f"mgmt_switch_{i:03}_deploy_data"])
-            gns3_update_nodes(gns3_server_data, new_project_id, node_id, deploy_data_z)
+            gns3_update_nodes(gns3_server_data, project_id, node_id, deploy_data_z)
         else:
             log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"No nodes found in project {project_name} for MGMT_switch_{i}")
 
-    for i in range(1, vedge_count + 1):
+    for i in range(vedge_index, vedge_index + vedge_count):
         matching_node = vedge_info[i - 1]
         if matching_node:
             node_id = matching_node['node_id']
-            gns3_update_nodes(gns3_server_data, new_project_id, node_id, vedge_deploy_data[f"vedge_{i:03}_deploy_data"])
+            gns3_update_nodes(gns3_server_data, project_id, node_id, vedge_deploy_data[f"vedge_{i:03}_deploy_data"])
         else:
             log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"No nodes found in project {project_name} for vEdge {i}")
     # endregion
     # region Connect GNS3 Lab Nodes
     deployment_step = 'Connect GNS3 Nodes'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting GNS3 Nodes Connect")
-    matching_nodes = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'name', 'ports', 'MGMT-Cloud-TAP')
+    matching_nodes = gns3_query_find_nodes_by_field(server_ip, server_port, project_id, 'name', 'ports', 'MGMT-Cloud-TAP')
     mgmt_tap_interface = 0
     for port in matching_nodes[0]:
         if port["short_name"] == mgmt_tap_name:
@@ -186,9 +175,9 @@ def viptela_vedge_deploy():
         if port["short_name"] == isp_tap_name:
             isp_tap_interface = port['port_number']
     if use_tap == 1:
-        gns3_connect_nodes(gns3_server_data, new_project_id, cloud_node_id, 0, mgmt_tap_interface,
+        gns3_connect_nodes(gns3_server_data, project_id, cloud_node_id, 0, mgmt_tap_interface,
                            mgmt_main_switch_node_id, 0, 0)
-        gns3_connect_nodes(gns3_server_data, new_project_id, cloud_node_id, 0, isp_tap_interface,
+        gns3_connect_nodes(gns3_server_data, project_id, cloud_node_id, 0, isp_tap_interface,
                            isp_ovs_node_id, 0, 0)
     mgmt_switch_interface = 1
     switch_adapter_a = 5
@@ -196,24 +185,24 @@ def viptela_vedge_deploy():
     cloud_isp_node_index = 0
     mgmt_switch_node_index = 0
     for i in range(mgmt_switch_count):
-        first_vedge_index = i * 30
-        last_vedge_index = min((i + 1) * 30, vedge_count)
+        first_vedge_index = i * 45
+        last_vedge_index = min((i + 1) * 45, vedge_count)
         mgmt_switch_node_id = mgmt_switch_nodes[mgmt_switch_node_index]['node_id']
-        mgmt_switch_index = i + 5
-        gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_switch_node_id, 0, 0, mgmt_main_switch_node_id, 0,
+        mgmt_switch_index = i + 1
+        gns3_connect_nodes(gns3_server_data, project_id, mgmt_switch_node_id, 0, 0, mgmt_main_switch_node_id, 0,
                            mgmt_switch_index)
         for j in range(first_vedge_index, last_vedge_index):
-            vedge_node_id = vedge_info[j]['node_id']
-            gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_switch_node_id, 0, mgmt_switch_interface,
+            vedge_node_id = vedge_info[j + vedge_index]['node_id']
+            gns3_connect_nodes(gns3_server_data, project_id, mgmt_switch_node_id, 0, mgmt_switch_interface,
                                vedge_node_id, 0, 0)
-            gns3_connect_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, switch_adapter_a, 0, vedge_node_id,
+            gns3_connect_nodes(gns3_server_data, project_id, isp_ovs_node_id, switch_adapter_a, 0, vedge_node_id,
                                1, 0)
-            gns3_connect_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, switch_adapter_b, 0, vedge_node_id,
+            gns3_connect_nodes(gns3_server_data, project_id, isp_ovs_node_id, switch_adapter_b, 0, vedge_node_id,
                                2, 0)
             switch_adapter_a += 1
             switch_adapter_b += 1
             mgmt_switch_interface += 1
-            if (j + 1) % 44 == 0:
+            if (j + 1) % 45 == 0:
                 cloud_isp_node_index += 1
                 switch_adapter_a = 5
                 switch_adapter_b = (switchport_count // 2) + 4
@@ -221,19 +210,19 @@ def viptela_vedge_deploy():
         mgmt_switch_node_index += 1
     # endregion
     # region Create GNS3 Drawings
-    gns3_create_drawing(gns3_server_data, new_project_id, big_block_deploy_data)
-    for i in range(1, vedge_count + 1):
-        gns3_create_drawing(gns3_server_data, new_project_id,
+    gns3_create_drawing(gns3_server_data, project_id, big_block_deploy_data)
+    for i in range(vedge_index, vedge_index + vedge_count):
+        gns3_create_drawing(gns3_server_data, project_id,
                             site_drawing_deploy_data[f"site_drawing_{i:03}_deploy_data"])
     drawing_index = 1
     for drawing_data in viptela_drawing_data:
-        gns3_create_drawing(gns3_server_data, new_project_id, viptela_drawing_data[f'drawing_{drawing_index:02}'])
+        gns3_create_drawing(gns3_server_data, project_id, viptela_drawing_data[f'drawing_{drawing_index:02}'])
         drawing_index += 1
     # endregion
     # region Deploy GNS3 Node Config Files
     deployment_step = 'Node Configs'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting Node Config Creation")
-    matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "Cloud_ISP")
+    matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, project_id, "Cloud_ISP")
     starting_subnet = 1
     router_ip = 0
     switch_index = 0
@@ -241,8 +230,8 @@ def viptela_vedge_deploy():
     if matching_nodes:
         for matching_node in matching_nodes:
             node_id = matching_node[0]
-            vedge_isp_1_base_subnet = f'10.1.{starting_subnet}.0/24'
-            vedge_isp_2_base_subnet = f'10.1.{starting_subnet + 1}.0/24'
+            vedge_isp_1_base_subnet = f'10.{subnet_index}.{starting_subnet}.0/24'
+            vedge_isp_2_base_subnet = f'10.{subnet_index}.{starting_subnet + 1}.0/24'
             temp_file_name = f'cloud_isp_switch_{switch_index}_interfaces'
             # isp_router_objects = generate_network_objects(isp_router_base_subnet, 30)
             isp_switch_1_objects = generate_network_objects(vedge_isp_1_base_subnet, 30, vedge_index)
@@ -254,19 +243,19 @@ def viptela_vedge_deploy():
             generate_interfaces_file_new(isp_switch_1_objects, isp_switch_2_objects,
                                      temp_file_name)
             router_ip += 1
-            gns3_upload_file_to_node(gns3_server_data, new_project_id, node_id, "etc/network/interfaces",
+            gns3_upload_file_to_node(gns3_server_data, project_id, node_id, "etc/network/interfaces",
                                      temp_file_name)
-            vedge_index += 44
-    # matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "ISP-Router")
+            vedge_index += 45
+    # matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, project_id, "ISP-Router")
     # if matching_nodes:
     #    for matching_node in matching_nodes:
     #        temp_file_name = "ISP-Router"
     #        node_id = matching_node[0]
-    #        gns3_upload_file_to_node(gns3_server_data, new_project_id, node_id, "startup-config.cfg", temp_file_name)
+    #        gns3_upload_file_to_node(gns3_server_data, project_id, node_id, "startup-config.cfg", temp_file_name)
     # endregion
     # region Start All GNS3 Nodes
     deployment_step = 'Starting Nodes'
-    gns3_start_all_nodes(gns3_server_data, new_project_id)
+    gns3_start_all_nodes(gns3_server_data, project_id)
     time.sleep(120)
     # endregion
     # region Deploy Site Clients in Lab
@@ -277,22 +266,22 @@ def viptela_vedge_deploy():
     client_filename = 'client_interfaces'
     client_node_file_path = 'etc/network/interfaces'
     generate_client_interfaces_file(client_filename)
-    vedge_deploy_data, client_deploy_data, site_drawing_deploy_data = generate_vedge_deploy_data(vedge_count)
+    vedge_deploy_data, client_deploy_data, site_drawing_deploy_data = generate_scale_vedge_deploy_data(vedge_count, vedge_index)
     client_every = 1
-    v = 1
-    vedge_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "vEdge")
+    v = vedge_index
+    vedge_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, project_id, "vEdge")
     if vedge_nodes:
         for vedge_node in vedge_nodes:
             temp_file_name = "client_interfaces"
             node_id = vedge_node[0]
             if v % client_every == 0:
-                network_test_node_id = gns3_create_node(gns3_server_data, new_project_id, network_test_tool_template_id,
+                network_test_node_id = gns3_create_node(gns3_server_data, project_id, network_test_tool_template_id,
                                                         client_deploy_data[f"network_test_client_{v:03}_deploy_data"])
-                gns3_update_nodes(gns3_server_data, new_project_id, network_test_node_id,
+                gns3_update_nodes(gns3_server_data, project_id, network_test_node_id,
                                   client_deploy_data[f"network_test_client_{v:03}_deploy_data"])
-                gns3_upload_file_to_node(gns3_server_data, new_project_id, network_test_node_id, client_node_file_path,
+                gns3_upload_file_to_node(gns3_server_data, project_id, network_test_node_id, client_node_file_path,
                                          temp_file_name)
-                gns3_connect_nodes(gns3_server_data, new_project_id, node_id, 3, 0, network_test_node_id, 0, 0)
+                gns3_connect_nodes(gns3_server_data, project_id, node_id, 3, 0, network_test_node_id, 0, 0)
             v += 1
     # endregion
     # region Viptela vEdge Device Setup
@@ -302,16 +291,16 @@ def viptela_vedge_deploy():
     abs_path = os.path.abspath(__file__)
     configs_path = os.path.join(os.path.dirname(abs_path), 'configs/viptela')
     file_name = os.path.join(configs_path, 'vedge_cloud_site_template')
-    vedge_lan_objects = generate_vedge_objects(vedge_count, '172.16.241')
+    vedge_lan_objects = generate_scale_vedge_objects(vedge_count, vedge_mgmt_subnet, subnet_index, vedge_index, site_id)
     isp_index = 0
     for server_ip in server_ips:
-        for i in range(1, vedge_count + 1):
+        for i in range(vedge_index, vedge_index + vedge_count):
             temp_node_name = f'vEdge_{i:003}'
-            matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
+            matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, project_id, temp_node_name)
             if matching_nodes:
                 for matching_node in matching_nodes:
                     node_id, console_port, aux = matching_node
-                    node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id', 'name', node_id)
+                    node_name = gns3_query_find_nodes_by_field(server_ip, server_port, project_id, 'node_id', 'name', node_id)
                     for vedge_lan_object in vedge_lan_objects:
                         if vedge_lan_object['vedge'] == temp_node_name:
                             lan_dhcp_pool = vedge_lan_object['lan_dhcp_pool']
@@ -337,9 +326,9 @@ def viptela_vedge_deploy():
                     while True:
                         tn.write(b"\r\n")
                         output = tn.read_until(b"login:", timeout=1).decode('ascii')
-                        if 'vedge#' in output:
-                            tn.write(b"\r\n")
-                            break
+                        # if 'vedge#' in output:
+                        #    tn.write(b"\r\n")
+                        #    break
                         tn.write(viptela_username.encode("ascii") + b"\n")
                         tn.read_until(b"Password:", timeout=2)
                         tn.write(viptela_old_password.encode("ascii") + b"\n")
@@ -393,7 +382,7 @@ def viptela_vedge_deploy():
                     tn.read_until(b"exit")
                     tn.close()
                     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vEdge Device Setup for {temp_node_name}, Remaining - {vedge_count - i}")
-                    if i % 44 == 0 and i != 0:
+                    if i % 45 == 0 and i != 0:
                         isp_index += 1
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vEdge Device Setup for {vedge_count} vEdge devices")
     # endregion
@@ -405,14 +394,14 @@ def viptela_vedge_deploy():
     v = 1
 
     for server_ip in server_ips:
-        vedge_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "vEdge")
+        vedge_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, project_id, "vEdge")
         log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Logging in to console for node {temp_node_name}")
         for vedge_node in vedge_nodes:
             vedge_id, vedge_console, vedge_aux = vedge_node
-            node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id', 'name', vedge_id)
-            scp_command = f"request execute vpn 512 scp /home/admin/SDWAN.pem admin@172.16.241.{ve}:/home/admin"
-            scp_2_command = f"request execute vpn 512 scp /home/admin/vedge.crt admin@172.16.241.{ve}:/home/admin"
-            ssh_command = f"request execute vpn 512 ssh admin@172.16.241.{ve}"
+            node_name = gns3_query_find_nodes_by_field(server_ip, server_port, project_id, 'node_id', 'name', vedge_id)
+            scp_command = f"request execute vpn 512 scp /home/admin/SDWAN.pem admin@{vedge_mgmt_subnet}.{ve}:/home/admin"
+            scp_2_command = f"request execute vpn 512 scp /home/admin/vedge.crt admin@{vedge_mgmt_subnet}.{ve}:/home/admin"
+            ssh_command = f"request execute vpn 512 ssh admin@{vedge_mgmt_subnet}.{ve}"
             ssh_2_command = f"request execute vpn 512 ssh admin@{vbond_mgmt_address}"
             tn = telnetlib.Telnet(gns3_viptela_management_server_ip, vmanage_console_port)
             log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vEdge Certificate Setup for {node_name[0]} - vEdge {v} of {vedge_count}")
@@ -555,38 +544,38 @@ def viptela_vedge_deploy():
     vmanage_push_certs(gns3_server_data, vmanage_headers)
     # endregion
     # region Validation
-    client_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "Client")
+    client_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, project_id, "Client")
     if client_nodes:
         for client_node in client_nodes:
             node_id, console_port, aux = client_node
-            gns3_start_node(gns3_server_data, new_project_id, node_id)
+            gns3_start_node(gns3_server_data, project_id, node_id)
     wait_time = 10  # minutes
     deployment_step = 'Validation'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Waiting {wait_time} minutes to validate deployment, to resume at {util_resume_time(wait_time)}")
     time.sleep(wait_time * 60)
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     for server_ip in server_ips:
-        temp_node_name = f'001_Client'
+        temp_node_name = f'{vedge_index:03}Client'
         vedge_nodes = f'vEdge_'
-        matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
-        client_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, vedge_nodes)
+        matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, project_id, temp_node_name)
+        client_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, project_id, vedge_nodes)
         client_ip = 101
         successful_site = 0
         i = 1
         if matching_nodes:
             node_id, console_port, aux = matching_nodes[0]
-            node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id', 'name', node_id)
+            node_name = gns3_query_find_nodes_by_field(server_ip, server_port, project_id, 'node_id', 'name', node_id)
             log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting deployment validation on node {node_name[0]}")
             tn = telnetlib.Telnet(server_ip, console_port)
             tn.write(b"\r\n")
             tn.read_until(b"#")
             for client_node in client_nodes:
-                ping_command = f"ping -c 2 -W 1 172.16.{client_ip}.1"
+                ping_command = f"ping -c 2 -W 1 10.{subnet_index}.{client_ip}.1"
                 tn.write(ping_command.encode('ascii') + b"\r")
                 output = tn.read_until(b"loss", timeout=5).decode('ascii')
                 if "100% packet" in output:
                     client_node_name = \
-                    gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id', 'name', client_nodes[i][0])[0]
+                    gns3_query_find_nodes_by_field(server_ip, server_port, project_id, 'node_id', 'name', client_nodes[i][0])[0]
                     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Packet Loss to Site {client_ip}")
                 else:
                     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,f"Successfully connected to Site {client_ip}")

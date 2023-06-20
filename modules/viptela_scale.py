@@ -2,6 +2,7 @@ from modules.viptela_mgmt_deployment import *
 from modules.viptela_vedge_deployment import *
 from modules.gns3_actions import *
 from modules.gns3_query import *
+from modules.viptela_vedge_scale_deployment import *
 
 gns3_isp_tap_name = 'tap1'
 gns3_mgmt_tap_name = 'tap2'
@@ -46,4 +47,6 @@ def start_scale_deploy():
     # set_config(gns3_sites_01_server_ip, gns3_sites_01_server_port, gns3_sites_01_project_name, vmanage_address, gns3_sites_01_site_count, gns3_isp_tap_name, gns3_mgmt_tap_name)
     viptela_vedge_deploy()
 
+
+viptela_vedge_scale_deploy(gns3_sites_01_server_ip, gns3_sites_01_server_port, gns3_sites_01_project_name, vmanage_address, gns3_isp_tap_name, gns3_mgmt_tap_name, 1, 1, 1, 1)
 #start_scale_deploy()

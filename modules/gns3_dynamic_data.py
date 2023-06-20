@@ -23,7 +23,7 @@ def generate_network_objects(base_subnet, subnet_mask, vedge_index=1):
     switch_limit = 1
     for subnet in subnets_64:
         if subnet.prefixlen == subnet_mask:
-            if switch_limit == 45:
+            if switch_limit == 46:
                 break
             router_address = str(subnet.network_address + 1)
             vedge_address = str(subnet.network_address + 2)
@@ -225,6 +225,42 @@ def generate_vedge_objects(vedge_count, mgmt_base_subnet):
                 }
             networks.append(network_dict)
             k += 1
+    # logging.info(networks)
+    return networks
+
+def generate_scale_vedge_objects(vedge_count, mgmt_base_subnet, subnet_index, vedge_index, site_id):
+    subnet_mask = 24
+    k = 101
+    networks = []
+    for i in range(vedge_index, vedge_index + vedge_count):
+        base_subnet = f'10.{subnet_index}.{k}.0/24'
+        network = ipaddress.IPv4Network(base_subnet)
+        subnets_64 = list(network.subnets(new_prefix=subnet_mask))
+        for subnet in subnets_64:
+            if subnet.prefixlen == subnet_mask:
+                router_address = str(subnet.network_address + 1)
+                vedge_address = str(subnet.network_address + 2)
+                subnet_address_full = str(
+                    ipaddress.IPv4Interface(str(subnet.network_address) + '/' + str(subnet_mask)).netmask)
+                subnet_address_var = str(subnet.network_address) + '/' + str(subnet_mask)
+                dhcp_exclude_var = str(subnet.network_address + 1) + '-' + str(subnet.network_address + 50)
+                client_1_address_var = str(subnet.network_address + 51)
+                network_dict = {
+                    'lan_subnet_address': subnet_address_var,
+                    'lan_gateway_address': router_address,
+                    'lan_dhcp_pool': f'{router_address}/24',
+                    'lan_dhcp_exclude': dhcp_exclude_var,
+                    'client_1_address': client_1_address_var,
+                    'vedge': f'vEdge_{i:003}',
+                    'system_ip': f'{mgmt_base_subnet}.{i + 100}',
+                    'mgmt_address': f'{mgmt_base_subnet}.{i + 100}/24',
+                    'mgmt_gateway': f'{mgmt_base_subnet}.1',
+                    'site_id': site_id,
+                    'org_name': 'sdwan-lab'
+                }
+            networks.append(network_dict)
+            k += 1
+            site_id += 1
     # logging.info(networks)
     return networks
 
@@ -507,6 +543,92 @@ def generate_vedge_deploy_data(vedge_count):
                 "x": drawing_x, "y": drawing_y, "z": 0}
     return deploy_data, client_deploy_data, site_drawing_deploy_data
 
+def generate_scale_vedge_deploy_data(vedge_count, vedge_index):
+    deploy_data = {}
+    client_deploy_data = {}
+    site_drawing_deploy_data = {}
+    e = 1
+    o = 1
+    y_modifier = 0
+    x_o = -557
+    x_e = 267
+    y = -554
+    y_s = -554
+    row_count = 20
+
+    client_x = 0
+    client_y = 0
+    client_y_modifier = 115
+
+    drawing_x = 0
+    drawing_y = 0
+    drawing_x_modifier = 200
+
+    row_count = 10
+    # y = -107
+    # y_s = -107
+    for i in range(vedge_index, vedge_index + vedge_count):
+        temp_name = f"vEdge_{i:03}"
+        name = f"vEdge_{i:03}_{city_data[temp_name]['city']}"
+        client_name = f"Site_{i:03}_Client"
+        if i == 1:
+            x = x_o
+            client_x = x
+            client_y = y + client_y_modifier
+            drawing_x = x - 55
+            drawing_y = y - 55
+        elif i == 2:
+            x = x_e
+            client_x = x
+            client_y = y + client_y_modifier
+            drawing_x = x - 55
+            drawing_y = y - 55
+        elif i <= row_count:
+            if i % 2 == 0:
+                x = x_e + 200 * e
+                e += 1
+                client_x = x
+                client_y = y + client_y_modifier
+                drawing_x = x - 55
+                drawing_y = y - 55
+            else:
+                x = x_o + -200 * (o)
+                o += 1
+                client_x = x
+                client_y = y + client_y_modifier
+                drawing_x = x - 55
+                drawing_y = y - 55
+        else:
+            if (i - 1) % row_count == 0:
+                e = 1
+                o = 1
+                y_modifier += 1
+                x_o = -557
+                x_e = 267
+            if i % 2 == 0:
+                x = x_e + 200 * (e - 1)
+                e += 1
+                y = y_s + 300 * y_modifier
+                client_x = x
+                client_y = y + client_y_modifier
+                drawing_x = x - 55
+                drawing_y = y - 55
+            else:
+                x = x_o - 200 * (o - 1)
+                y = y_s + 300 * y_modifier
+                o += 1
+                client_x = x
+                client_y = y + client_y_modifier
+                drawing_x = x - 55
+                drawing_y = y - 55
+        deploy_data[f"vedge_{i:03}_deploy_data"] = {"x": x, "y": y, "name": name}
+        client_deploy_data[f"network_test_client_{i:03}_deploy_data"] = {"x": client_x, "y": client_y,
+                                                                         "name": client_name}
+        site_drawing_deploy_data[f"site_drawing_{i:03}_deploy_data"] = {
+            "svg": "<svg height=\"267\" width=\"169\"><rect fill=\"#aaffff\" fill-opacity=\"1.0\" height=\"267\" stroke=\"#000000\" stroke-width=\"2\" width=\"169\" /></svg>",
+            "x": drawing_x, "y": drawing_y, "z": 0}
+    return deploy_data, client_deploy_data, site_drawing_deploy_data
+
 def oa_generate_vedge_deploy_data(vedge_count):
     deploy_data = {}
     client_deploy_data = {}
@@ -720,33 +842,6 @@ def oa_generate_vedge_deploy_data(vedge_count):
                 "svg": "<svg height=\"267\" width=\"169\"><rect fill=\"#aaffff\" fill-opacity=\"1.0\" height=\"267\" stroke=\"#000000\" stroke-width=\"2\" width=\"169\" /></svg>",
                 "x": drawing_x, "y": drawing_y, "z": 0}
     return deploy_data, client_deploy_data, site_drawing_deploy_data
-
-def generate_mgmt_switch_deploy_data_old(num_nodes):
-    deploy_data = {}
-    e = 1
-    o = 1
-    x_o = -261
-    x_e = 39
-    y = -316
-    z = -1
-    row_count = 10
-
-    for i in range(1, num_nodes + 1):
-        name = f"MGMT_switch_{i:03}"
-        if i == 1:
-            x = x_o
-        elif i == 2:
-            x = x_e
-        elif i <= row_count:
-            if i % 2 == 0:
-                x = x_e + 100 * e
-                e += 1
-            else:
-                x = x_o + -100 * o
-                o += 1
-        deploy_data[f"mgmt_switch_{i:03}_deploy_data"] = {"x": x, "y": y, "name": name}
-
-    return deploy_data
 
 def generate_mgmt_switch_deploy_data(num_nodes):
     deploy_data = {}

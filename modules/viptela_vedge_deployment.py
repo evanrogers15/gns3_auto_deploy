@@ -38,7 +38,7 @@ def viptela_vedge_deploy():
     vedge_nodes = []
     vmanage_root_cert = ""
     configure_mgmt_tap = 0
-    deployment_type = 'viptela_mgmt'
+    deployment_type = 'viptela_vedge'
     deployment_status = 'running'
     deployment_step = '- Action - '
     cloud_node_deploy_data = {"x": 25, "y": -554, "name": "MGMT-Cloud-TAP", "node_type": "cloud",
