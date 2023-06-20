@@ -65,7 +65,7 @@ def viptela_vedge_scale_deploy(server_ip, server_port, project_name, vmanage_api
                     "vManage API IP": vmanage_api_ip, "Project Name": project_name, "Project ID": project_id,
                     "ISP Tap Name": isp_tap_name, "MGMT Tap Name": mgmt_tap_name,
                     "Site Count": vedge_count, "Use Tap": use_tap, "Deployment Type": deployment_type, "Deployment Status": deployment_status, "Deployment Step": deployment_step}]
-    mgmt_switch_count = (vedge_count // 50)
+    mgmt_switch_count = (vedge_count // 50) + 1
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
     #c.execute("DELETE FROM deployments")
