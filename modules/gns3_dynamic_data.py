@@ -134,7 +134,7 @@ def generate_interfaces_file_new(interface_data_2, interface_data_3, filename_te
             f.write('iface eth3 inet static\n')
             f.write(f'\taddress 172.16.4.9\n')
             f.write(f'\tnetmask 255.255.255.252\n')
-        for i in range(5, 49):
+        for i in range(2, 47):
             f.write(f'#{interface_data_2[eth_1]["vedge"]} interface ge0/0\n')
             f.write(f'auto eth{i}\n')
             f.write(f'iface eth{i} inet static\n')
@@ -142,7 +142,7 @@ def generate_interfaces_file_new(interface_data_2, interface_data_3, filename_te
             f.write(f'\tnetmask {interface_data_2[eth_1]["subnet_address"]}\n')
             f.write('\n')
             eth_1 += 1
-        for i in range(51, 95):
+        for i in range(48, 93):
             f.write(f'#{interface_data_3[eth_2]["vedge"]} interface ge0/1\n')
             f.write(f'auto eth{i}\n')
             f.write(f'iface eth{i} inet static\n')
