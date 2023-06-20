@@ -17,9 +17,6 @@ gns3_sites_01_server_port = '80'
 gns3_sites_01_project_name = 'viptela_sites'
 gns3_sites_01_site_count = 40
 
-
-viptela_vedge_scale_deploy(gns3_sites_01_server_ip, gns3_sites_01_server_port, gns3_sites_01_project_name, vmanage_address, gns3_isp_tap_name, gns3_mgmt_tap_name, 1, 1, 1, 1)
-
 def set_config(server_ip, server_port, new_project_name, vmanage_api_ip, site_count, isp_tap_name, mgmt_tap_name):
     projects = gns3_query_get_projects(server_ip, server_port)
     server_name = gns3_query_get_computes_name(server_ip, server_port)
@@ -48,7 +45,7 @@ def start_scale_deploy():
     # set_config(gns3_mgmt_server_ip, gns3_mgmt_server_port, gns3_mgmt_project_name, vmanage_address, gns3_sites_01_site_count, gns3_isp_tap_name, gns3_mgmt_tap_name)
     viptela_mgmt_deploy()
     # set_config(gns3_sites_01_server_ip, gns3_sites_01_server_port, gns3_sites_01_project_name, vmanage_address, gns3_sites_01_site_count, gns3_isp_tap_name, gns3_mgmt_tap_name)
-    viptela_vedge_deploy()
+    #viptela_vedge_deploy()
 
 
 
