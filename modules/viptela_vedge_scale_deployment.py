@@ -192,7 +192,7 @@ def viptela_vedge_scale_deploy(server_ip, server_port, project_name, vmanage_api
         gns3_connect_nodes(gns3_server_data, project_id, mgmt_switch_node_id, 0, 0, mgmt_main_switch_node_id, 0,
                            mgmt_switch_index)
         for j in range(first_vedge_index, last_vedge_index):
-            vedge_node_id = vedge_info[j + vedge_index]['node_id']
+            vedge_node_id = vedge_info[j + vedge_index]['node_id'] - 1
             gns3_connect_nodes(gns3_server_data, project_id, mgmt_switch_node_id, 0, mgmt_switch_interface,
                                vedge_node_id, 0, 0)
             gns3_connect_nodes(gns3_server_data, project_id, isp_ovs_node_id, switch_adapter_a, 0, vedge_node_id,
