@@ -17,7 +17,7 @@ from modules.gns3_variables import *
 from modules.gns3_dynamic_data import *
 from modules.gns3_query import *
 
-def viptela_vedge_scale_deploy(server_ip, server_port, project_name, vmanage_api_ip, isp_tap_name, mgmt_tap_name, vedge_index, site_id, subnet_index, server_index):
+def viptela_vedge_scale_deploy(server_ip, server_port, project_name, vmanage_api_ip, isp_tap_name, mgmt_tap_name, vedge_index, site_id, subnet_index, server_index, site_count):
     # region Variables
     vmanage_headers = {}
     lan_subnet_address = ''
@@ -49,7 +49,7 @@ def viptela_vedge_scale_deploy(server_ip, server_port, project_name, vmanage_api
     # region GNS3 Lab Setup
     start_time = time.time()
     use_tap = 1
-    vedge_count = 45
+    vedge_count = site_count
     vedge_mgmt_subnet = f"172.16.2{40 + server_index}"
     projects = gns3_query_get_projects(server_ip, server_port)
     server_name = gns3_query_get_computes_name(server_ip, server_port)
@@ -155,7 +155,7 @@ def viptela_vedge_scale_deploy(server_ip, server_port, project_name, vmanage_api
         else:
             log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"No nodes found in project {project_name} for MGMT_switch_{i}")
 
-    for i in range(vedge_index, vedge_index + vedge_count):
+    for i in range(vedge_index, vedge_index + vedge_count + 1):
         matching_node = vedge_info[i - 1]
         if matching_node:
             node_id = matching_node['node_id']

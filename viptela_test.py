@@ -17,7 +17,7 @@ gns3_sites_01_server_port = '80'
 gns3_sites_01_project_name = 'viptela_sites'
 gns3_sites_01_site_count = 40
 
-viptela_vedge_scale_deploy(gns3_sites_01_server_ip, gns3_sites_01_server_port, gns3_sites_01_project_name, vmanage_address, gns3_isp_tap_name, gns3_mgmt_tap_name, 1, 1, 1, 1)
+viptela_vedge_scale_deploy(gns3_sites_01_server_ip, gns3_sites_01_server_port, gns3_sites_01_project_name, vmanage_address, gns3_isp_tap_name, gns3_mgmt_tap_name, 1, 1, 1, 1, 20)
 
 
 
