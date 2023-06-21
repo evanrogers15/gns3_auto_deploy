@@ -226,7 +226,7 @@ def viptela_vedge_scale_deploy(server_ip, server_port, project_name, vmanage_api
     starting_subnet = 1
     router_ip = 0
     switch_index = 0
-    vedge_index = 1
+    v_index = vedge_index
     if matching_nodes:
         for matching_node in matching_nodes:
             node_id = matching_node[0]
@@ -234,8 +234,8 @@ def viptela_vedge_scale_deploy(server_ip, server_port, project_name, vmanage_api
             vedge_isp_2_base_subnet = f'10.{subnet_index}.{starting_subnet + 1}.0/24'
             temp_file_name = f'cloud_isp_switch_{switch_index}_interfaces'
             # isp_router_objects = generate_network_objects(isp_router_base_subnet, 30)
-            isp_switch_1_objects = generate_network_objects(vedge_isp_1_base_subnet, 30, vedge_index)
-            isp_switch_2_objects = generate_network_objects(vedge_isp_2_base_subnet, 30, vedge_index)
+            isp_switch_1_objects = generate_network_objects(vedge_isp_1_base_subnet, 30, v_index)
+            isp_switch_2_objects = generate_network_objects(vedge_isp_2_base_subnet, 30, v_index)
             isp_1_overall.append(isp_switch_1_objects)
             isp_2_overall.append(isp_switch_2_objects)
             starting_subnet += 2
@@ -245,7 +245,7 @@ def viptela_vedge_scale_deploy(server_ip, server_port, project_name, vmanage_api
             router_ip += 1
             gns3_upload_file_to_node(gns3_server_data, project_id, node_id, "etc/network/interfaces",
                                      temp_file_name)
-            vedge_index += 45
+            v_index += 45
     # matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, project_id, "ISP-Router")
     # if matching_nodes:
     #    for matching_node in matching_nodes:
@@ -323,12 +323,10 @@ def viptela_vedge_scale_deploy(server_ip, server_port, project_name, vmanage_api
                     vedge_hostname = f"{temp_node_name}_{city_data[temp_node_name]['city']}"
                     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vEdge Device Setup for {node_name[0]} - vEdge {i} of {vedge_count}")
                     tn = telnetlib.Telnet(server_ip, console_port)
+                    tn.write(b"\r\n")
                     while True:
                         tn.write(b"\r\n")
-                        output = tn.read_until(b"login:", timeout=1).decode('ascii')
-                        # if 'vedge#' in output:
-                        #    tn.write(b"\r\n")
-                        #    break
+                        tn.read_until(b"login:", timeout=2).decode('ascii')
                         tn.write(viptela_username.encode("ascii") + b"\n")
                         tn.read_until(b"Password:", timeout=2)
                         tn.write(viptela_old_password.encode("ascii") + b"\n")
@@ -341,6 +339,7 @@ def viptela_vedge_scale_deploy(server_ip, server_port, project_name, vmanage_api
                             tn.write(b"\r\n")
                             break
                         elif 'Welcome' in output:
+                            tn.read_until(b"Re-enter password:", timeout=2)
                             tn.write(viptela_password.encode("ascii") + b"\n")
                             tn.read_until(b"password:", timeout=2)
                             tn.write(viptela_password.encode("ascii") + b"\n")
