@@ -38,9 +38,9 @@ def set_config(server_ip, server_port, new_project_name, vmanage_api_ip, site_co
     project_status = [project['status'] for project in projects]
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
-    c.execute("DELETE FROM config")
+    c.execute("DELETE FROM mgmt_config")
     c.execute(
-        "INSERT INTO config (server_ip, server_port, server_name, project_list, project_names, project_status, project_name, project_id, vmanage_api_ip, site_count, isp_tap_name, mgmt_tap_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO mgmt_config (server_ip, server_port, server_name, project_list, project_names, project_status, project_name, project_id, vmanage_api_ip, site_count, isp_tap_name, mgmt_tap_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (server_ip, server_port, server_name, json.dumps(project_ids), json.dumps(project_names),
          json.dumps(project_status), new_project_name, project_id, vmanage_api_ip, site_count, isp_tap_name, mgmt_tap_name))
     conn.commit()
@@ -51,5 +51,3 @@ viptela_mgmt_deploy()
 viptela_vedge_scale_deploy(gns3_sites_01_server_ip, gns3_sites_01_server_port, gns3_sites_01_project_name, vmanage_address, gns3_isp_tap_name, gns3_mgmt_tap_name, 1, 1, 1, 1, 20)
 viptela_vedge_scale_deploy(gns3_sites_02_server_ip, gns3_sites_02_server_port, gns3_sites_02_project_name, vmanage_address, gns3_isp_tap_name, gns3_mgmt_tap_name, 21, 21, 2, 2, 20)
 
-
-#start_scale_deploy()

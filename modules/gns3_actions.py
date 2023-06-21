@@ -337,11 +337,15 @@ def gns3_start_all_nodes(gns3_server_data, project_id):
         log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Started all nodes in project {project_name}")
 
 
-def gns3_set_project(gns3_server_data, project_id):
+def gns3_set_project(gns3_server_data, project_id, mgmt_server=None):
     for server_record in gns3_server_data:
         server_ip, server_port, server_name, project_name, vmanage_api_ip, deployment_type, deployment_status, deployment_step, vedge_count = server_record['GNS3 Server'], server_record[
             'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['vManage API IP'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step'], server_record['Site Count']
-        if vedge_count is None:
+        if mgmt_server:
+            project_zoom = 100
+            project_scene_height = 1000
+            project_scene_width = 2000
+        elif vedge_count is None:
             project_zoom = 80
             project_scene_height = 1000
             project_scene_width = 2000
