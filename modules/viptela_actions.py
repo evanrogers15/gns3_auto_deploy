@@ -206,7 +206,7 @@ def vmanage_set_device(gns3_server_data, vmanage_headers, vdevice_ip, vdevice_pe
             if response.status_code == requests.codes.ok:
                 logging.info(f"Deploy - {vdevice_personality} with address {vdevice_ip} set successfully on vManage {vmanage_address}")
             else:
-                logging.info(f"Deploy - Failed to add {vdevice_personality} device. ")
+                logging.info(f"Deploy - Failed to add {vdevice_personality} with address {vdevice_ip}. ")
                 logging.info("Response: {}".format(response.text))
             return response
         except requests.exceptions.RequestException as e:
