@@ -501,7 +501,7 @@ def viptela_mgmt_deploy():
                 vmanage_set_device(gns3_server_data, vmanage_headers, vsmart_mgmt_address, "vsmart")
                 vmanage_set_device(gns3_server_data, vmanage_headers, vbond_address, "vbond")
                 vbond_csr = vmanage_generate_csr(gns3_server_data, vmanage_headers, vbond_address, 'vbond')
-                vsmart_csr = vmanage_generate_csr(gns3_server_data, vmanage_headers, vsmart_address, 'vsmart')
+                vsmart_csr = vmanage_generate_csr(gns3_server_data, vmanage_headers, vsmart_mgmt_address, 'vsmart')
                 tn.write(b'exit\r\n')
                 tn.read_until(b'#')
                 tn.write(b'vshell\r\n')
