@@ -441,10 +441,12 @@ def viptela_vedge_scale_deploy(server_ip, server_port, project_name, vmanage_api
             tn.read_until(b'#')
             tn.write(scp_command.encode('ascii') + b"\n")
             test_o = tn.read_until(b"?", timeout=2).decode('ascii')
-            if "fingerprint" in test_o:
-                tn.write(b'yes\r\n')
-            else:
-                tn.write(b"\n")
+            if v == 1:
+                test_o = tn.read_until(b"?", timeout=5).decode('ascii')
+                if "fingerprint" in test_o:
+                    tn.write(b'yes\r\n')
+                else:
+                    tn.write(b"\n")
             tn.read_until(b"Password:")
             tn.write(viptela_password.encode("ascii") + b"\n")
             tn.read_until(b'#')
