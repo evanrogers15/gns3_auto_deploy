@@ -158,10 +158,10 @@ def viptela_vedge_scale_deploy(server_ip, server_port, project_name, vmanage_api
 
     for i in range(vedge_index, vedge_index + vedge_count - 1):
         #matching_node = vedge_info[i - 1]
-        temp_node_name = f'vEdge_{i -1:003}'
+        temp_node_name = f'vEdge_{i:003}'
         matching_node = gns3_query_find_nodes_by_name(server_ip, server_port, project_id, temp_node_name)
         if matching_node:
-            node_id = matching_node['node_id']
+            node_id = matching_node[0][0]
             gns3_update_nodes(gns3_server_data, project_id, node_id, vedge_deploy_data[f"vedge_{i:03}_deploy_data"])
         else:
             log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"No nodes found in project {project_name} for vEdge {i}")
@@ -184,7 +184,7 @@ def viptela_vedge_scale_deploy(server_ip, server_port, project_name, vmanage_api
                            isp_ovs_node_id, 0, 0)
     mgmt_switch_interface = 1
     switch_adapter_a = 1
-    switch_adapter_b = (switchport_count // 2) + 4
+    switch_adapter_b = (switchport_count // 2) # + 4
     cloud_isp_node_index = 0
     mgmt_switch_node_index = 0
     for i in range(mgmt_switch_count):
@@ -196,10 +196,10 @@ def viptela_vedge_scale_deploy(server_ip, server_port, project_name, vmanage_api
                            mgmt_switch_index)
         for j in range(first_vedge_index, last_vedge_index):
             # vedge_node_id = vedge_info[j + vedge_index - 1]['node_id']
-            temp_node_name = f'vEdge_{j + vedge_index -1:003}'
+            temp_node_name = f'vEdge_{j + vedge_index:003}'
             matching_node = gns3_query_find_nodes_by_name(server_ip, server_port, project_id, temp_node_name)
             if matching_node:
-                vedge_node_id = matching_node['node_id']
+                vedge_node_id = matching_node[0][0]
             gns3_connect_nodes(gns3_server_data, project_id, mgmt_switch_node_id, 0, mgmt_switch_interface,
                                vedge_node_id, 0, 0)
             gns3_connect_nodes(gns3_server_data, project_id, isp_ovs_node_id, switch_adapter_a, 0, vedge_node_id,
@@ -211,7 +211,7 @@ def viptela_vedge_scale_deploy(server_ip, server_port, project_name, vmanage_api
             mgmt_switch_interface += 1
             if (j + 1) % 45 == 0:
                 cloud_isp_node_index += 1
-                switch_adapter_a = 5
+                switch_adapter_a = 1
                 switch_adapter_b = (switchport_count // 2) + 4
                 mgmt_switch_interface = 1
         mgmt_switch_node_index += 1
@@ -508,6 +508,9 @@ def viptela_vedge_scale_deploy(server_ip, server_port, project_name, vmanage_api
             tn.read_until(b'#')
             vedge_install_command = f"request vedge add chassis-num {chassis_number} serial-num {serial_number}"
             tn.write(ssh_2_command.encode('ascii') + b"\n")
+            test_o = tn.read_until(b"?", timeout=2).decode('ascii')
+            if "fingerprint" in test_o:
+                tn.write(b'yes\r\n')
             tn.read_until(b"Password:")
             tn.write(viptela_password.encode("ascii") + b"\n")
             tn.read_until(b'#')
