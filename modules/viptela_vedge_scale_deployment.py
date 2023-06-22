@@ -439,11 +439,12 @@ def viptela_vedge_scale_deploy(server_ip, server_port, project_name, vmanage_api
             tn.write(b'exit\r\n')
             # SCP SDWAN.pem to vEdge
             tn.read_until(b'#')
-            tn.write(scp_command.encode('ascii') + b"\n")
-            if v == 1:
+            while True:
+                tn.write(scp_command.encode('ascii') + b"\n")
                 test_o = tn.read_until(b"?", timeout=5).decode('ascii')
                 if "fingerprint" in test_o:
                     tn.write(b'yes\r\n')
+                    break
                 else:
                     tn.write(b"\n")
             tn.read_until(b"Password:")
@@ -463,15 +464,18 @@ def viptela_vedge_scale_deploy(server_ip, server_port, project_name, vmanage_api
             tn.write(b'sdwan-lab\n')
             tn.read_until(b'#')
             # SCP the vEdge.csr to the vManage
+            #while True:
             tn.write(b'request execute vpn 512 scp /home/admin/vedge.csr admin@172.16.240.2:/home/admin\r\n')
-            if v == 1:
-                test_o = tn.read_until(b"?", timeout=5).decode('ascii')
-                if "fingerprint" in test_o:
-                    tn.write(b'yes\r\n')
-                else:
-                    tn.write(b"\n")
-            tn.read_until(b"Password:")
-            tn.write(viptela_password.encode("ascii") + b"\n")
+            test_o = tn.read_until(b"?", timeout=5).decode('ascii')
+            if "fingerprint" in test_o:
+                tn.write(b'yes\r\n')
+                tn.read_until(b"Password:")
+                tn.write(viptela_password.encode("ascii") + b"\n")
+                #break
+            elif "Password:" in test_o:
+                tn.write(viptela_password.encode("ascii") + b"\n")
+            #tn.read_until(b"Password:")
+            #tn.write(viptela_password.encode("ascii") + b"\n")
             tn.read_until(b'#')
             # Drop back to the vManage
             tn.write(b'exit\r\n')
@@ -509,12 +513,18 @@ def viptela_vedge_scale_deploy(server_ip, server_port, project_name, vmanage_api
             tn.write(b'exit\r\n')
             tn.read_until(b'#')
             vedge_install_command = f"request vedge add chassis-num {chassis_number} serial-num {serial_number}"
+            # while True:
             tn.write(ssh_2_command.encode('ascii') + b"\n")
-            test_o = tn.read_until(b"?", timeout=2).decode('ascii')
+            test_o = tn.read_until(b"?", timeout=5).decode('ascii')
             if "fingerprint" in test_o:
                 tn.write(b'yes\r\n')
-            tn.read_until(b"Password:")
-            tn.write(viptela_password.encode("ascii") + b"\n")
+                tn.read_until(b"Password:")
+                tn.write(viptela_password.encode("ascii") + b"\n")
+                # break
+            elif "Password:" in test_o:
+                tn.write(viptela_password.encode("ascii") + b"\n")
+            #tn.read_until(b"Password:")
+            #tn.write(viptela_password.encode("ascii") + b"\n")
             tn.read_until(b'#')
             tn.write(vedge_install_command.encode('ascii') + b"\n")
             tn.read_until(b'#')

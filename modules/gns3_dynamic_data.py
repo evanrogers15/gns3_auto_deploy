@@ -845,8 +845,8 @@ def generate_scale_vedge_objects(vedge_count, mgmt_base_subnet, subnet_index, ve
                     'lan_dhcp_exclude': dhcp_exclude_var,
                     'client_1_address': client_1_address_var,
                     'vedge': f'vEdge_{i:003}',
-                    'system_ip': f'{mgmt_base_subnet}.{i + 100}',
-                    'mgmt_address': f'{mgmt_base_subnet}.{i + 100}/24',
+                    'system_ip': f'{mgmt_base_subnet}.{k}',
+                    'mgmt_address': f'{mgmt_base_subnet}.{k}/24',
                     'mgmt_gateway': f'{mgmt_base_subnet}.1',
                     'site_id': site_id,
                     'org_name': 'sdwan-lab'
