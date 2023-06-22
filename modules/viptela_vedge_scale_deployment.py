@@ -463,7 +463,7 @@ def viptela_vedge_scale_deploy(server_ip, server_port, project_name, vmanage_api
             tn.read_until(b'#')
             # SCP the vEdge.csr to the vManage
             tn.write(b'request execute vpn 512 scp /home/admin/vedge.csr admin@172.16.240.2:/home/admin\r\n')
-            test_o = tn.read_until(b"?").decode('ascii')
+            test_o = tn.read_until(b"?", timeout=5).decode('ascii')
             if "fingerprint" in test_o:
                 tn.write(b'yes\r\n')
             else:
