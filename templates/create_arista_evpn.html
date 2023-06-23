@@ -351,10 +351,7 @@
             project_name = document.getElementById("project_name_input").value;
           }
           var vmanage_api_ip = "172.16.2.2";
-          var site_count = document.getElementById("site_count").value;
-          if (site_count === "custom") {
-            site_count = document.getElementById("site_count_input").value;
-          }
+
           var tap_name = document.getElementById("tap_name").value;
           var site_count = "5";
           var mgmt_subnet_ip = "172.16.4.0/24";
@@ -365,7 +362,8 @@
             project_name: project_name,
             vmanage_api_ip: vmanage_api_ip,
             site_count: site_count,
-            tap_name: tap_name
+            tap_name: tap_name,
+            mgmt_subnet_ip: mgmt_subnet_ip
           });
 
           var xhr = new XMLHttpRequest();
