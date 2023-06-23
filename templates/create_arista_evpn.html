@@ -357,7 +357,8 @@
           }
           var tap_name = document.getElementById("tap_name").value;
           var site_count = "5";
-          var mgmt_subnet_ip = "172.16.4.0/24";
+          #var mgmt_subnet_ip = "172.16.4.0/24";
+
           var data = JSON.stringify({
             server_ip: server_ip,
             server_port: server_port,
@@ -365,7 +366,7 @@
             vmanage_api_ip: vmanage_api_ip,
             site_count: site_count,
             tap_name: tap_name,
-             mgmt_subnet_ip: mgmt_subnet_ip,
+            mgmt_subnet_ip: mgmt_subnet_ip,
           });
 
           var xhr = new XMLHttpRequest();
