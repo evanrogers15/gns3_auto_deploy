@@ -90,8 +90,6 @@ def viptela_deploy():
     # region Create GNS3 Templates
     deployment_step = 'Creating Templates'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, "Starting Template Creation")
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
-                      mgmt_subnet_ip)
     vmanage_template_id = gns3_create_template(gns3_server_data, viptela_vmanage_template_data)
     vbond_template_id = gns3_create_template(gns3_server_data, viptela_vbond_template_data)
     vsmart_template_id = gns3_create_template(gns3_server_data, viptela_vsmart_template_data)

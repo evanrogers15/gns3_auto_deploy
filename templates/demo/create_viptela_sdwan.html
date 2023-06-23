@@ -191,7 +191,7 @@
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
 </head>
 <body>
-  <h1>Demo - Viptela SDWAN GNS3 Lab Auto Deployment</h1>
+  <h1>Viptela SDWAN GNS3 Lab Auto Deployment</h1>
   <div class="wrapper">
     <div class="prerequisites-container">
     <h3>Information</h3>
@@ -201,18 +201,23 @@
         <li>If in GCP, the instance requires an N2 CPU <br>and nested virtualization needs to be enabled</li>
         <li>Minimum Machine Type: n2-standard-16</li>
         <li>Access to the GNS3 Web UI from this machine</li>
-        <li>Tap Interface with IP address of 172.16.2.1</li>
+        <li>Tap interface with subnet mask of /24</li>
     </ul>
     <h4>Required GNS3 Images:</h4>
       <ul>
         <li>viptela-vmanage-li-20.10.1-genericx86-64.qcow2</li>
-        <li>empty30G.qcow2</li>
         <li>viptela-smart-li-20.10.1-genericx86-64.qcow2</li>
         <li>viptela-edge-20.10.1-genericx86-64.qcow2</li>
+        <li>If using GNS3 2.2.40 or newer, the below is not needed</li>
+        <li>empty30G.qcow2</li>
     </ul>
     <h4>Monitoring Requirements:</h4>
       <ul>
         <li>OpenVPN Deployed on GNS3 Server</li>
+        <li>Discover managment network specified during deployment setup</li>
+        <li>vManage IP: This will be the .2 IP address of your selected management subnet (Example: 172.16.2.2)</li>
+        <li>vManage Credentials: admin / PW4netops</li>
+        <li>SNMP v2 Community: public</li>
     </ul>
 
   </div>
@@ -225,6 +230,7 @@
         <li>Set different project name if desired</li>
         <li>Set Site Count between 1 and 50 (note more sites require more resources)</li>
         <li>Set Tap Interface Name (Example: tap0)</li>
+        <li>Enter desired management network subnet, must be a /24 subnet mask</li>
         <li>Click Start Deployment</li>
     </ul>
   </div>
@@ -245,7 +251,7 @@
       <form>
         <label for="server_ip">GNS3 Server IP:</label>
         <select id="server_ip" name="server_ip">
-          <option value="192.168.122.1">Local GNS3 Server</option>
+          <option value="192.168.122.1">Local Host GNS3 Server</option>
           <option value="custom">Custom</option>
         </select>
         <input type="text" id="server_ip_input" style="display: none;">
@@ -275,6 +281,13 @@
 
         <label for="tap_name">Tap Interface Name:</label>
         <input type="text" id="tap_name" name="tap_name">
+
+        <label for="mgmt_subnet_ip">Management Subnet IP:</label>
+        <select id="mgmt_subnet_ip" name="mgmt_subnet_ip">
+          <option value="172.16.2.0/24">172.16.2.0/24</option>
+          <option value="custom">Custom</option>
+        </select>
+        <input type="text" id="mgmt_subnet_ip_input" name="mgmt_subnet_ip_input" style="display: none;">
 
         <input type="button" value="Start Deployment" onclick="submitForm()">
       </form>
@@ -346,19 +359,30 @@
             document.getElementById("site_count_input").style.display = "none";
           }
         });
+
         document.getElementById("tap_name").addEventListener("change", function() {
           var selectedValue = this.value;
-
           if (selectedValue === "custom") {
             document.getElementById("tap_name_input").style.display = "block";
           } else {
             document.getElementById("tap_name_input").style.display = "none";
           }
         });
+
         var serverPort = document.getElementById("tap_name").value;
         if (serverPort === "custom") {
           serverPort = document.getElementById("tap_name_input").value;
         }
+
+        document.getElementById("mgmt_subnet_ip").addEventListener("change", function() {
+          var selectedValue = this.value;
+
+          if (selectedValue === "custom") {
+            document.getElementById("mgmt_subnet_ip_input").style.display = "block";
+          } else {
+            document.getElementById("mgmt_subnet_ip_input").style.display = "none";
+          }
+        });
 
         function submitForm() {
           var startDeploymentButton = document.querySelector('input[type="button"]');
@@ -370,11 +394,18 @@
             server_ip = document.getElementById("server_ip_input").value;
           }
           var server_port = document.getElementById("server_port").value;
+
           var project_name = document.getElementById("project_name").value;
           if (project_name === "custom") {
             project_name = document.getElementById("project_name_input").value;
           }
+          var mgmt_subnet_ip = document.getElementById("mgmt_subnet_ip").value;
+          if (mgmt_subnet_ip === "custom") {
+            mgmt_subnet_ip = document.getElementById("mgmt_subnet_ip_input").value;
+          }
+
           var vmanage_api_ip = "172.16.2.2";
+
           var site_count = document.getElementById("site_count").value;
           if (site_count === "custom") {
             site_count = document.getElementById("site_count_input").value;
@@ -388,6 +419,7 @@
             vmanage_api_ip: vmanage_api_ip,
             site_count: site_count,
             tap_name: tap_name,
+            mgmt_subnet_ip: mgmt_subnet_ip,
           });
 
           var xhr = new XMLHttpRequest();
