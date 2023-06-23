@@ -1,6 +1,6 @@
 import ipaddress
 import os
-from modules.gns3_variables import *
+from modules.gns3.gns3_variables import *
 def generate_temp_hub_data(num_ports, template_name):
     ports_mapping = [{"name": f"Ethernet{i}", "port_number": i} for i in range(num_ports)]
 
@@ -74,7 +74,7 @@ def generate_versa_network_objects(base_subnet, subnet_mask, vedge_index=1):
 
 def generate_client_interfaces_file(filename_temp, ip=None):
     abs_path = os.path.abspath(__file__)
-    configs_path = os.path.join(os.path.dirname(abs_path), 'configs/')
+    configs_path = os.path.join(os.path.dirname(abs_path), '../configs/')
     filename = os.path.join(configs_path, filename_temp)
 
     with open(filename, 'w') as f:
@@ -92,7 +92,7 @@ def generate_client_interfaces_file(filename_temp, ip=None):
 
 def generate_interfaces_file(interface_data_1, router_index, interface_data_2, interface_data_3, filename_temp):
     abs_path = os.path.abspath(__file__)
-    configs_path = os.path.join(os.path.dirname(abs_path), 'configs/')
+    configs_path = os.path.join(os.path.dirname(abs_path), '../configs/')
     filename = os.path.join(configs_path, filename_temp)
     with open(filename, 'w') as f:
         eth_1 = 0
@@ -137,7 +137,7 @@ def generate_interfaces_file(interface_data_1, router_index, interface_data_2, i
 
 def generate_interfaces_file_new(interface_data_2, interface_data_3, filename_temp):
     abs_path = os.path.abspath(__file__)
-    configs_path = os.path.join(os.path.dirname(abs_path), 'configs/')
+    configs_path = os.path.join(os.path.dirname(abs_path), '../configs/')
     filename = os.path.join(configs_path, filename_temp)
     with open(filename, 'w') as f:
         eth_1 = 0
@@ -182,7 +182,7 @@ def generate_interfaces_file_new(interface_data_2, interface_data_3, filename_te
 
 def generate_versa_interfaces_file(interface_data_1, router_index, interface_data_2, interface_data_3, filename_temp):
     abs_path = os.path.abspath(__file__)
-    configs_path = os.path.join(os.path.dirname(abs_path), 'configs/')
+    configs_path = os.path.join(os.path.dirname(abs_path), '../configs/')
     filename = os.path.join(configs_path, filename_temp)
     with open(filename, 'w') as f:
         eth_1 = 0
@@ -230,7 +230,7 @@ def generate_versa_interfaces_file(interface_data_1, router_index, interface_dat
 
 def generate_arista_interfaces_file(filename_temp, mgmt_network_address, ip_var):
     abs_path = os.path.abspath(__file__)
-    configs_path = os.path.join(os.path.dirname(abs_path), 'configs/')
+    configs_path = os.path.join(os.path.dirname(abs_path), '../configs/')
     filename = os.path.join(configs_path, filename_temp)
 
     with open(filename, 'w') as f:

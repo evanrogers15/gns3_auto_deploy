@@ -1,20 +1,4 @@
-import requests
-import json
-import telnetlib
-import time
-import datetime
-import urllib3
-import ipaddress
-import os
-import re
-import logging
-import logging.handlers
-import sqlite3
-
-
-from modules.gns3_actions import *
-from modules.gns3_variables import *
-from modules.gns3_dynamic_data import *
+from modules.gns3.gns3_actions import *
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 # region Functions: Viptela API

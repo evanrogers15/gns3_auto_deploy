@@ -1,21 +1,10 @@
-import requests
-import json
 import telnetlib
 import time
-import datetime
-import urllib3
-import ipaddress
-import os
 import re
-import logging
-import logging.handlers
-import sqlite3
 import sys
-from modules.gns3_actions import *
-from modules.viptela_actions import *
-from modules.gns3_variables import *
-from modules.gns3_dynamic_data import *
-from modules.gns3_query import *
+from modules.vendor_specific.viptela_actions import *
+from modules.gns3.gns3_dynamic_data import *
+from modules.gns3.gns3_query import *
 
 
 def versa_deploy():

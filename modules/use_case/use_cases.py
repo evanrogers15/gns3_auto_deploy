@@ -1,9 +1,7 @@
-from modules.gns3_query import *
-from modules.gns3_actions_old import set_single_packet_filter, remove_single_packet_filter, set_suspend, change_node_state, reset_single_suspend
-from modules.telnet import run_telnet_command
-from modules.gns3_actions import *
-import time
-import sys
+from modules.gns3.gns3_query import *
+from modules.gns3.gns3_actions_old import set_single_packet_filter, remove_single_packet_filter, change_node_state
+from modules.use_case.telnet import run_telnet_command
+
 
 def use_case_1(server, port, project_id, state):
     matching_nodes = gns3_query_find_nodes_by_field(server, port, project_id, 'name', 'name', 'Client')

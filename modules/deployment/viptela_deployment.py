@@ -1,23 +1,12 @@
-import requests
-import json
 import telnetlib
 import time
-import datetime
-import urllib3
-import ipaddress
-import os
 import re
-import logging
-import logging.handlers
-import sqlite3
 
-from modules.gns3_actions import *
-from modules.viptela_actions import *
-from modules.gns3_variables import *
-from modules.gns3_dynamic_data import *
-from modules.gns3_query import *
+from modules.vendor_specific.viptela_actions import *
+from modules.gns3.gns3_dynamic_data import *
+from modules.gns3.gns3_query import *
 
-def scale_viptela_deploy():
+def viptela_deploy():
     # region Variables
     vmanage_headers = {}
     lan_subnet_address = ''
@@ -101,6 +90,8 @@ def scale_viptela_deploy():
     vmanage_template_id = gns3_create_template(gns3_server_data, viptela_vmanage_template_data)
     vbond_template_id = gns3_create_template(gns3_server_data, viptela_vbond_template_data)
     vsmart_template_id = gns3_create_template(gns3_server_data, viptela_vsmart_template_data)
+    vedge_template_id = gns3_create_template(gns3_server_data, viptela_vedge_template_data)
+    network_test_tool_template_id = gns3_create_template(gns3_server_data, network_test_tool_template_data)
     openvswitch_isp_template_id = gns3_create_template(gns3_server_data, openvswitch_isp_template_data)
     temp_hub_data = generate_temp_hub_data(mgmt_main_switchport_count, mgmt_main_hub_template_name)
     regular_ethernet_hub_template_id = gns3_create_template(gns3_server_data, temp_hub_data)
@@ -135,6 +126,15 @@ def scale_viptela_deploy():
             mgmt_switch_nodes.append({'node_name': node_name, 'node_id': node_id})
         else:
             log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Node {node_name} already exists in project {project_name}")
+    for i in range(1, vedge_count + 1):
+        node_name = f"vEdge_{i:03}"
+        matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, node_name)
+        if not matching_nodes:
+            node_id, node_name = gns3_create_node_multi_return(gns3_server_data, new_project_id, vedge_template_id,
+                                                               vedge_deploy_data[f"vedge_{i:03}_deploy_data"])
+            vedge_info.append({'node_name': node_name, 'node_id': node_id})
+        else:
+            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Node {node_name} already exists in project {project_name}")
     gns3_update_nodes(gns3_server_data, new_project_id, vmanage_node_id, vmanage_deploy_data)
     gns3_update_nodes(gns3_server_data, new_project_id, vsmart_node_id, vsmart_deploy_data)
     gns3_update_nodes(gns3_server_data, new_project_id, vbond_node_id, vbond_deploy_data)
@@ -151,6 +151,14 @@ def scale_viptela_deploy():
             gns3_update_nodes(gns3_server_data, new_project_id, node_id, deploy_data_z)
         else:
             log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"No nodes found in project {project_name} for MGMT_switch_{i}")
+
+    for i in range(1, vedge_count + 1):
+        matching_node = vedge_info[i - 1]
+        if matching_node:
+            node_id = matching_node['node_id']
+            gns3_update_nodes(gns3_server_data, new_project_id, node_id, vedge_deploy_data[f"vedge_{i:03}_deploy_data"])
+        else:
+            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"No nodes found in project {project_name} for vEdge {i}")
     # endregion
     # region Connect GNS3 Lab Nodes
     deployment_step = 'Connect GNS3 Nodes'
@@ -170,16 +178,45 @@ def scale_viptela_deploy():
     gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, 1, vmanage_node_id, 0, 0)
     gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, 2, vsmart_node_id, 0, 0)
     gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, 3, vbond_node_id, 0, 0)
+    mgmt_switch_interface = 1
+    switch_adapter_a = 5
+    switch_adapter_b = (switchport_count // 2) + 4
+    cloud_isp_node_index = 0
+    mgmt_switch_node_index = 0
+    for i in range(mgmt_switch_count):
+        first_vedge_index = i * 30
+        last_vedge_index = min((i + 1) * 30, vedge_count)
+        mgmt_switch_node_id = mgmt_switch_nodes[mgmt_switch_node_index]['node_id']
+        mgmt_switch_index = i + 5
+        gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_switch_node_id, 0, 0, mgmt_main_switch_node_id, 0,
+                           mgmt_switch_index)
+        for j in range(first_vedge_index, last_vedge_index):
+            vedge_node_id = vedge_info[j]['node_id']
+            gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_switch_node_id, 0, mgmt_switch_interface,
+                               vedge_node_id, 0, 0)
+            gns3_connect_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, switch_adapter_a, 0, vedge_node_id,
+                               1, 0)
+            gns3_connect_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, switch_adapter_b, 0, vedge_node_id,
+                               2, 0)
+            switch_adapter_a += 1
+            switch_adapter_b += 1
+            mgmt_switch_interface += 1
+            if (j + 1) % 44 == 0:
+                cloud_isp_node_index += 1
+                switch_adapter_a = 5
+                switch_adapter_b = (switchport_count // 2) + 4
+                mgmt_switch_interface = 1
+        mgmt_switch_node_index += 1
     # endregion
     # region Create GNS3 Drawings
-    #gns3_create_drawing(gns3_server_data, new_project_id, big_block_deploy_data)
-    #for i in range(1, vedge_count + 1):
-    #    gns3_create_drawing(gns3_server_data, new_project_id,
-    #                        site_drawing_deploy_data[f"site_drawing_{i:03}_deploy_data"])
-    # drawing_index = 1
-    #for drawing_data in viptela_drawing_data:
-    #    gns3_create_drawing(gns3_server_data, new_project_id, viptela_drawing_data[f'drawing_{drawing_index:02}'])
-    #    drawing_index += 1
+    gns3_create_drawing(gns3_server_data, new_project_id, big_block_deploy_data)
+    for i in range(1, vedge_count + 1):
+        gns3_create_drawing(gns3_server_data, new_project_id,
+                            site_drawing_deploy_data[f"site_drawing_{i:03}_deploy_data"])
+    drawing_index = 1
+    for drawing_data in viptela_drawing_data:
+        gns3_create_drawing(gns3_server_data, new_project_id, viptela_drawing_data[f'drawing_{drawing_index:02}'])
+        drawing_index += 1
     # endregion
     # region Deploy GNS3 Node Config Files
     deployment_step = 'Node Configs'
@@ -192,9 +229,11 @@ def scale_viptela_deploy():
     if matching_nodes:
         for matching_node in matching_nodes:
             node_id = matching_node[0]
+            isp_router_base_subnet = '172.16.5.0/24'
             vedge_isp_1_base_subnet = f'172.16.{starting_subnet}.0/24'
             vedge_isp_2_base_subnet = f'172.16.{starting_subnet + 1}.0/24'
             temp_file_name = f'cloud_isp_switch_{switch_index}_interfaces'
+            # isp_router_objects = generate_network_objects(isp_router_base_subnet, 30)
             isp_switch_1_objects = generate_network_objects(vedge_isp_1_base_subnet, 30, vedge_index)
             isp_switch_2_objects = generate_network_objects(vedge_isp_2_base_subnet, 30, vedge_index)
             isp_1_overall.append(isp_switch_1_objects)
@@ -290,7 +329,7 @@ def scale_viptela_deploy():
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vSmart Device Setup")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     abs_path = os.path.abspath(__file__)
-    configs_path = os.path.join(os.path.dirname(abs_path), 'configs/viptela')
+    configs_path = os.path.join(os.path.dirname(abs_path), '../configs/viptela')
     file_name = os.path.join(configs_path, 'vsmart_template')
     for server_ip in server_ips:
         temp_node_name = f'vSmart'
@@ -362,7 +401,7 @@ def scale_viptela_deploy():
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vBond Device Setup")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     abs_path = os.path.abspath(__file__)
-    configs_path = os.path.join(os.path.dirname(abs_path), 'configs/viptela')
+    configs_path = os.path.join(os.path.dirname(abs_path), '../configs/viptela')
     file_name = os.path.join(configs_path, 'vbond_template')
     for server_ip in server_ips:
         temp_node_name = f'vBond'
@@ -433,7 +472,7 @@ def scale_viptela_deploy():
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vManage setup part 2")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     abs_path = os.path.abspath(__file__)
-    configs_path = os.path.join(os.path.dirname(abs_path), 'configs/viptela')
+    configs_path = os.path.join(os.path.dirname(abs_path), '../configs/viptela')
     file_name = os.path.join(configs_path, 'vmanage_template')
     vdevices = [6, 10]
     for server_ip in server_ips:
@@ -515,7 +554,7 @@ def scale_viptela_deploy():
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vEdge Device Setup for {vedge_count} vEdges")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     abs_path = os.path.abspath(__file__)
-    configs_path = os.path.join(os.path.dirname(abs_path), 'configs/viptela')
+    configs_path = os.path.join(os.path.dirname(abs_path), '../configs/viptela')
     file_name = os.path.join(configs_path, 'vedge_cloud_site_template')
     vedge_lan_objects = generate_vedge_objects(vedge_count, '172.16.2')
     isp_index = 0

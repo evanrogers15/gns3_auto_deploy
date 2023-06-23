@@ -1,18 +1,12 @@
-
-import requests
-import json
-import telnetlib
-import time
 import datetime
 import urllib3
-import ipaddress
 import os
 import logging.handlers
 import sqlite3
 
 
-from modules.gns3_variables import *
-from modules.gns3_query import *
+from modules.gns3.gns3_variables import *
+from modules.gns3.gns3_query import *
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -250,7 +244,7 @@ def gns3_upload_symbol(gns3_server_data, symbol_file, symbol_name):
 
 def gns3_upload_file_to_node(gns3_server_data, project_id, node_id, file_path_var, filename_temp):
     abs_path = os.path.abspath(__file__)
-    configs_path = os.path.join(os.path.dirname(abs_path), 'configs/')
+    configs_path = os.path.join(os.path.dirname(abs_path), '../configs/')
     file_path = os.path.join(configs_path, filename_temp)
     for server_record in gns3_server_data:
         server_ip, server_port, server_name, project_name, vmanage_api_ip, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[

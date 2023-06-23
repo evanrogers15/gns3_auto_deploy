@@ -2,18 +2,14 @@ from flask import Flask, jsonify, abort, make_response, request, render_template
 import subprocess
 import psutil
 import threading
-import logging.handlers
 from werkzeug.utils import secure_filename
 
-from modules.arista_evpn_deploy import *
-from modules.gns3_query import *
-from modules.viptela_deployment import *
-from modules.viptela_large_scale_deployment import *
-from modules.oa_viptela_deployment import *
-from modules.gns3_actions_old import *
-from modules.gns3_variables import *
-from modules.use_cases import *
-from modules.versa_deployment import versa_deploy
+from modules.deployment.arista_evpn_deploy import *
+from modules.deployment.viptela_deployment import *
+from modules.deployment.oa_viptela_deployment import *
+from modules.gns3.gns3_actions_old import *
+from modules.use_case.use_cases import *
+from modules.deployment.versa_deployment import versa_deploy
 
 app = Flask(__name__)
 
@@ -27,17 +23,29 @@ def index_render():
 def oa_sdwan_deploy_render():
     return render_template('oa_create_viptela_sdwan.html')
 
-@app.route('/versa')
-def oa_versa_deploy_render():
-    return render_template('create_versa_sdwan.html')
-
 @app.route('/demo')
 def demo_sdwan_deploy_render():
     return render_template('demo_create_viptela_sdwan.html')
 
+@app.route('/versa')
+def oa_versa_deploy_render():
+    return render_template('create_versa_sdwan.html')
+
 @app.route('/arista')
 def arista_deploy_render():
     return render_template('create_arista_evpn.html')
+
+@app.route('/uc-local')
+def index_uc_index():
+    return render_template('use_case/uc_local.html')
+
+@app.route('/uc-remote')
+def index_multi():
+    return render_template('use_case/uc_remote.html')
+
+@app.route('/uc_scenarios')
+def uc_scenariosPage():
+    return render_template('use_case/uc_scenarios.html')
 
 @app.route('/admin')
 def adminPage():
@@ -208,19 +216,6 @@ def oa_viptela_deploy_full():
 
     return make_response(jsonify({'message': 'Deployment Started Successfully'}), 200)
 
-@app.route('/api/tasks/start_scale_viptela_deploy', methods=['PUT'])
-def scale_viptela_deploy_full():
-    global running_thread
-    # Check if a thread is already running
-    if running_thread is not None and running_thread.is_alive():
-        return make_response(jsonify({'message': 'Deployment is already in progress'}), 400)
-
-    # Start a new thread for deployment
-    running_thread = threading.Thread(target=scale_viptela_deploy, args=())
-    running_thread.start()
-
-    return make_response(jsonify({'message': 'Deployment Started Successfully'}), 200)
-
 @app.route('/api/tasks/start_versa_deploy', methods=['PUT'])
 def versa_deploy_full():
     global running_thread
@@ -271,17 +266,6 @@ def get_project_list():
     return jsonify({'projects': project_data})
 
 # region UC
-@app.route('/uc-local')
-def index_uc_index():
-    return render_template('uc_local.html')
-
-@app.route('/uc-remote')
-def index_multi():
-    return render_template('uc_remote.html')
-
-@app.route('/uc_scenarios')
-def uc_scenariosPage():
-    return render_template('uc_scenarios.html')
 
 @app.route('/api/uc_config', methods=['POST'])
 def update_uc_config():

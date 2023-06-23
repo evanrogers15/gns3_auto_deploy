@@ -1,17 +1,6 @@
 import requests
-import json
-import telnetlib
-import time
-import datetime
-import urllib3
-import ipaddress
-import os
-import re
-import logging
-import logging.handlers
-import sqlite3
 
-from modules.gns3_query import gns3_query_get_nodes, gns3_query_find_nodes_by_name
+from modules.gns3.gns3_query import gns3_query_get_nodes, gns3_query_find_nodes_by_name
 
 
 def export_project(server, port, project_id): 

@@ -1,21 +1,7 @@
-import requests
-import json
-import telnetlib
-import time
-import datetime
-import urllib3
-import ipaddress
-import os
-import re
-import logging
-import logging.handlers
-import sqlite3
 import sys
-from modules.gns3_actions import *
-from modules.versa_actions import *
-from modules.gns3_variables import *
-from modules.gns3_dynamic_data import *
-from modules.gns3_query import *
+from modules.vendor_specific.versa_actions import *
+from modules.gns3.gns3_dynamic_data import *
+from modules.gns3.gns3_query import *
 
 
 def versa_deploy():
@@ -482,7 +468,7 @@ def versa_deploy():
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting Director setup part 2")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     abs_path = os.path.abspath(__file__)
-    configs_path = os.path.join(os.path.dirname(abs_path), 'configs/versa')
+    configs_path = os.path.join(os.path.dirname(abs_path), '../configs/versa')
     clustersetup_file = os.path.join(configs_path, 'clustersetup.conf')
     vdevices = [6, 10]
     director_ip = '172.14.2.2'

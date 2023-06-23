@@ -1,23 +1,12 @@
-import requests
-import json
 import telnetlib
 import time
-import datetime
-import urllib3
-import ipaddress
-import os
 import re
-import logging
-import logging.handlers
-import sqlite3
 
-from modules.gns3_actions import *
-from modules.viptela_actions import *
-from modules.gns3_variables import *
-from modules.gns3_dynamic_data import *
-from modules.gns3_query import *
+from modules.vendor_specific.viptela_actions import *
+from modules.gns3.gns3_dynamic_data import *
+from modules.gns3.gns3_query import *
 
-def viptela_deploy():
+def scale_viptela_deploy():
     # region Variables
     vmanage_headers = {}
     lan_subnet_address = ''
@@ -340,7 +329,7 @@ def viptela_deploy():
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vSmart Device Setup")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     abs_path = os.path.abspath(__file__)
-    configs_path = os.path.join(os.path.dirname(abs_path), 'configs/viptela')
+    configs_path = os.path.join(os.path.dirname(abs_path), '../configs/viptela')
     file_name = os.path.join(configs_path, 'vsmart_template')
     for server_ip in server_ips:
         temp_node_name = f'vSmart'
@@ -412,7 +401,7 @@ def viptela_deploy():
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vBond Device Setup")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     abs_path = os.path.abspath(__file__)
-    configs_path = os.path.join(os.path.dirname(abs_path), 'configs/viptela')
+    configs_path = os.path.join(os.path.dirname(abs_path), '../configs/viptela')
     file_name = os.path.join(configs_path, 'vbond_template')
     for server_ip in server_ips:
         temp_node_name = f'vBond'
@@ -483,7 +472,7 @@ def viptela_deploy():
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vManage setup part 2")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     abs_path = os.path.abspath(__file__)
-    configs_path = os.path.join(os.path.dirname(abs_path), 'configs/viptela')
+    configs_path = os.path.join(os.path.dirname(abs_path), '../configs/viptela')
     file_name = os.path.join(configs_path, 'vmanage_template')
     vdevices = [6, 10]
     for server_ip in server_ips:
@@ -565,7 +554,7 @@ def viptela_deploy():
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vEdge Device Setup for {vedge_count} vEdges")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     abs_path = os.path.abspath(__file__)
-    configs_path = os.path.join(os.path.dirname(abs_path), 'configs/viptela')
+    configs_path = os.path.join(os.path.dirname(abs_path), '../configs/viptela')
     file_name = os.path.join(configs_path, 'vedge_cloud_site_template')
     vedge_lan_objects = generate_vedge_objects(vedge_count, '172.16.2')
     isp_index = 0
