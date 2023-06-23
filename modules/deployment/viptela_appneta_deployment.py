@@ -583,7 +583,7 @@ def viptela_appneta_deploy():
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     abs_path = os.path.abspath(__file__)
     configs_path = os.path.join(os.path.dirname(abs_path), '../configs/viptela')
-    file_name = os.path.join(configs_path, 'vedge_cloud_site_template')
+    file_name = os.path.join(configs_path, 'vedge_cloud_site_template_no_restrict')
     vedge_lan_objects = generate_vedge_objects(vedge_count, f'{mgmt_subnet_ip}')
     isp_index = 0
     for server_ip in server_ips:
