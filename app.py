@@ -6,7 +6,6 @@ from werkzeug.utils import secure_filename
 
 from modules.deployment.arista_evpn_deploy import *
 from modules.deployment.viptela_deployment import *
-from modules.deployment.oa_viptela_deployment import *
 from modules.gns3.gns3_actions_old import *
 from modules.use_case.use_cases import *
 from modules.deployment.versa_deployment import versa_deploy
@@ -18,10 +17,6 @@ running_thread = None
 @app.route('/')
 def index_render():
     return render_template('create_viptela_sdwan.html')
-
-@app.route('/oa')
-def oa_sdwan_deploy_render():
-    return render_template('oa_create_viptela_sdwan.html')
 
 @app.route('/demo')
 def demo_sdwan_deploy_render():
@@ -203,19 +198,6 @@ def viptela_deploy_full():
 
     return jsonify({'success': True})
 
-@app.route('/api/tasks/oa_start_viptela_deploy', methods=['PUT'])
-def oa_viptela_deploy_full():
-    global running_thread
-    # Check if a thread is already running
-    if running_thread is not None and running_thread.is_alive():
-        return make_response(jsonify({'message': 'Deployment is already in progress'}), 400)
-
-    # Start a new thread for deployment
-    running_thread = threading.Thread(target=oa_viptela_deploy, args=())
-    running_thread.start()
-
-    return make_response(jsonify({'message': 'Deployment Started Successfully'}), 200)
-
 @app.route('/api/tasks/start_versa_deploy', methods=['PUT'])
 def versa_deploy_full():
     global running_thread
@@ -266,9 +248,8 @@ def get_project_list():
     return jsonify({'projects': project_data})
 
 # region UC
-
 @app.route('/api/uc_config', methods=['POST'])
-def update_uc_config():
+def uc_update_config():
     req_data = request.get_json()
     if not req_data:
         return jsonify({'error': 'Request data is empty or None.'}), 400
@@ -326,7 +307,7 @@ def update_uc_config():
     return jsonify({'success': True})
 
 @app.route('/api/uc_config', methods=['GET'])
-def get_uc_config():
+def uc_get_config():
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
@@ -447,7 +428,7 @@ def uc_get_scenario(scenario_id):
     return jsonify({'scenario': scenario})
 
 @app.route('/api/uc_scenario_status', methods=['GET'])
-def get_uc_scenario_status():
+def uc_get_scenario_status():
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
     c.execute(
