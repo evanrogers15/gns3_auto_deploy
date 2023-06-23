@@ -1,5 +1,5 @@
 import sys
-from modules.vendor_specific.versa_actions import *
+from modules.vendor_specific_actions.versa_actions import *
 from modules.gns3.gns3_dynamic_data import *
 from modules.gns3.gns3_query import *
 

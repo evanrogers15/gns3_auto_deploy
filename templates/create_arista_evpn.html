@@ -199,15 +199,13 @@
       <ul>
         <li>GNS3 Server Deployed with 2.2.38 or Later</li>
         <li>If in GCP, the instance requires an N2 CPU <br>and nested virtualization needs to be enabled</li>
-        <li>Minimum Machine Type: n2-standard-16</li>
-        <li>Cisco IOU License Applied</li>
+        <li>Minimum GNS3 Host Specs: 16vCPU and 64GB Memory </li>
         <li>Access to the GNS3 Web UI from this machine</li>
         <li>Tap Interface with IP address of 172.16.3.1</li>
     </ul>
     <h4>Required Docker Images (Manual install)</h4>
       <ul>
         <li>cEOS64-lab-4.28.6.1M.tar.xz</li>
-
     </ul>
     <h4>Monitoring Requirements:</h4>
       <ul>
@@ -219,32 +217,19 @@
     <div class="instructions-container">
     <h3>Instructions:</h3>
       <ul>
-        <li>Drag and drop the required GNS3 images if they aren't already on the server</li>
+        <li>Manually install the required Docker image according to Arista documentation.</li>
         <li>Set GNS3 server IP address, if Deployment container is running on the GNS3 host select Local</li>
         <li>Set different project name if desired</li>
-        <li>Set Site Count between 1 and 50 (note more sites require more resources)</li>
         <li>Set Tap Interface Name (Example: tap0)</li>
         <li>Click Start Deployment</li>
     </ul>
   </div>
-    <div id="file-drop-zone" class="drop-zone" style="display: none;">Drag and drop GNS3 images here to upload</div>
-    <div id="file-upload-status"></div>
-      <div class="uploaded-files-container">
-      <div class="uploaded-files-list">
-        <h3>Uploaded QEMU Files</h3>
-        <ul id="uploaded-files-list-qemu"></ul>
-      </div>
-      <div class="uploaded-files-list">
-        <h3>Uploaded IOU Files</h3>
-        <ul id="uploaded-files-list-iou"></ul>
-      </div>
-</div>
   </div>
     <div class="form-container">
       <form>
         <label for="server_ip">GNS3 Server IP:</label>
         <select id="server_ip" name="server_ip">
-          <option value="192.168.122.1">Local GNS3 Server</option>
+          <option value="192.168.122.1">Local Host GNS3 Server</option>
           <option value="custom">Custom</option>
         </select>
         <input type="text" id="server_ip_input" style="display: none;">
@@ -263,13 +248,6 @@
           <option value="custom">Custom</option>
         </select>
         <input type="text" id="project_name_input" name="project_name_input" style="display: none;">
-
-        <label for="site_count">Site Count: </label>
-        <select id="site_count" name="site_count">
-          <option value="5">5</option>
-          <option value="custom">Custom</option>
-        </select>
-        <input type="text" id="site_count_input" style="display: none;">
 
         <label for="tap_name">Tap Interface Name:</label>
         <input type="text" id="tap_name" name="tap_name">
@@ -378,6 +356,7 @@
             site_count = document.getElementById("site_count_input").value;
           }
           var tap_name = document.getElementById("tap_name").value;
+          var site_count = "5";
 
           var data = JSON.stringify({
             server_ip: server_ip,

@@ -2,12 +2,14 @@ import telnetlib
 import time
 import re
 
-from modules.vendor_specific.viptela_actions import *
+from modules.vendor_specific_actions.viptela_actions import *
 from modules.gns3.gns3_dynamic_data import *
 from modules.gns3.gns3_query import *
 
 def viptela_deploy():
     # region Variables
+
+    mgmt_subnet_ip = '172.16.2.'
     vmanage_headers = {}
     lan_subnet_address = ''
     lan_gateway_address = ''
@@ -375,13 +377,13 @@ def viptela_deploy():
                             hostname=temp_node_name,
                             latitude='40.758701',
                             longitude='-111.876183',
-                            system_ip='172.16.2.6',
+                            system_ip=f'{mgmt_subnet_ip}.6',
                             org_name=org_name,
                             vbond_address=vbond_address,
-                            vpn_0_eth1_ip_address='172.16.4.6/30',
+                            vpn_0_eth1_ip_address=f'172.16.4.6/30',
                             vpn_0_eth1_ip_gateway='172.16.4.5',
-                            vpn_512_eth0_ip_address='172.16.2.6/24',
-                            vpn_512_eth0_ip_gateway='172.16.2.1'
+                            vpn_512_eth0_ip_address=f'{mgmt_subnet_ip}.6/24',
+                            vpn_512_eth0_ip_gateway=f'{mgmt_subnet_ip}.1'
                         )
                         tn.write(formatted_line.encode('ascii') + b"\n")
                         tn.read_until(b"#")
@@ -447,13 +449,13 @@ def viptela_deploy():
                             hostname=temp_node_name,
                             latitude='40.758701',
                             longitude='-111.876183',
-                            system_ip='172.16.2.10',
+                            system_ip=f'{mgmt_subnet_ip}.10',
                             org_name=org_name,
                             vbond_address=vbond_address,
                             vpn_0_eth1_ip_address='172.16.4.10/30',
                             vpn_0_eth1_ip_gateway='172.16.4.9',
-                            vpn_512_eth0_ip_address='172.16.2.10/24',
-                            vpn_512_eth0_ip_gateway='172.16.2.1'
+                            vpn_512_eth0_ip_address=f'{mgmt_subnet_ip}.10/24',
+                            vpn_512_eth0_ip_gateway=f'{mgmt_subnet_ip}.1'
                         )
                         tn.write(formatted_line.encode('ascii') + b"\n")
                         tn.read_until(b"#")
@@ -510,13 +512,13 @@ def viptela_deploy():
                             hostname=temp_node_name,
                             latitude='40.758701',
                             longitude='-111.876183',
-                            system_ip='172.16.2.2',
+                            system_ip=f'{mgmt_subnet_ip}.2',
                             org_name=org_name,
                             vbond_address=vbond_address,
                             vpn_0_eth1_ip_address='172.16.4.2/30',
                             vpn_0_eth1_ip_gateway='172.16.4.1',
-                            vpn_512_eth0_ip_address='172.16.2.2/24',
-                            vpn_512_eth0_ip_gateway='172.16.2.1'
+                            vpn_512_eth0_ip_address=f'{mgmt_subnet_ip}.2/24',
+                            vpn_512_eth0_ip_gateway=f'{mgmt_subnet_ip}.1'
                         )
                         tn.write(formatted_line.encode('ascii') + b"\n")
                         tn.read_until(b"#")
@@ -534,7 +536,7 @@ def viptela_deploy():
                 tn.write(b'exit\r\n')
                 tn.read_until(b'#')
                 for vdevice in vdevices:
-                    scp_command = f"request execute vpn 512 scp /home/admin/SDWAN.pem admin@172.16.2.{vdevice}:/home/admin"
+                    scp_command = f"request execute vpn 512 scp /home/admin/SDWAN.pem admin@{mgmt_subnet_ip}.{vdevice}:/home/admin"
                     tn.write(scp_command.encode('ascii') + b"\r")
                     test_o = tn.read_until(b"?", timeout=2).decode('ascii')
                     if "fingerprint" in test_o:
@@ -556,7 +558,7 @@ def viptela_deploy():
     abs_path = os.path.abspath(__file__)
     configs_path = os.path.join(os.path.dirname(abs_path), '../configs/viptela')
     file_name = os.path.join(configs_path, 'vedge_cloud_site_template')
-    vedge_lan_objects = generate_vedge_objects(vedge_count, '172.16.2')
+    vedge_lan_objects = generate_vedge_objects(vedge_count, f'{mgmt_subnet_ip}')
     isp_index = 0
     for server_ip in server_ips:
         for i in range(1, vedge_count + 1):
@@ -784,10 +786,11 @@ def viptela_deploy():
                 for vedge_node in vedge_nodes:
                     vedge_id, vedge_console, vedge_aux = vedge_node
                     node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id', 'name', vedge_id)
-                    scp_command = f"request execute vpn 512 scp /home/admin/SDWAN.pem admin@172.16.2.{ve}:/home/admin"
-                    scp_2_command = f"request execute vpn 512 scp /home/admin/vedge.crt admin@172.16.2.{ve}:/home/admin"
-                    ssh_command = f"request execute vpn 512 ssh admin@172.16.2.{ve}"
-                    ssh_2_command = f"request execute vpn 512 ssh admin@172.16.2.10"
+                    scp_command = f"request execute vpn 512 scp /home/admin/SDWAN.pem admin@{mgmt_subnet_ip}.{ve}:/home/admin"
+                    scp_2_command = f"request execute vpn 512 scp /home/admin/vedge.crt admin@{mgmt_subnet_ip}.{ve}:/home/admin"
+                    scp_3_command = f"request execute vpn 512 scp /home/admin/vedge.csr admin@{mgmt_subnet_ip}.2:/home/admin"
+                    ssh_command = f"request execute vpn 512 ssh admin@{mgmt_subnet_ip}.{ve}"
+                    ssh_2_command = f"request execute vpn 512 ssh admin@{mgmt_subnet_ip}.10"
                     tn = telnetlib.Telnet(server_ip, console_port)
                     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vEdge Certificate Setup for {node_name[0]} - vEdge {v} of {vedge_count}")
                     while True:
@@ -842,7 +845,7 @@ def viptela_deploy():
                     tn.write(b'sdwan-lab\n')
                     tn.read_until(b'#')
                     # SCP the vEdge.csr to the vManage
-                    tn.write(b'request execute vpn 512 scp /home/admin/vedge.csr admin@172.16.2.2:/home/admin\r\n')
+                    tn.write(scp_3_command.encode('ascii') + b"\n")
                     test_o = tn.read_until(b"?", timeout=2).decode('ascii')
                     if "fingerprint" in test_o:
                         tn.write(b'yes\r\n')

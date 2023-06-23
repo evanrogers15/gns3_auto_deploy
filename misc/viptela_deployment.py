@@ -2,7 +2,7 @@ import telnetlib
 import time
 import re
 
-from modules.vendor_specific.viptela_actions import *
+from modules.vendor_specific_actions.viptela_actions import *
 from modules.gns3.gns3_dynamic_data import *
 from modules.gns3.gns3_query import *
 
