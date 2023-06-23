@@ -64,6 +64,21 @@ def viptela_deploy():
                     "vManage API IP": vmanage_api_ip, "Project Name": project_name, "Project ID": new_project_id,
                     "Tap Name": tap_name,
                     "Site Count": vedge_count, "Use Tap": use_tap, "Deployment Type": deployment_type, "Deployment Status": deployment_status, "Deployment Step": deployment_step}]
+    viptela_drawing_data = {
+        "drawing_01": {
+            "svg": "<svg width=\"297\" height=\"246\"><rect width=\"297\" height=\"246\" fill=\"#6080b3\" fill-opacity=\"0.6399938963912413\" stroke-width=\"2\" stroke=\"#000000\" /></svg>",
+            "x": -228, "y": 457, "z": 0},
+        "drawing_02": {
+            "svg": "<svg width=\"232\" height=\"25\"><text font-family=\"Arial\" font-size=\"14.0\" font-weight=\"bold\" fill=\"#000000\" fill-opacity=\"1.0\">Viptela Management Components</text></svg>",
+            "x": -195, "y": 675, "z": 2},
+        "drawing_03": {
+            "svg": "<svg width=\"471\" height=\"50\"><text font-family=\"Arial\" font-size=\"36.0\" fill=\"#000000\" fill-opacity=\"1.0\">Viptela SDWAN Environment</text></svg>",
+            "x": -1172, "y": -591, "z": 2},
+        "drawing_04": {
+            "svg": f"<svg width=\"318\" height=\"50\"><text font-family=\"Arial\" font-size=\"18.0\" fill=\"#000000\" fill-opacity=\"1.0\">Management IP Range: {mgmt_subnet_ip}.0/24\nViptela vManage MGMT IP: {mgmt_subnet_ip}.2</text></svg>",
+            "x": -1165, "y": -541, "z": 2},
+    }
+
     isp_switch_count = (vedge_count // 40) + 1
     mgmt_switch_count = (vedge_count // 30) + 1
     conn = sqlite3.connect(db_path)
