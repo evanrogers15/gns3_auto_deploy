@@ -34,6 +34,9 @@ def oa_versa_deploy_render():
 @app.route('/arista')
 def arista_deploy_render():
     return render_template('create_arista_evpn.html')
+@app.route('/demo/arista')
+def arista_demo_deploy_render():
+    return render_template('demo/create_arista_evpn.html')
 
 @app.route('/uc-local')
 def index_uc_index():

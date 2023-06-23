@@ -191,7 +191,7 @@
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
 </head>
 <body>
-  <h1>Versa SDWAN GNS3 Lab Auto Deployment</h1>
+  <h1>Arista EVPN GNS3 Lab Auto Deployment</h1>
   <div class="wrapper">
     <div class="prerequisites-container">
     <h3>Information</h3>
@@ -199,15 +199,13 @@
       <ul>
         <li>GNS3 Server Deployed with 2.2.38 or Later</li>
         <li>If in GCP, the instance requires an N2 CPU <br>and nested virtualization needs to be enabled</li>
-        <li>Minimum Machine Type: n2-standard-16</li>
+        <li>Minimum GNS3 Host Specs: 16vCPU and 64GB Memory </li>
         <li>Access to the GNS3 Web UI from this machine</li>
-        <li>Tap Interface with IP address of 172.14.2.1</li>
+        <li>Tap Interface with IP address of 172.16.3.1</li>
     </ul>
-    <h4>Required GNS3 Images:</h4>
+    <h4>Required Docker Images (Manual install)</h4>
       <ul>
-        <li>versa-director-c19c43c-21.2.3.qcow2</li>
-        <li>versa-analytics-67ff6c7-21.2.3.qcow2</li>
-        <li>versa-flexvnf-67ff6c7-21.2.3.qcow2</li>
+        <li>cEOS64-lab-4.28.6.1M.tar.xz</li>
     </ul>
     <h4>Monitoring Requirements:</h4>
       <ul>
@@ -219,22 +217,13 @@
     <div class="instructions-container">
     <h3>Instructions:</h3>
       <ul>
-        <li>Drag and drop the required GNS3 images if they aren't already on the server</li>
+        <li>Manually install the required Docker image according to Arista documentation.</li>
         <li>Set GNS3 server IP address, if Deployment container is running on the GNS3 host select Local</li>
         <li>Set different project name if desired</li>
-        <li>Set Site Count between 1 and 50 (note more sites require more resources)</li>
         <li>Set Tap Interface Name (Example: tap0)</li>
         <li>Click Start Deployment</li>
     </ul>
   </div>
-    <div id="file-drop-zone" class="drop-zone">Drag and drop GNS3 images here to upload</div>
-    <div id="file-upload-status"></div>
-      <div class="uploaded-files-container">
-      <div class="uploaded-files-list">
-        <h3>Uploaded QEMU Files</h3>
-        <ul id="uploaded-files-list-qemu"></ul>
-      </div>
-</div>
   </div>
     <div class="form-container">
       <form>
@@ -244,7 +233,6 @@
           <option value="custom">Custom</option>
         </select>
         <input type="text" id="server_ip_input" style="display: none;">
-
 
         <label for="server_port">GNS3 Server Port:</label>
         <select id="server_port" name="server_port">
@@ -256,17 +244,10 @@
 
         <label for="project_name">New GNS3 Project Name:</label>
         <select id="project_name" name="project_name">
-          <option value="versa_sdwan_autodeploy">versa_sdwan_autodeploy</option>
+          <option value="arista_evpn_autodeploy">arista_evpn_autodeploy</option>
           <option value="custom">Custom</option>
         </select>
         <input type="text" id="project_name_input" name="project_name_input" style="display: none;">
-
-        <label for="site_count">Site Count: </label>
-        <select id="site_count" name="site_count">
-          <option value="5">5</option>
-          <option value="custom">Custom</option>
-        </select>
-        <input type="text" id="site_count_input" style="display: none;">
 
         <label for="tap_name">Tap Interface Name:</label>
         <input type="text" id="tap_name" name="tap_name">
@@ -370,12 +351,11 @@
             project_name = document.getElementById("project_name_input").value;
           }
           var vmanage_api_ip = "172.16.2.2";
-          var site_count = document.getElementById("site_count").value;
-          if (site_count === "custom") {
-            site_count = document.getElementById("site_count_input").value;
-          }
+
           var tap_name = document.getElementById("tap_name").value;
+          var site_count = "5";
           var mgmt_subnet_ip = "172.16.4.0/24";
+
           var data = JSON.stringify({
             server_ip: server_ip,
             server_port: server_port,
@@ -383,11 +363,11 @@
             vmanage_api_ip: vmanage_api_ip,
             site_count: site_count,
             tap_name: tap_name,
-            mgmt_subnet_ip: mgmt_subnet_ip,
+            mgmt_subnet_ip: mgmt_subnet_ip
           });
 
           var xhr = new XMLHttpRequest();
-          var url = "/api/config";
+          var url = "/api/demo_config";
           xhr.open("POST", url, true);
           xhr.setRequestHeader("Content-Type", "application/json");
 
@@ -396,7 +376,7 @@
               if (xhr.status === 200) {
                 // Successful response
                 var putXhr = new XMLHttpRequest();
-                var putUrl = "/api/tasks/start_versa_deploy";
+                var putUrl = "/api/tasks/start_arista_deploy";
                 putXhr.open("PUT", putUrl, true);
                 putXhr.setRequestHeader("Content-Type", "application/json");
 
@@ -477,6 +457,13 @@
             data.qemu_files.forEach(function(file) {
               qemuFilesList.append('<li>' + file + '</li>');
             });
+
+            // Display the uploaded files for IOU
+            var iouFilesList = $('#uploaded-files-list-iou');
+            iouFilesList.empty();
+            data.iou_files.forEach(function(file) {
+              iouFilesList.append('<li>' + file + '</li>');
+            });
           },
           error: function() {
             console.log('Error occurred while fetching uploaded files.');
@@ -490,7 +477,7 @@
       $(document).ready(function() {
         refreshData();
 
-        setInterval(refreshData, 1000); // Refresh every 5 seconds
+        setInterval(refreshData, 5000); // Refresh every 5 seconds
 
         function refreshData() {
           $.ajax({
