@@ -7,6 +7,7 @@ from modules.viptela_vedge_scale_deployment import *
 gns3_isp_tap_name = 'tap1'
 gns3_mgmt_tap_name = 'tap2'
 vmanage_address = '10.0.0.2'
+total_sites = 50
 
 gns3_mgmt_server_ip = '10.142.0.134'
 gns3_mgmt_server_port = '80'
@@ -46,8 +47,16 @@ def set_config(server_ip, server_port, new_project_name, vmanage_api_ip, site_co
     conn.commit()
     conn.close()
 
+start_time = time.time()
+
 set_config(gns3_mgmt_server_ip, gns3_mgmt_server_port, gns3_mgmt_project_name, vmanage_address, gns3_sites_01_site_count, gns3_isp_tap_name, gns3_mgmt_tap_name)
 viptela_mgmt_deploy()
-viptela_vedge_scale_deploy(gns3_sites_01_server_ip, gns3_sites_01_server_port, gns3_sites_01_project_name, vmanage_address, gns3_isp_tap_name, gns3_mgmt_tap_name, 1, 1, 1, 1, 20)
-viptela_vedge_scale_deploy(gns3_sites_02_server_ip, gns3_sites_02_server_port, gns3_sites_02_project_name, vmanage_address, gns3_isp_tap_name, gns3_mgmt_tap_name, 21, 21, 2, 2, 20)
+viptela_vedge_scale_deploy(gns3_sites_01_server_ip, gns3_sites_01_server_port, gns3_sites_01_project_name, vmanage_address, gns3_isp_tap_name, gns3_mgmt_tap_name, 1, 1, 1, 1, 30)
+viptela_vedge_scale_deploy(gns3_sites_02_server_ip, gns3_sites_02_server_port, gns3_sites_02_project_name, vmanage_address, gns3_isp_tap_name, gns3_mgmt_tap_name, 31, 31, 2, 2, 30)
 
+end_time = time.time()
+total_time = (end_time - start_time) / 60
+deployment_step = 'Complete'
+deployment_status = 'Complete'
+log_and_update_db('Deployment', 'Scale', deployment_type, deployment_status, deployment_step,
+                  f"Total time for GNS3 Lab Deployment with {total_time} vEdge Devices: {total_time:.2f} minutes")

@@ -222,9 +222,9 @@ def viptela_vedge_scale_deploy(server_ip, server_port, project_name, vmanage_api
         gns3_create_drawing(gns3_server_data, project_id,
                             site_drawing_deploy_data[f"site_drawing_{i:03}_deploy_data"])
     drawing_index = 1
-    for drawing_data in viptela_drawing_data:
-        gns3_create_drawing(gns3_server_data, project_id, viptela_drawing_data[f'drawing_{drawing_index:02}'])
-        drawing_index += 1
+    #for drawing_data in viptela_drawing_data:
+    #    gns3_create_drawing(gns3_server_data, project_id, viptela_drawing_data[f'drawing_{drawing_index:02}'])
+    #    drawing_index += 1
     # endregion
     # region Deploy GNS3 Node Config Files
     deployment_step = 'Node Configs'
@@ -611,6 +611,6 @@ def viptela_vedge_scale_deploy(server_ip, server_port, project_name, vmanage_api
     total_time = (end_time - start_time) / 60
     deployment_step = 'Complete'
     deployment_status = 'Complete'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Total time for GNS3 Lab Deployment with {vedge_count} vEdge Devices: {total_time:.2f} minutes")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Total time for Viptela Sites Server {server_index} Deployment with {vedge_count} vEdge Devices: {total_time:.2f} minutes")
     # endregion
 
