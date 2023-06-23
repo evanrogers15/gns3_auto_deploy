@@ -291,11 +291,16 @@ def viptela_appneta_deploy():
         for vedge_node in vedge_nodes:
             temp_file_name = "client_interfaces"
             node_id = vedge_node[0]
-            if v == 1:
+            if v == 3:
                 network_test_node_id = gns3_create_node(gns3_server_data, new_project_id, appneta_template_id,
                                                         client_deploy_data[f"network_test_client_{v:03}_deploy_data"])
                 gns3_update_nodes(gns3_server_data, new_project_id, network_test_node_id,
-                                  {"name": "Site_001_AppNeta_vk35"})
+                                  {"name": "Site_003_AppNeta_vk35"})
+            elif v == 4:
+                network_test_node_id = gns3_create_node(gns3_server_data, new_project_id, appneta_template_id,
+                                                        client_deploy_data[f"network_test_client_{v:03}_deploy_data"])
+                gns3_update_nodes(gns3_server_data, new_project_id, network_test_node_id,
+                                  {"name": "Site_004_AppNeta_vk35"})
             else:
                 network_test_node_id = gns3_create_node(gns3_server_data, new_project_id, network_test_tool_template_id,
                                                         client_deploy_data[f"network_test_client_{v:03}_deploy_data"])
@@ -609,7 +614,9 @@ def viptela_appneta_deploy():
                             vpn_0_ge0_1_ip_address = dictionary_1['vedge_address']
                             vpn_0_ge0_1_ip_gateway = dictionary_1['router_address']
                     vedge_hostname = f"{temp_node_name}_{city_data[temp_node_name]['city']}"
-                    if i == 1:
+                    if i == 3:
+                        client_1_mac_address = "52:54:00:E0:00:00"
+                    elif i == 4:
                         client_1_mac_address = "52:54:00:E0:00:00"
                     else:
                         client_1_mac_address = "4C:D7:17:00:00:00"
