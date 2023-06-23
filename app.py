@@ -18,9 +18,9 @@ running_thread = None
 def index_render():
     return render_template('create_viptela_sdwan.html')
 
-@app.route('/demo')
+@app.route('/demo/viptela')
 def demo_sdwan_deploy_render():
-    return render_template('demo_create_viptela_sdwan.html')
+    return render_template('demo/create_viptela_sdwan.html')
 
 @app.route('/versa')
 def oa_versa_deploy_render():
@@ -59,6 +59,7 @@ def update_config():
     vmanage_api_ip = req_data.get('vmanage_api_ip')
     site_count = req_data.get('site_count')
     tap_name = req_data.get('tap_name')
+    mgmt_subnet_ip = req_data.get('mgmt_subnet_ip')
     projects = gns3_query_get_projects(server_ip, server_port)
     server_name = gns3_query_get_computes_name(server_ip, server_port)
     if new_project_name not in [project['name'] for project in projects]:
@@ -75,7 +76,7 @@ def update_config():
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
     c.execute("DELETE FROM config")
-    c.execute("INSERT INTO config (server_ip, server_port, server_name, project_list, project_names, project_status, project_name, project_id, vmanage_api_ip, site_count, tap_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (server_ip, server_port, server_name, json.dumps(project_ids), json.dumps(project_names), json.dumps(project_status), new_project_name, project_id, vmanage_api_ip, site_count, tap_name))
+    c.execute("INSERT INTO config (server_ip, server_port, server_name, project_list, project_names, project_status, project_name, project_id, vmanage_api_ip, site_count, tap_name, mgmt_subnet_ip) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (server_ip, server_port, server_name, json.dumps(project_ids), json.dumps(project_names), json.dumps(project_status), new_project_name, project_id, vmanage_api_ip, site_count, tap_name, mgmt_subnet_ip))
     conn.commit()
     conn.close()
     return jsonify({'success': True})
@@ -93,9 +94,11 @@ def update_confign():
     vmanage_api_ip = req_data.get('vmanage_api_ip')
     site_count = req_data.get('site_count')
     tap_name = req_data.get('tap_name')
+    mgmt_subnet_ip = req_data.get('mgmt_subnet_ip')
     use_existing = req_data.get('use_existing')
     projects = gns3_query_get_projects(server_ip, server_port)
     server_name = gns3_query_get_computes_name(server_ip, server_port)
+    mgmt_subnet_temp = '.'.join(mgmt_subnet_ip.split('/')[0].split('.')[:3])
     if use_existing == 0:
         if new_project_name not in [project['name'] for project in projects]:
             project_id = gns3_create_project(server_ip, server_port, new_project_name)
@@ -115,7 +118,7 @@ def update_confign():
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
     c.execute("DELETE FROM config")
-    c.execute("INSERT INTO config (server_ip, server_port, server_name, project_list, project_names, project_status, project_name, project_id, vmanage_api_ip, site_count, tap_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (server_ip, server_port, server_name, json.dumps(project_ids), json.dumps(project_names), json.dumps(project_status), new_project_name, project_id, vmanage_api_ip, site_count, tap_name))
+    c.execute("INSERT INTO config (server_ip, server_port, server_name, project_list, project_names, project_status, project_name, project_id, vmanage_api_ip, site_count, tap_name, mgmt_subnet_ip) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (server_ip, server_port, server_name, json.dumps(project_ids), json.dumps(project_names), json.dumps(project_status), new_project_name, project_id, vmanage_api_ip, site_count, tap_name, mgmt_subnet_ip))
     conn.commit()
     conn.close()
     return jsonify({'success': True})

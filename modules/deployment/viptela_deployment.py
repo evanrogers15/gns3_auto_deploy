@@ -9,7 +9,7 @@ from modules.gns3.gns3_query import *
 def viptela_deploy():
     # region Variables
 
-    mgmt_subnet_ip = '172.16.2.'
+    #mgmt_subnet_ip = '172.16.2'
     vmanage_headers = {}
     lan_subnet_address = ''
     lan_gateway_address = ''
@@ -54,6 +54,7 @@ def viptela_deploy():
         vedge_count = row[9]
         tap_name = row[10]
         vmanage_api_ip = row[11]
+        mgmt_subnet_ip = row[12]
     if tap_name == 'none':
         use_tap = 0
     else:

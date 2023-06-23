@@ -23,7 +23,8 @@ CREATE TABLE IF NOT EXISTS config (
     project_id TEXT,
     site_count INTEGER,
     tap_name TEXT,
-    vmanage_api_ip TEXT
+    vmanage_api_ip TEXT,
+    mgmt_subnet_ip TEXT
 );
 ''')
 # Create the projects table
