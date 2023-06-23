@@ -2,7 +2,10 @@ import sys
 from modules.vendor_specific_actions.versa_actions import *
 from modules.gns3.gns3_dynamic_data import *
 from modules.gns3.gns3_query import *
+from modules.gns3.gns3_variables import *
 
+import telnetlib
+import time
 
 def versa_deploy():
     # region Variables
