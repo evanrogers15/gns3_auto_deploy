@@ -60,6 +60,7 @@ def update_config():
     site_count = req_data.get('site_count')
     tap_name = req_data.get('tap_name')
     mgmt_subnet_ip = req_data.get('mgmt_subnet_ip')
+    mgmt_subnet_ip = '.'.join(mgmt_subnet_ip.split('/')[0].split('.')[:3])
     projects = gns3_query_get_projects(server_ip, server_port)
     server_name = gns3_query_get_computes_name(server_ip, server_port)
     if new_project_name not in [project['name'] for project in projects]:
