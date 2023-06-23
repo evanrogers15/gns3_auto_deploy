@@ -359,19 +359,21 @@
             document.getElementById("site_count_input").style.display = "none";
           }
         });
+
         document.getElementById("tap_name").addEventListener("change", function() {
           var selectedValue = this.value;
-
           if (selectedValue === "custom") {
             document.getElementById("tap_name_input").style.display = "block";
           } else {
             document.getElementById("tap_name_input").style.display = "none";
           }
         });
+
         var serverPort = document.getElementById("tap_name").value;
         if (serverPort === "custom") {
           serverPort = document.getElementById("tap_name_input").value;
         }
+
         document.getElementById("mgmt_subnet_ip").addEventListener("change", function() {
           var selectedValue = this.value;
 
@@ -392,6 +394,7 @@
             server_ip = document.getElementById("server_ip_input").value;
           }
           var server_port = document.getElementById("server_port").value;
+
           var project_name = document.getElementById("project_name").value;
           if (project_name === "custom") {
             project_name = document.getElementById("project_name_input").value;
@@ -399,7 +402,9 @@
           if (mgmt_subnet_ip === "custom") {
             mgmt_subnet_ip = document.getElementById("mgmt_subnet_input").value;
           }
+
           var vmanage_api_ip = "172.16.2.2";
+
           var site_count = document.getElementById("site_count").value;
           if (site_count === "custom") {
             site_count = document.getElementById("site_count_input").value;
@@ -413,6 +418,7 @@
             vmanage_api_ip: vmanage_api_ip,
             site_count: site_count,
             tap_name: tap_name,
+            mgmt_subnet_ip: mgmt_subnet_ip,
           });
 
           var xhr = new XMLHttpRequest();
