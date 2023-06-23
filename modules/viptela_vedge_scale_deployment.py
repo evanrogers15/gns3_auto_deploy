@@ -120,7 +120,7 @@ def viptela_vedge_scale_deploy(server_ip, server_port, project_name, vmanage_api
     isp_ovs_node_id = gns3_create_node(gns3_server_data, project_id, openvswitch_isp_template_id, openvswitch_isp_deploy_data)
     mgmt_main_switch_node_id = gns3_create_node(gns3_server_data, project_id, regular_ethernet_hub_template_id,
                                                 main_mgmt_switch_deploy_data)
-    nat_node_id = gns3_create_cloud_node(gns3_server_data, project_id, nat_node_deploy_data)
+    #nat_node_id = gns3_create_cloud_node(gns3_server_data, project_id, nat_node_deploy_data)
     cloud_node_id = gns3_create_cloud_node(gns3_server_data, project_id, cloud_node_deploy_data)
 
     for i in range(1, mgmt_switch_count + 1):

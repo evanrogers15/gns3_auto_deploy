@@ -23,7 +23,7 @@ def generate_network_objects(base_subnet, subnet_mask, vedge_index=1):
     switch_limit = 1
     for subnet in subnets_64:
         if subnet.prefixlen == subnet_mask:
-            if switch_limit == 46:
+            if switch_limit == 100:
                 break
             router_address = str(subnet.network_address + 1)
             vedge_address = str(subnet.network_address + 2)
