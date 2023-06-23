@@ -201,18 +201,23 @@
         <li>If in GCP, the instance requires an N2 CPU <br>and nested virtualization needs to be enabled</li>
         <li>Minimum Machine Type: n2-standard-16</li>
         <li>Access to the GNS3 Web UI from this machine</li>
-        <li>Tap Interface with IP address of 172.16.2.1</li>
+        <li>Tap interface with subnet mask of /24</li>
     </ul>
     <h4>Required GNS3 Images:</h4>
       <ul>
         <li>viptela-vmanage-li-20.10.1-genericx86-64.qcow2</li>
-        <li>empty30G.qcow2</li>
         <li>viptela-smart-li-20.10.1-genericx86-64.qcow2</li>
         <li>viptela-edge-20.10.1-genericx86-64.qcow2</li>
+        <li>If using GNS3 2.2.40 or newer, the below is not needed</li>
+        <li>empty30G.qcow2</li>
     </ul>
     <h4>Monitoring Requirements:</h4>
       <ul>
         <li>OpenVPN Deployed on GNS3 Server</li>
+        <li>Discover managment network specified during deployment setup</li>
+        <li>vManage IP: This will be the .2 IP address of your selected management subnet (Example: 172.16.2.2)</li>
+        <li>vManage Credentials: admin / PW4netops</li>
+        <li>SNMP v2 Community: public</li>
     </ul>
 
   </div>
@@ -225,6 +230,7 @@
         <li>Set different project name if desired</li>
         <li>Set Site Count between 1 and 50 (note more sites require more resources)</li>
         <li>Set Tap Interface Name (Example: tap0)</li>
+        <li>Enter desired management network subnet, must be a /24 subnet mask</li>
         <li>Click Start Deployment</li>
     </ul>
   </div>
