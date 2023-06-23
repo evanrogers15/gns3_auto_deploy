@@ -78,7 +78,7 @@ admin-state  up
 options
 default-gateway {dhcp_gateway}
 dns-servers     192.168.122.1
-static-lease 4C:D7:17:00:00:00 ip {client_1_address}
+static-lease {client_1_mac} ip {client_1_address}
 ip route 0.0.0.0/0 vpn 0
 vpn 512
 name "MGMT VPN"

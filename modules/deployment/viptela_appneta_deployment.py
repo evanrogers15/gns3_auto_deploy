@@ -294,6 +294,8 @@ def viptela_appneta_deploy():
             if v == 1:
                 network_test_node_id = gns3_create_node(gns3_server_data, new_project_id, appneta_template_id,
                                                         client_deploy_data[f"network_test_client_{v:03}_deploy_data"])
+                gns3_update_nodes(gns3_server_data, new_project_id, network_test_node_id,
+                                  {"name": "Site_001_AppNeta_vk35"})
             else:
                 network_test_node_id = gns3_create_node(gns3_server_data, new_project_id, network_test_tool_template_id,
                                                         client_deploy_data[f"network_test_client_{v:03}_deploy_data"])
@@ -607,6 +609,10 @@ def viptela_appneta_deploy():
                             vpn_0_ge0_1_ip_address = dictionary_1['vedge_address']
                             vpn_0_ge0_1_ip_gateway = dictionary_1['router_address']
                     vedge_hostname = f"{temp_node_name}_{city_data[temp_node_name]['city']}"
+                    if i == 1:
+                        client_1_mac_address = "52:54:00:E0:00:00"
+                    else:
+                        client_1_mac_address = "4C:D7:17:00:00:00"
                     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vEdge Device Setup for {node_name[0]} - vEdge {i} of {vedge_count}")
                     tn = telnetlib.Telnet(server_ip, console_port)
                     while True:
@@ -657,6 +663,7 @@ def viptela_appneta_deploy():
                                 dhcp_exclude=lan_dhcp_exclude,
                                 dhcp_gateway=lan_gateway_address,
                                 client_1_address=client_1_address,
+                                client_1_mac=client_1_mac_address,
                                 vpn_512_eth0_ip_address=mgmt_address,
                                 vpn_512_eth0_ip_gateway=mgmt_gateway
                             )
