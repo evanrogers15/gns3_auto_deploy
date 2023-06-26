@@ -304,10 +304,10 @@
         </select>
 
         <label for="appn_url">AppNeta URL:</label>
-        <input type="text" id="appn_url" name="appn_url">
+        <input type="text" id="appn_url" name="appn_url" style="display: none;">
 
         <label for="appn_site_key">AppNeta Site Key:</label>
-        <input type="text" id="appn_site_key" name="appn_site_key">
+        <input type="text" id="appn_site_key" name="appn_site_key" style="display: none;">
 
         <input type="button" value="Start Deployment" onclick="submitForm()">
       </form>
@@ -367,6 +367,18 @@
           }
         });
         var serverPort = document.getElementById("project_name").value;
+
+        document.getElementById("deploy_appneta").addEventListener("change", function() {
+          var selectedValue = this.value;
+          if (selectedValue === "y") {
+            document.getElementById("appn_site_key").style.display = "block";
+            document.getElementById("appn_url").style.display = "block";
+          } else {
+            document.getElementById("appn_site_key").style.display = "none";
+            document.getElementById("appn_url").style.display = "none";
+          }
+        });
+
         if (serverPort === "custom") {
           serverPort = document.getElementById("project_name_input").value;
         }
