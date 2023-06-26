@@ -39,13 +39,17 @@ def versa_deploy_render():
 def viptela_deploy_render():
     return render_template('deployment/create_viptela_sdwan.html')
 
-@app.route('/demo/viptela')
-def demo_viptela_deploy_render():
-    return render_template('demo/create_viptela_sdwan.html')
-
 @app.route('/demo/arista')
 def demo_arista_deploy_render():
     return render_template('demo/create_arista_evpn.html')
+
+@app.route('/demo/versa')
+def demo_versa_deploy_render():
+    return render_template('demo/create_versa_sdwan.html')
+
+@app.route('/demo/viptela')
+def demo_viptela_deploy_render():
+    return render_template('demo/create_viptela_sdwan.html')
 
 @app.route('/test/viptela-appneta')
 def test_viptela_appneta_deploy_render():
