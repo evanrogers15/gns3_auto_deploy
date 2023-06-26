@@ -303,11 +303,12 @@
           <option value="y">Yes</option>
         </select>
 
-        <label for="appn_url">AppNeta URL:</label>
+        <label for="appn_url" id="appn_url_label" style="display: none;">AppNeta URL:</label>
         <input type="text" id="appn_url" name="appn_url" style="display: none;">
 
-        <label for="appn_site_key">AppNeta Site Key:</label>
+        <label for="appn_site_key" id="appn_site_key_label" style="display: none;">AppNeta Site Key:</label>
         <input type="text" id="appn_site_key" name="appn_site_key" style="display: none;">
+
 
         <input type="button" value="Start Deployment" onclick="submitForm()">
       </form>
@@ -368,23 +369,32 @@
         });
         var serverPort = document.getElementById("project_name").value;
 
-        document.getElementById("deploy_appneta").addEventListener("change", function() {
-            var selectedValue = this.value;
-            var appnSiteKeyLabel = document.querySelector("label[for='appn_site_key']");
-            var appnUrlLabel = document.querySelector("label[for='appn_url']");
+        document.addEventListener("DOMContentLoaded", function() {
+        var deployAppnetaDropdown = document.getElementById("deploy_appneta");
+        var appnUrlLabel = document.getElementById("appn_url_label");
+        var appnSiteKeyLabel = document.getElementById("appn_site_key_label");
+        var appnUrlInput = document.getElementById("appn_url");
+        var appnSiteKeyInput = document.getElementById("appn_site_key");
 
-            if (selectedValue === "y") {
-                document.getElementById("appn_site_key").style.display = "block";
-                document.getElementById("appn_url").style.display = "block";
-                appnSiteKeyLabel.style.display = "block";
+        function toggleAppnetaInputs() {
+            if (deployAppnetaDropdown.value === "y") {
                 appnUrlLabel.style.display = "block";
+                appnSiteKeyLabel.style.display = "block";
+                appnUrlInput.style.display = "block";
+                appnSiteKeyInput.style.display = "block";
             } else {
-                document.getElementById("appn_site_key").style.display = "none";
-                document.getElementById("appn_url").style.display = "none";
-                appnSiteKeyLabel.style.display = "none";
                 appnUrlLabel.style.display = "none";
+                appnSiteKeyLabel.style.display = "none";
+                appnUrlInput.style.display = "none";
+                appnSiteKeyInput.style.display = "none";
             }
-        });
+        }
+
+        toggleAppnetaInputs();
+
+        deployAppnetaDropdown.addEventListener("change", toggleAppnetaInputs);
+    });
+
 
 
         if (serverPort === "custom") {
