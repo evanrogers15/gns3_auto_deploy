@@ -19,29 +19,37 @@ running_thread = None
 def main_page():
     return render_template('main.html')
 
-@app.route('/arista')
+@app.route('/demo')
+def demo_main_page():
+    return render_template('demo_main.html')
+
+@app.route('/test')
+def test_main_page():
+    return render_template('test_main.html')
+
+@app.route('/deployment/arista')
 def arista_deploy_render():
-    return render_template('create_arista_evpn.html')
+    return render_template('deployment/create_arista_evpn.html')
 
-@app.route('/versa')
+@app.route('/deployment/versa')
 def versa_deploy_render():
-    return render_template('create_versa_sdwan.html')
+    return render_template('deployment/create_versa_sdwan.html')
 
-@app.route('/viptela')
+@app.route('/deployment/viptela')
 def viptela_deploy_render():
-    return render_template('create_viptela_sdwan.html')
+    return render_template('deployment/create_viptela_sdwan.html')
 
 @app.route('/demo/viptela')
-def demo_sdwan_deploy_render():
+def demo_viptela_deploy_render():
     return render_template('demo/create_viptela_sdwan.html')
 
-@app.route('/demo/viptela-appneta')
-def demo_viptela_appneta_deploy_render():
-    return render_template('demo/create_viptela_appneta_sdwan.html')
-
 @app.route('/demo/arista')
-def arista_demo_deploy_render():
+def demo_arista_deploy_render():
     return render_template('demo/create_arista_evpn.html')
+
+@app.route('/test/viptela-appneta')
+def test_viptela_appneta_deploy_render():
+    return render_template('test/create_viptela_appneta_sdwan.html')
 
 @app.route('/uc-local')
 def index_uc_index():
