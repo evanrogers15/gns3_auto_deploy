@@ -300,8 +300,8 @@ def viptela_appneta_deploy():
                                                         client_deploy_data[f"network_test_client_{v:03}_deploy_data"])
                 gns3_update_nodes(gns3_server_data, new_project_id, network_test_node_id,
                                   {"name": "Site-003-AppNeta-vk35"})
-                gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, mgmt_network_adapter_index, network_test_node_id, 0, 0)
-                gns3_connect_nodes(gns3_server_data, new_project_id, node_id, 3, 0, network_test_node_id, 1, 0)
+                gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, mgmt_network_adapter_index, network_test_node_id, 2, 0)
+                gns3_connect_nodes(gns3_server_data, new_project_id, node_id, 3, 0, network_test_node_id, 0, 0)
                 gns3_start_node(gns3_server_data, new_project_id, node_id)
                 break
             elif v == 4:
@@ -310,8 +310,8 @@ def viptela_appneta_deploy():
                 gns3_update_nodes(gns3_server_data, new_project_id, network_test_node_id,
                                   {"name": "Site-004-AppNeta-vk35"})
                 gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, mgmt_network_adapter_index,
-                                   network_test_node_id, 0, 0)
-                gns3_connect_nodes(gns3_server_data, new_project_id, node_id, 3, 0, network_test_node_id, 1, 0)
+                                   network_test_node_id, 2, 0)
+                gns3_connect_nodes(gns3_server_data, new_project_id, node_id, 3, 0, network_test_node_id, 0, 0)
                 gns3_start_node(gns3_server_data, new_project_id, node_id)
                 break
             else:
