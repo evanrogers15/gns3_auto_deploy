@@ -24,7 +24,10 @@ CREATE TABLE IF NOT EXISTS config (
     site_count INTEGER,
     tap_name TEXT,
     vmanage_api_ip TEXT,
-    mgmt_subnet_ip TEXT
+    mgmt_subnet_ip TEXT,
+    appn_url TEXT,
+    appn_site_key TEXT
+    
 );
 ''')
 # Create the projects table

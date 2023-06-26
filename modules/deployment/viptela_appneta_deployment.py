@@ -5,6 +5,7 @@ import re
 from modules.vendor_specific_actions.viptela_actions import *
 from modules.gns3.gns3_dynamic_data import *
 from modules.gns3.gns3_query import *
+from modules.vendor_specific_actions.appneta_actions import *
 
 def viptela_appneta_deploy():
     # region Variables
@@ -54,6 +55,8 @@ def viptela_appneta_deploy():
         tap_name = row[10]
         vmanage_api_ip = row[11]
         mgmt_subnet_ip = row[12]
+        appn_url = row[13]
+        appn_site_key = row[14]
     if tap_name == 'none':
         use_tap = 0
     else:
@@ -295,12 +298,21 @@ def viptela_appneta_deploy():
                 network_test_node_id = gns3_create_node(gns3_server_data, new_project_id, appneta_template_id,
                                                         client_deploy_data[f"network_test_client_{v:03}_deploy_data"])
                 gns3_update_nodes(gns3_server_data, new_project_id, network_test_node_id,
-                                  {"name": "Site_003_AppNeta_vk35"})
+                                  {"name": "Site-003-AppNeta-vk35"})
+                gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, {v+10}, network_test_node_id, 0, 0)
+                gns3_connect_nodes(gns3_server_data, new_project_id, node_id, 3, 0, network_test_node_id, 1, 0)
+                gns3_start_node(gns3_server_data, new_project_id, node_id)
+                break
             elif v == 4:
                 network_test_node_id = gns3_create_node(gns3_server_data, new_project_id, appneta_template_id,
                                                         client_deploy_data[f"network_test_client_{v:03}_deploy_data"])
                 gns3_update_nodes(gns3_server_data, new_project_id, network_test_node_id,
-                                  {"name": "Site_004_AppNeta_vk35"})
+                                  {"name": "Site-004-AppNeta-vk35"})
+                gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, {v + 10},
+                                   network_test_node_id, 0, 0)
+                gns3_connect_nodes(gns3_server_data, new_project_id, node_id, 3, 0, network_test_node_id, 1, 0)
+                gns3_start_node(gns3_server_data, new_project_id, node_id)
+                break
             else:
                 network_test_node_id = gns3_create_node(gns3_server_data, new_project_id, network_test_tool_template_id,
                                                         client_deploy_data[f"network_test_client_{v:03}_deploy_data"])
@@ -964,8 +976,31 @@ def viptela_appneta_deploy():
     vmanage_headers = vmanage_create_auth(gns3_server_data)
     vmanage_push_certs(gns3_server_data, vmanage_headers)
     # endregion
+    # region AppNeta MP Setup
+    deployment_step = 'AppNeta MP Setup'
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Starting AppNeta Monitoring Point Configuration")
+    server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
+    ve = 101
+    v = 1
+    for server_ip in server_ips:
+        temp_node_name = f'AppNeta'
+        matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
+        if matching_nodes:
+            for matching_node in matching_nodes:
+                mp_ip_address = f"{mgmt_subnet_ip}.{v+50}"
+                node_id, console_port, aux = matching_node
+                node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id', 'name',
+                                                           node_id)
+                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                  f"Logging in to console for node {node_name[0]}")
+                appneta_cli_curl_commands(server_ip, console_port, node_name[0], appneta_mp_mac, mp_ip_address, appn_site_key, appn_url)
+
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Completed AppNeta MP Configuration")
+    # endregion
     # region Validation
-    client_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "Client")
+    client_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "Site_")
     if client_nodes:
         for client_node in client_nodes:
             node_id, console_port, aux = client_node

@@ -85,7 +85,13 @@ def update_config():
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
     c.execute("DELETE FROM config")
-    c.execute("INSERT INTO config (server_ip, server_port, server_name, project_list, project_names, project_status, project_name, project_id, vmanage_api_ip, site_count, tap_name, mgmt_subnet_ip) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (server_ip, server_port, server_name, json.dumps(project_ids), json.dumps(project_names), json.dumps(project_status), new_project_name, project_id, vmanage_api_ip, site_count, tap_name, mgmt_subnet_ip))
+    if req_data.get('deploy_appneta') == 'y':
+        appn_url = req_data.get('appn_url')
+        appn_site_key = req_data.get('appn_site_key')
+        c.execute("INSERT INTO config (server_ip, server_port, server_name, project_list, project_names, project_status, project_name, project_id, vmanage_api_ip, site_count, tap_name, mgmt_subnet_ip, appn_url, appn_site_key) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (server_ip, server_port, server_name, json.dumps(project_ids), json.dumps(project_names), json.dumps(project_status), new_project_name, project_id, vmanage_api_ip, site_count, tap_name, mgmt_subnet_ip, appn_url, appn_site_key))
+    else:
+        c.execute("INSERT INTO config (server_ip, server_port, server_name, project_list, project_names, project_status, project_name, project_id, vmanage_api_ip, site_count, tap_name, mgmt_subnet_ip) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (server_ip, server_port, server_name, json.dumps(project_ids), json.dumps(project_names), json.dumps(project_status), new_project_name, project_id, vmanage_api_ip, site_count, tap_name, mgmt_subnet_ip))
+
     conn.commit()
     conn.close()
     return jsonify({'success': True})

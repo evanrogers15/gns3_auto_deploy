@@ -27,6 +27,8 @@ versa_flexvnf_username = "admin"
 
 mgmt_switchport_count = 45
 mgmt_main_switchport_count = 30
+
+appneta_mp_mac = "525400E00000"
 # endregion
 
 gns3_server_data_old = [
@@ -96,8 +98,8 @@ viptela_vedge_template_data = {"compute_id": "local", "cpus": 1, "adapters": 6,
 # endregion
 # region Misc Template Data
 appneta_mp_template_data = {"compute_id": "local", "cpus": 2, "port_name_format": "eth{0}", "adapters": 3,
-                            "adapter_type": "virtio-net-pci", "qemu_path": "/usr/bin/qemu-system-x86_64",
-                            "mac_address": "52:54:00:E0:00:00",
+                            "adapter_type": "virtio-net-pci","hda_disk_interface": "virtio", "qemu_path": "/usr/bin/qemu-system-x86_64",
+                            "mac_address": "52:54:00:E0:00:00", "custom_adapters": [{"adapter_number": 1, "mac_address": "52:54:00:e1:00:01"}, {"adapter_number": 2, "mac_address": "52:54:00:e2:00:02"}],
                             "hda_disk_image": "pathview-amd64-13.12.6.53966.qcow2", "name": "Appneta-vk35",
                             "ram": 4096, "template_type": "qemu"}
 openvswitch_template_data = {"compute_id": "local", "adapters": 16, "category": "switch",
