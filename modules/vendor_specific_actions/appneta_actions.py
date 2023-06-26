@@ -33,9 +33,9 @@ def appneta_cli_curl_commands(server_ip, console_port, node_name, appn_password,
     tn = telnetlib.Telnet(server_ip, console_port)
     user = "admin"
     set_eth2_command = f'curl -k -u admin:525400E00000 -X POST -H "Content-Type: application/json" -d \'{{"name": "eth2", "family": "inet", "method": "static", "address": "{mp_ip_address}", "netmask": "255.255.255.0"}}\' \'https://127.0.0.1/api/v1/interface/\''
-    set_hostname_command = f'curl -k -u admin:525400E00000 -X PUT -H "Content-Type: application/json" -H "Accept: application/json" -d \'{"hostname": {node_name}}\' \'https://127.0.0.1/api/v1/hostname/\''
-    set_nis_command = f'curl -k -u admin:525400E00000 -X POST -H "Content-Type: application/json" -d \'{"address": appn_url, "site_key": {appn_site_key}, "ports": "80,8080", "relay_addresses": f"{appn_url}:443", "ssl": "true", "protocol": "TCP"}\' \'https://127.0.0.1/api/v1/nis/?restart_services=true\''
-    set_password_command = f'curl -k -u admin:525400E00000 -X PUT -H "Content-Type: application/json" -H "Accept: application/json" -d \'{"password": "PW4netops!"}\' \'https://127.0.0.1/api/v1/appliance/password/\''
+    set_hostname_command = f'curl -k -u admin:525400E00000 -X PUT -H "Content-Type: application/json" -H "Accept: application/json" -d \'{{"hostname": "{node_name}"}}\' "https://127.0.0.1/api/v1/hostname/"'
+    set_nis_command = f'curl -k -u admin:525400E00000 -X POST -H "Content-Type: application/json" -d \'{{"address": "{appn_url}", "site_key": "{appn_site_key}", "ports": "80,8080", "relay_addresses": "{appn_url}:443", "ssl": "true", "protocol": "TCP"}}\' "https://127.0.0.1/api/v1/nis/?restart_services=true"'
+    set_password_command = f'curl -k -u admin:525400E00000 -X PUT -H "Content-Type: application/json" -H "Accept: application/json" -d \'{{"password": "PW4netops!"}}\' "https://127.0.0.1/api/v1/appliance/password/"'
     tn.write(b"\r\n")
     while True:
         tn.write(b"\r\n")

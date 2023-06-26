@@ -21,11 +21,11 @@ def main_page():
 
 @app.route('/demo')
 def demo_main_page():
-    return render_template('demo/demo_main.html')
+    return render_template('demo_main.html')
 
 @app.route('/test')
 def test_main_page():
-    return render_template('test/test_main.html')
+    return render_template('test_main.html')
 
 @app.route('/deployment/arista')
 def arista_deploy_render():
@@ -38,6 +38,10 @@ def versa_deploy_render():
 @app.route('/deployment/viptela')
 def viptela_deploy_render():
     return render_template('deployment/create_viptela_sdwan.html')
+
+@app.route('/deploymemt/viptela-appneta')
+def viptela_appneta_deploy_render():
+    return render_template('deployment/create_viptela_appneta_sdwan.html')
 
 @app.route('/demo/arista')
 def demo_arista_deploy_render():
