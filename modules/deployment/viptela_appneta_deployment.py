@@ -36,6 +36,7 @@ def viptela_appneta_deploy():
                               "compute_id": "local", "symbol": ":/symbols/cloud.svg"}
     required_qemu_images = {"viptela-vmanage-li-20.10.1-genericx86-64.qcow2", "empty30G.qcow2", "viptela-smart-li-20.10.1-genericx86-64.qcow2", "viptela-edge-20.10.1-genericx86-64.qcow2"}
     required_image_response = 201
+    deploy_appneta = 'n'
     # endregion
     conn = sqlite3.connect(db_path)
     # region Runtime
@@ -61,6 +62,9 @@ def viptela_appneta_deploy():
         use_tap = 0
     else:
         use_tap = 1
+    if appn_url:
+        deploy_appneta = 'y'
+
     #mgmt_subnet_ip = '.'.join(mgmt_subnet_ip.split('/')[0].split('.')[:3])
     gns3_server_data = [{"GNS3 Server": server_ip, "Server Name": server_name, "Server Port": server_port,
                     "vManage API IP": vmanage_api_ip, "Project Name": project_name, "Project ID": new_project_id,
@@ -295,7 +299,7 @@ def viptela_appneta_deploy():
             temp_file_name = "client_interfaces"
             node_id = vedge_node[0]
             mgmt_network_adapter_index = v + 10
-            if v == 3:
+            if v == 3 and deploy_appneta == 'y':
                 network_test_node_id = gns3_create_node(gns3_server_data, new_project_id, appneta_template_id,
                                                         client_deploy_data[f"network_test_client_{v:03}_deploy_data"])
                 gns3_update_nodes(gns3_server_data, new_project_id, network_test_node_id,
@@ -303,7 +307,7 @@ def viptela_appneta_deploy():
                 gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, mgmt_network_adapter_index, network_test_node_id, 2, 0)
                 gns3_connect_nodes(gns3_server_data, new_project_id, node_id, 3, 0, network_test_node_id, 0, 0)
                 gns3_start_node(gns3_server_data, new_project_id, network_test_node_id)
-            elif v == 4:
+            elif v == 4 and deploy_appneta == 'y':
                 network_test_node_id = gns3_create_node(gns3_server_data, new_project_id, appneta_template_id,
                                                         client_deploy_data[f"network_test_client_{v:03}_deploy_data"])
                 gns3_update_nodes(gns3_server_data, new_project_id, network_test_node_id,
