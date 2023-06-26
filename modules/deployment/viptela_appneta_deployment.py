@@ -303,7 +303,6 @@ def viptela_appneta_deploy():
                 gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, mgmt_network_adapter_index, network_test_node_id, 2, 0)
                 gns3_connect_nodes(gns3_server_data, new_project_id, node_id, 3, 0, network_test_node_id, 0, 0)
                 gns3_start_node(gns3_server_data, new_project_id, node_id)
-                break
             elif v == 4:
                 network_test_node_id = gns3_create_node(gns3_server_data, new_project_id, appneta_template_id,
                                                         client_deploy_data[f"network_test_client_{v:03}_deploy_data"])
@@ -313,7 +312,6 @@ def viptela_appneta_deploy():
                                    network_test_node_id, 2, 0)
                 gns3_connect_nodes(gns3_server_data, new_project_id, node_id, 3, 0, network_test_node_id, 0, 0)
                 gns3_start_node(gns3_server_data, new_project_id, node_id)
-                break
             else:
                 network_test_node_id = gns3_create_node(gns3_server_data, new_project_id, network_test_tool_template_id,
                                                         client_deploy_data[f"network_test_client_{v:03}_deploy_data"])
@@ -321,7 +319,7 @@ def viptela_appneta_deploy():
                                   client_deploy_data[f"network_test_client_{v:03}_deploy_data"])
                 gns3_upload_file_to_node(gns3_server_data, new_project_id, network_test_node_id, client_node_file_path,
                                          temp_file_name)
-            gns3_connect_nodes(gns3_server_data, new_project_id, node_id, 3, 0, network_test_node_id, 0, 0)
+                gns3_connect_nodes(gns3_server_data, new_project_id, node_id, 3, 0, network_test_node_id, 0, 0)
             v += 1
     # endregion
     # region Viptela vManage Setup Part 1
