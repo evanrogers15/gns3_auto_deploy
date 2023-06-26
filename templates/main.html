@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Main Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333333;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        a {
+            text-decoration: none;
+            color: #007bff;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Viptela Deployment</h1>
+        <ul>
+            <li><a href="{{ url_for('arista_deploy_render') }}">Arista</a> - Deploy and manage Arista EVPN</li>
+            <li><a href="{{ url_for('versa_deploy_render') }}">Versa</a> - Deploy and manage Versa SD-WAN</li>
+            <li><a href="{{ url_for('viptela_deploy_render') }}">Viptela</a> - Deploy and manage Viptela SD-WAN</li>
+        </ul>
+    </div>
+</body>
+</html>

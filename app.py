@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, abort, make_response, request, render_template
+from flask import Flask, jsonify, abort, make_response, request, render_template, redirect, url_for
 import subprocess
 import psutil
 import threading
@@ -16,7 +16,19 @@ app = Flask(__name__)
 running_thread = None
 
 @app.route('/')
-def index_render():
+def main_page():
+    return render_template('main.html')
+
+@app.route('/arista')
+def arista_deploy_render():
+    return render_template('create_arista_evpn.html')
+
+@app.route('/versa')
+def versa_deploy_render():
+    return render_template('create_versa_sdwan.html')
+
+@app.route('/viptela')
+def viptela_deploy_render():
     return render_template('create_viptela_sdwan.html')
 
 @app.route('/demo/viptela')
@@ -27,13 +39,6 @@ def demo_sdwan_deploy_render():
 def demo_viptela_appneta_deploy_render():
     return render_template('demo/create_viptela_appneta_sdwan.html')
 
-@app.route('/versa')
-def oa_versa_deploy_render():
-    return render_template('create_versa_sdwan.html')
-
-@app.route('/arista')
-def arista_deploy_render():
-    return render_template('create_arista_evpn.html')
 @app.route('/demo/arista')
 def arista_demo_deploy_render():
     return render_template('demo/create_arista_evpn.html')
