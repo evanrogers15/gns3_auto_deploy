@@ -369,15 +369,23 @@
         var serverPort = document.getElementById("project_name").value;
 
         document.getElementById("deploy_appneta").addEventListener("change", function() {
-          var selectedValue = this.value;
-          if (selectedValue === "y") {
-            document.getElementById("appn_site_key").style.display = "block";
-            document.getElementById("appn_url").style.display = "block";
-          } else {
-            document.getElementById("appn_site_key").style.display = "none";
-            document.getElementById("appn_url").style.display = "none";
-          }
+            var selectedValue = this.value;
+            var appnSiteKeyLabel = document.querySelector("label[for='appn_site_key']");
+            var appnUrlLabel = document.querySelector("label[for='appn_url']");
+
+            if (selectedValue === "y") {
+                document.getElementById("appn_site_key").style.display = "block";
+                document.getElementById("appn_url").style.display = "block";
+                appnSiteKeyLabel.style.display = "block";
+                appnUrlLabel.style.display = "block";
+            } else {
+                document.getElementById("appn_site_key").style.display = "none";
+                document.getElementById("appn_url").style.display = "none";
+                appnSiteKeyLabel.style.display = "none";
+                appnUrlLabel.style.display = "none";
+            }
         });
+
 
         if (serverPort === "custom") {
           serverPort = document.getElementById("project_name_input").value;
