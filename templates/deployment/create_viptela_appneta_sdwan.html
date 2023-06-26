@@ -274,6 +274,12 @@
         </select>
         <input type="text" id="project_name_input" name="project_name_input" style="display: none;">
 
+        <label for="use_existing_project">Use Existing Project:</label>
+        <select id="use_existing_project" name="use_existing_project">
+          <option value="n">No</option>
+          <option value="y">Yes</option>
+        </select>
+
         <label for="site_count">Site Count: </label>
         <select id="site_count" name="site_count">
           <option value="5">5</option>
@@ -429,7 +435,7 @@
           var deploy_appneta = document.getElementById("deploy_appneta").value;
           var appn_url = document.getElementById("appn_url").value;
           var appn_site_key = document.getElementById("appn_site_key").value;
-
+          var use_existing_project = document.getElementById("use_existing_project").value;
          var data;
           if (deploy_appneta == "n") {
               data = JSON.stringify({
@@ -440,7 +446,8 @@
                   site_count: site_count,
                   tap_name: tap_name,
                   mgmt_subnet_ip: mgmt_subnet_ip,
-                  deploy_appneta: deploy_appneta
+                  deploy_appneta: deploy_appneta,
+                  use_existing_project: use_existing_project
               });
           } else if (deploy_appneta == "y") {
               data = JSON.stringify({
@@ -453,7 +460,8 @@
                   mgmt_subnet_ip: mgmt_subnet_ip,
                   deploy_appneta: deploy_appneta,
                   appn_url: appn_url,
-                  appn_site_key: appn_site_key
+                  appn_site_key: appn_site_key,
+                  use_existing_project: use_existing_project
               });
           }
 

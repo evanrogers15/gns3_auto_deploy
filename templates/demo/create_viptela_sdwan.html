@@ -272,6 +272,12 @@
         </select>
         <input type="text" id="project_name_input" name="project_name_input" style="display: none;">
 
+        <label for="use_existing_project">Use Existing Project:</label>
+        <select id="use_existing_project" name="use_existing_project">
+          <option value="n">No</option>
+          <option value="y">Yes</option>
+        </select>
+
         <label for="site_count">Site Count: </label>
         <select id="site_count" name="site_count">
           <option value="5">5</option>
@@ -411,6 +417,7 @@
             site_count = document.getElementById("site_count_input").value;
           }
           var tap_name = document.getElementById("tap_name").value;
+          var use_existing_project = document.getElementById("use_existing_project").value;
 
           var data = JSON.stringify({
             server_ip: server_ip,
@@ -420,10 +427,11 @@
             site_count: site_count,
             tap_name: tap_name,
             mgmt_subnet_ip: mgmt_subnet_ip,
+            use_existing_project: use_existing_project
           });
 
           var xhr = new XMLHttpRequest();
-          var url = "/api/demo_config";
+          var url = "/api/config";
           xhr.open("POST", url, true);
           xhr.setRequestHeader("Content-Type", "application/json");
 

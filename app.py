@@ -92,13 +92,18 @@ def update_config():
     mgmt_subnet_ip = '.'.join(mgmt_subnet_ip.split('/')[0].split('.')[:3])
     projects = gns3_query_get_projects(server_ip, server_port)
     server_name = gns3_query_get_computes_name(server_ip, server_port)
-    if new_project_name not in [project['name'] for project in projects]:
-        project_id = gns3_create_project(server_ip, server_port, new_project_name)
+    if req_data.get('use_existing_project') == 'n':
+        if new_project_name not in [project['name'] for project in projects]:
+            project_id = gns3_create_project(server_ip, server_port, new_project_name)
+        else:
+            matching_projects = [project for project in projects if project['name'] == new_project_name]
+            project_id = matching_projects[0]['project_id']
+            gns3_delete_project_static(server_ip, server_port, new_project_name, project_id)
+            project_id = gns3_create_project(server_ip, server_port, new_project_name)
     else:
-        matching_projects = [project for project in projects if project['name'] == new_project_name]
-        project_id = matching_projects[0]['project_id']
-        gns3_delete_project_static(server_ip, server_port, new_project_name, project_id)
-        project_id = gns3_create_project(server_ip, server_port, new_project_name)
+        project_id = gns3_query_get_project_id(server_ip, server_port, new_project_name)
+        gns3_delete_all_nodes(server_ip, server_port, project_id)
+        gns3_delete_all_drawings(server_ip, server_port, project_id)
     projects = gns3_query_get_projects(server_ip, server_port)
     project_names = [project['name'] for project in projects]
     project_ids = [project['project_id'] for project in projects]
