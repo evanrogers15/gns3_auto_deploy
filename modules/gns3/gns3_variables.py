@@ -31,19 +31,6 @@ mgmt_main_switchport_count = 30
 appneta_mp_mac = "525400E00000"
 # endregion
 
-gns3_server_data_old = [
- {
-     "GNS3 Server": "10.210.242.13",
-     "Server Name": "er-test-01",
-     "Server Port": "80",
-     "vManage API IP": "172.16.2.2",
-     "Project Name": "test111",
-     "Tap Name": "tap1",
-     "Use Tap": 0,
-     "Site Count": 0
- }
-]
-
 # region Variables: GNS3 Template Data
 headers = {
     "accept": "application/json",
