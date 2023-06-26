@@ -85,11 +85,11 @@ def update_config():
         return jsonify({'error': 'Server IP is missing.'}), 400
     server_port = req_data.get('server_port')
     new_project_name = req_data.get('project_name')
-    vmanage_api_ip = req_data.get('vmanage_api_ip')
     site_count = req_data.get('site_count')
     tap_name = req_data.get('tap_name')
     mgmt_subnet_ip = req_data.get('mgmt_subnet_ip')
     mgmt_subnet_ip = '.'.join(mgmt_subnet_ip.split('/')[0].split('.')[:3])
+    vmanage_api_ip = mgmt_subnet_ip + ".2"
     projects = gns3_query_get_projects(server_ip, server_port)
     server_name = gns3_query_get_computes_name(server_ip, server_port)
     if req_data.get('use_existing_project') == 'n':

@@ -258,7 +258,6 @@
         </select>
         <input type="text" id="server_ip_input" style="display: none;">
 
-
         <label for="server_port">GNS3 Server Port:</label>
         <select id="server_port" name="server_port">
           <option value="80">80</option>
@@ -345,29 +344,52 @@
             document.getElementById("server_ip_input").style.display = "none";
             }
         });
+
         document.getElementById("server_port").addEventListener("change", function() {
           var selectedValue = this.value;
-
           if (selectedValue === "custom") {
             document.getElementById("server_port_input").style.display = "block";
           } else {
             document.getElementById("server_port_input").style.display = "none";
           }
         });
-        var serverPort = document.getElementById("server_port").value;
-        if (serverPort === "custom") {
-          serverPort = document.getElementById("server_port_input").value;
-        }
+
         document.getElementById("project_name").addEventListener("change", function() {
           var selectedValue = this.value;
-
           if (selectedValue === "custom") {
             document.getElementById("project_name_input").style.display = "block";
           } else {
             document.getElementById("project_name_input").style.display = "none";
           }
         });
-        var serverPort = document.getElementById("project_name").value;
+
+        document.getElementById("site_count").addEventListener("change", function() {
+          var selectedValue = this.value;
+          if (selectedValue === "custom") {
+            document.getElementById("site_count_input").style.display = "block";
+          } else {
+            document.getElementById("site_count_input").style.display = "none";
+          }
+        });
+
+        document.getElementById("tap_name").addEventListener("change", function() {
+          var selectedValue = this.value;
+          if (selectedValue === "custom") {
+            document.getElementById("tap_name_input").style.display = "block";
+          } else {
+            document.getElementById("tap_name_input").style.display = "none";
+          }
+        });
+
+        document.getElementById("mgmt_subnet_ip").addEventListener("change", function() {
+          var selectedValue = this.value;
+
+          if (selectedValue === "custom") {
+            document.getElementById("mgmt_subnet_ip_input").style.display = "block";
+          } else {
+            document.getElementById("mgmt_subnet_ip_input").style.display = "none";
+          }
+        });
 
         document.addEventListener("DOMContentLoaded", function() {
         var deployAppnetaDropdown = document.getElementById("deploy_appneta");
@@ -389,50 +411,9 @@
                 appnSiteKeyInput.style.display = "none";
             }
         }
-
         toggleAppnetaInputs();
-
         deployAppnetaDropdown.addEventListener("change", toggleAppnetaInputs);
-    });
-
-
-
-        if (serverPort === "custom") {
-          serverPort = document.getElementById("project_name_input").value;
-        }
-        document.getElementById("site_count").addEventListener("change", function() {
-          var selectedValue = this.value;
-
-          if (selectedValue === "custom") {
-            document.getElementById("site_count_input").style.display = "block";
-          } else {
-            document.getElementById("site_count_input").style.display = "none";
-          }
-        });
-
-        document.getElementById("tap_name").addEventListener("change", function() {
-          var selectedValue = this.value;
-          if (selectedValue === "custom") {
-            document.getElementById("tap_name_input").style.display = "block";
-          } else {
-            document.getElementById("tap_name_input").style.display = "none";
-          }
-        });
-
-        var serverPort = document.getElementById("tap_name").value;
-        if (serverPort === "custom") {
-          serverPort = document.getElementById("tap_name_input").value;
-        }
-
-        document.getElementById("mgmt_subnet_ip").addEventListener("change", function() {
-          var selectedValue = this.value;
-
-          if (selectedValue === "custom") {
-            document.getElementById("mgmt_subnet_ip_input").style.display = "block";
-          } else {
-            document.getElementById("mgmt_subnet_ip_input").style.display = "none";
-          }
-        });
+      });
 
         function submitForm() {
           var startDeploymentButton = document.querySelector('input[type="button"]');
@@ -454,8 +435,6 @@
             mgmt_subnet_ip = document.getElementById("mgmt_subnet_ip_input").value;
           }
 
-          var vmanage_api_ip = "172.16.2.2";
-
           var site_count = document.getElementById("site_count").value;
           if (site_count === "custom") {
             site_count = document.getElementById("site_count_input").value;
@@ -466,13 +445,13 @@
           var appn_url = document.getElementById("appn_url").value;
           var appn_site_key = document.getElementById("appn_site_key").value;
           var use_existing_project = document.getElementById("use_existing_project").value;
+
          var data;
           if (deploy_appneta == "n") {
               data = JSON.stringify({
                   server_ip: server_ip,
                   server_port: server_port,
                   project_name: project_name,
-                  vmanage_api_ip: vmanage_api_ip,
                   site_count: site_count,
                   tap_name: tap_name,
                   mgmt_subnet_ip: mgmt_subnet_ip,
@@ -484,7 +463,6 @@
                   server_ip: server_ip,
                   server_port: server_port,
                   project_name: project_name,
-                  vmanage_api_ip: vmanage_api_ip,
                   site_count: site_count,
                   tap_name: tap_name,
                   mgmt_subnet_ip: mgmt_subnet_ip,
