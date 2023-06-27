@@ -21,7 +21,7 @@
       justify-content: center;
     }
    .instructions-container {
-          width: 400px;
+          width: 500px;
           margin: 20px;
           padding: 20px;
           border-radius: 10px;
@@ -29,7 +29,7 @@
           background-color: #ffffff;
       }
      .prerequisites-container {
-        width: 400px;
+        width: 500px;
         margin: 20px;
         padding: 20px;
         border-radius: 10px;
@@ -37,7 +37,7 @@
         background-color: #ffffff;
     }
     .form-container {
-      width: 400px;
+      width: 500px;
       margin: 20px;
       padding: 20px;
       border-radius: 10px;
@@ -46,7 +46,7 @@
     }
 
      .uploaded-files-container {
-        width: 400px;
+        width: 500px;
         margin: 20px;
         padding: 10px;
         border-radius: 10px;
@@ -210,7 +210,7 @@
         <li>viptela-edge-20.10.1-genericx86-64.qcow2</li>
         <li>If deploying AppNeta Monitoring Points: (Example as version number will change)<br>It can be downloaded by logging into your AppNeta instance and browsing to Monitoring Points, then click Add Monitoring Points, select KVM as the Platform Type, then click Download KVM Base Image</li>
         <li>pathview-amd64-14.0.0.54253.qcow2</li>
-        <li>If using GNS3 2.2.40 or newer, the below is not needed</li>
+        <li>If using GNS3 2.2.40 or newer, the below image is not required</li>
         <li>empty30G.qcow2</li>
     </ul>
     <h4>Monitoring Requirements:</h4>
@@ -584,7 +584,7 @@
       $(document).ready(function() {
         refreshData();
 
-        setInterval(refreshData, 5000); // Refresh every 5 seconds
+        setInterval(refreshData, 500); // Refresh every .5 seconds
 
         function refreshData() {
           $.ajax({
