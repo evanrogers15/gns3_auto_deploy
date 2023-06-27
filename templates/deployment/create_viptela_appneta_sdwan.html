@@ -238,15 +238,14 @@
   </div>
     <div id="file-drop-zone" class="drop-zone">Drag and drop GNS3 images here to upload</div>
     <div id="file-upload-status"></div>
-    <div class="uploaded-files-container" style="display: none;">
-      <div class="uploaded-files-list" id="qemu-files-list">
-        <h3>Uploaded QEMU Files</h3>
-        <ul id="uploaded-files-list-qemu"></ul>
-      </div>
-      <div class="uploaded-files-list" id="iou-files-list">
-        <h3>Uploaded IOU Files</h3>
-        <ul id="uploaded-files-list-iou"></ul>
-      </div>
+    <div class="uploaded-files-container">
+    <div class="uploaded-files-list">
+      <h3>Uploaded QEMU Files</h3>
+      <ul id="uploaded-files-list-qemu"></ul>
+    </div>
+    <div class="uploaded-files-list">
+      <h3>Uploaded IOU Files</h3>
+      <ul id="uploaded-files-list-iou"></ul>
     </div>
 </div>
   </div>
@@ -509,71 +508,65 @@
         var fileDropZone = $('#file-drop-zone');
 
         fileDropZone.on('dragover', function() {
-          fileDropZone.addClass('hover');
-          return false;
+        fileDropZone.addClass('hover');
+        return false;
         });
 
         fileDropZone.on('dragleave', function() {
-          fileDropZone.removeClass('hover');
-          return false;
+        fileDropZone.removeClass('hover');
+        return false;
         });
 
         fileDropZone.on('drop', function(e) {
-          e.preventDefault();
-          fileDropZone.removeClass('hover');
+        e.preventDefault();
+        fileDropZone.removeClass('hover');
 
-          var files = e.originalEvent.dataTransfer.files;
-          var formData = new FormData();
+        var files = e.originalEvent.dataTransfer.files;
+        var formData = new FormData();
 
-          for (var i = 0; i < files.length; i++) {
-            formData.append('file', files[i]);
+        for (var i = 0; i < files.length; i++) {
+          formData.append('file', files[i]);
+        }
+
+        $.ajax({
+          url: '/api/upload',
+          type: 'POST',
+          data: formData,
+          processData: false,
+          contentType: false,
+          xhr: function() {
+            var xhr = new window.XMLHttpRequest();
+            xhr.upload.addEventListener('progress', function(e) {
+              if (e.lengthComputable) {
+                var percent = Math.round((e.loaded / e.total) * 100);
+                $('#file-upload-status').text(percent + '% uploaded');
+              }
+            }, false);
+            return xhr;
+          },
+          success: function(data) {
+            console.log(data);
+            getUploadedFiles();
           }
-
-          $.ajax({
-            url: '/api/upload',
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            xhr: function() {
-              var xhr = new window.XMLHttpRequest();
-              xhr.upload.addEventListener('progress', function(e) {
-                if (e.lengthComputable) {
-                  var percent = Math.round((e.loaded / e.total) * 100);
-                  $('#file-upload-status').text(percent + '% uploaded');
-                }
-              }, false);
-              return xhr;
-            },
-            success: function(data) {
-              console.log(data);
-              getUploadedFiles();
-            }
-          });
         });
-      });
+        });
+        });
 
-      function getUploadedFiles() {
+        function getUploadedFiles() {
         $.ajax({
           url: '/api/uploaded_files',
           type: 'GET',
           dataType: 'json',
           success: function(data) {
-            var uploadedFilesContainer = $('.uploaded-files-container');
+            // Display the uploaded files for QEMU
             var qemuFilesList = $('#uploaded-files-list-qemu');
-            var iouFilesList = $('#uploaded-files-list-iou');
-
-            if (data.qemu_files.length > 0 || data.iou_files.length > 0) {
-              uploadedFilesContainer.show(); // Show the uploaded-files-container
-            } else {
-              uploadedFilesContainer.hide(); // Hide the uploaded-files-container
-            }
-
             qemuFilesList.empty();
             data.qemu_files.forEach(function(file) {
               qemuFilesList.append('<li>' + file + '</li>');
             });
 
+            // Display the uploaded files for IOU
+            var iouFilesList = $('#uploaded-files-list-iou');
             iouFilesList.empty();
             data.iou_files.forEach(function(file) {
               iouFilesList.append('<li>' + file + '</li>');
@@ -587,7 +580,6 @@
 
       // Call the getUploadedFiles function initially to display the uploaded files
       getUploadedFiles();
-
 
       $(document).ready(function() {
         refreshData();
