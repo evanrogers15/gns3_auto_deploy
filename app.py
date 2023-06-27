@@ -180,7 +180,7 @@ def viptela_appneta_deploy_full():
     return jsonify({'success': True})
 
 @app.route('/api/tasks/start_versa_appneta_deploy', methods=['PUT'])
-def versa_deploy_full():
+def versa_appneta_deploy_full():
     global running_thread
     # Check if a thread is already running
     if running_thread is not None and running_thread.is_alive():
