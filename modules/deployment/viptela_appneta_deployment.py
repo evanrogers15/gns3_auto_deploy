@@ -301,11 +301,12 @@ def viptela_appneta_deploy():
             temp_file_name = "client_interfaces"
             node_id = vedge_node[0]
             mgmt_network_adapter_index = v + 10
+            appneta_node_name = f"Site-{v:03}-AppNeta-vk35" + network_test_node_id[-4:]
             if v == 3 and deploy_appneta == 'y':
                 network_test_node_id = gns3_create_node(gns3_server_data, new_project_id, appneta_template_id,
                                                         client_deploy_data[f"network_test_client_{v:03}_deploy_data"])
                 gns3_update_nodes(gns3_server_data, new_project_id, network_test_node_id,
-                                  {"name": "Site-003-AppNeta-vk35"})
+                                  {"name": appneta_node_name})
                 gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, mgmt_network_adapter_index, network_test_node_id, 2, 0)
                 gns3_connect_nodes(gns3_server_data, new_project_id, node_id, 3, 0, network_test_node_id, 0, 0)
                 gns3_start_node(gns3_server_data, new_project_id, network_test_node_id)
@@ -313,7 +314,7 @@ def viptela_appneta_deploy():
                 network_test_node_id = gns3_create_node(gns3_server_data, new_project_id, appneta_template_id,
                                                         client_deploy_data[f"network_test_client_{v:03}_deploy_data"])
                 gns3_update_nodes(gns3_server_data, new_project_id, network_test_node_id,
-                                  {"name": "Site-004-AppNeta-vk35"})
+                                  {"name": appneta_node_name})
                 gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, mgmt_network_adapter_index,
                                    network_test_node_id, 2, 0)
                 gns3_connect_nodes(gns3_server_data, new_project_id, node_id, 3, 0, network_test_node_id, 0, 0)

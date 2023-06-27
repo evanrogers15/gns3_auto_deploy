@@ -5,29 +5,6 @@ import time
 import socket
 
 from modules.gns3.gns3_actions import *
-def appneta_cli_commands(server_ip, console_port, node_name, appn_password):
-    tn = telnetlib.Telnet(server_ip, console_port)
-    user = "admin"
-    tn.write(b"\r\n")
-    while True:
-        tn.write(b"\r\n")
-        tn.read_until(b"login:", timeout=1)
-        tn.write(user.encode("ascii") + b"\n")
-        output = tn.read_until(b"Password:", timeout=3)
-        if b"Password:" in output:
-            tn.write(appn_password.encode("ascii") + b"\n")
-            break
-        log_and_update_db(server_ip, 'project_name', "deployment_type", 'Running',
-                              deployment_step,
-                              f"{node_name} not available yet, trying again in 30 seconds")
-        time.sleep(30)
-    tn.read_until(b"admin@vk25")
-    tn.write(b'echo "vk35-r01" > /var/lib/pathview/ma-platform.force\n')
-    tn.write(b'sudo reboot\n')
-    tn.write(appn_password.encode("ascii") + b"\n")
-    tn.read_until(b"$ ")
-    tn.close()
-
 
 def appneta_cli_curl_commands(server_ip, console_port, node_name, appn_password, mp_ip_address, appn_site_key, appn_url):
     tn = telnetlib.Telnet(server_ip, console_port)

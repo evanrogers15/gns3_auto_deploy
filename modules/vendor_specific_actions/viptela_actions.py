@@ -5,7 +5,6 @@ from modules.gns3.gns3_dynamic_data import *
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-#viptela_username = modules.gns3_variables.viptela_username
 # region Functions: Viptela API
 class Authentication:
     def get_jsessionid(self, gns3_server_data):
@@ -37,7 +36,6 @@ class Authentication:
             else:
                 return None
 
-
 def vmanage_create_auth(gns3_server_data):
     vmanage_auth = Authentication()
     jsessionid = vmanage_auth.get_jsessionid(gns3_server_data)
@@ -47,7 +45,6 @@ def vmanage_create_auth(gns3_server_data):
     else:
         vmanage_headers = {'Content-Type': "application/json", 'Cookie': jsessionid}
     return vmanage_headers
-
 
 def vmanage_set_cert_type(gns3_server_data, vmanage_headers):
     server_ips = set(d['vManage API IP'] for d in gns3_server_data)
@@ -66,7 +63,6 @@ def vmanage_set_cert_type(gns3_server_data, vmanage_headers):
             logging.info(f"vManage not available: {str(e)}")
             continue
 
-
 def vmanage_set_cert(gns3_server_data, vmanage_headers, cert):
     server_ips = set(d['vManage API IP'] for d in gns3_server_data)
     for server_ip in server_ips:
@@ -83,7 +79,6 @@ def vmanage_set_cert(gns3_server_data, vmanage_headers, cert):
             logging.info(f"vManage not available: {str(e)}")
             continue
 
-
 def vmanage_install_cert(gns3_server_data, vmanage_headers, cert):
     server_ips = set(d['vManage API IP'] for d in gns3_server_data)
     for server_ip in server_ips:
@@ -98,7 +93,6 @@ def vmanage_install_cert(gns3_server_data, vmanage_headers, cert):
             logging.info(response.content)
             logging.info(f"vManage not available: {str(e)}")
             continue
-
 
 def vmanage_forcesync_rootcert(gns3_server_data, vmanage_headers):
     server_ips = set(d['vManage API IP'] for d in gns3_server_data)
@@ -116,7 +110,6 @@ def vmanage_forcesync_rootcert(gns3_server_data, vmanage_headers):
             logging.info(f"vManage not available: {str(e)}")
             continue
 
-
 def vmanage_sync_rootcertchain(gns3_server_data, vmanage_headers):
     server_ips = set(d['vManage API IP'] for d in gns3_server_data)
     for server_ip in server_ips:
@@ -131,7 +124,6 @@ def vmanage_sync_rootcertchain(gns3_server_data, vmanage_headers):
             logging.info(response.content)
             logging.info(f"vManage not available: {str(e)}")
             continue
-
 
 def vmanage_set_vbond(gns3_server_data, vmanage_headers):
     server_ips = set(d['vManage API IP'] for d in gns3_server_data)
@@ -148,7 +140,6 @@ def vmanage_set_vbond(gns3_server_data, vmanage_headers):
             logging.info(f"vManage not available: {str(e)}")
             continue
 
-
 def vmanage_set_org(gns3_server_data, vmanage_headers):
     server_ips = set(d['vManage API IP'] for d in gns3_server_data)
     for server_ip in server_ips:
@@ -164,7 +155,6 @@ def vmanage_set_org(gns3_server_data, vmanage_headers):
             logging.info(f"vManage not available: {str(e)}")
             continue
 
-
 def vmanage_push_certs(gns3_server_data, vmanage_headers):
     server_ips = set(d['vManage API IP'] for d in gns3_server_data)
     for server_ip in server_ips:
@@ -179,7 +169,6 @@ def vmanage_push_certs(gns3_server_data, vmanage_headers):
         except requests.exceptions.RequestException as e:
             logging.info(f"vManage not available: {str(e)}")
             continue
-
 
 def vmanage_set_device(gns3_server_data, vmanage_headers, vdevice_ip, vdevice_personality):
     server_ips = set(d['vManage API IP'] for d in gns3_server_data)
@@ -199,7 +188,6 @@ def vmanage_set_device(gns3_server_data, vmanage_headers, vdevice_ip, vdevice_pe
         except requests.exceptions.RequestException as e:
             logging.info(f"vManage not available: {str(e)}")
             continue
-
 
 def vmanage_generate_csr(gns3_server_data, vmanage_headers, vdevice_ip, vdevice_personality):
     server_ips = set(d['vManage API IP'] for d in gns3_server_data)
