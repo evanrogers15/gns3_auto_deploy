@@ -275,7 +275,7 @@
 
         <label for="use_existing_project">Utilize Existing Project:</label>
         <select id="use_existing_project" name="use_existing_project">
-          <option value="n">No</option>
+          <option value="n">No (Deletes project if project with the same name exists and creates new)</option>
           <option value="y">Yes (Wipes existing project clean if project with the same name exists)</option>
         </select>
 
@@ -303,7 +303,11 @@
         </select>
 
         <label for="appn_url" id="appn_url_label" style="display: none;">AppNeta URL:</label>
-        <input type="text" id="appn_url" name="appn_url" style="display: none;">
+        <select id="appn_url" name="appn_url">
+          <option value="app-01.pm.appneta.com">app-01.pm.appneta.com</option>
+          <option value="custom">Enter AppNeta URL</option>
+        </select>
+        <input type="text" id="appn_url_input" name="appn_url_input" style="display: none;">
 
         <label for="appn_site_key" id="appn_site_key_label" style="display: none;">AppNeta Site Key:</label>
         <input type="text" id="appn_site_key" name="appn_site_key" style="display: none;">
@@ -413,7 +417,17 @@
         }
         toggleAppnetaInputs();
         deployAppnetaDropdown.addEventListener("change", toggleAppnetaInputs);
-      });
+        });
+
+        document.getElementById("appn_url").addEventListener("change", function() {
+          var selectedValue = this.value;
+
+          if (selectedValue === "custom") {
+            document.getElementById("appn_url_input").style.display = "block";
+          } else {
+            document.getElementById("appn_url_input").style.display = "none";
+          }
+        });
 
         function submitForm() {
           var startDeploymentButton = document.querySelector('input[type="button"]');
@@ -424,12 +438,19 @@
           if (server_ip === "custom") {
             server_ip = document.getElementById("server_ip_input").value;
           }
+
           var server_port = document.getElementById("server_port").value;
+          if (server_port === "custom") {
+            server_port = document.getElementById("server_port_input").value;
+          }
 
           var project_name = document.getElementById("project_name").value;
           if (project_name === "custom") {
             project_name = document.getElementById("project_name_input").value;
           }
+
+          var use_existing_project = document.getElementById("use_existing_project").value;
+
           var mgmt_subnet_ip = document.getElementById("mgmt_subnet_ip").value;
           if (mgmt_subnet_ip === "custom") {
             mgmt_subnet_ip = document.getElementById("mgmt_subnet_ip_input").value;
@@ -439,12 +460,19 @@
           if (site_count === "custom") {
             site_count = document.getElementById("site_count_input").value;
           }
-          var tap_name = document.getElementById("tap_name").value;
 
+          var tap_name = document.getElementById("tap_name").value;
           var deploy_appneta = document.getElementById("deploy_appneta").value;
+
           var appn_url = document.getElementById("appn_url").value;
+          if (appn_url === "custom") {
+            appn_url = document.getElementById("appn_url_input").value;
+          }
+
           var appn_site_key = document.getElementById("appn_site_key").value;
-          var use_existing_project = document.getElementById("use_existing_project").value;
+          if (appn_site_key === "custom") {
+            appn_site_key = document.getElementById("appn_site_key_input").value;
+          }
 
          var data;
           if (deploy_appneta == "n") {
