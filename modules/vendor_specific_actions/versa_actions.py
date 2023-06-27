@@ -115,7 +115,7 @@ def versa_create_device_template(director_ip):
     }
     auth = ("Administrator", "versa123")
 
-    data = {"versanms.sdwan-template-workflow":{"analyticsCluster":"Analytics","bandwidth":"100","licensePeriod":"1","controllers":["Controller-01"],"deviceFirmfactor":6,"deviceType":"full-mesh","diaConfig":{"loadBalance":False},"isStaging":False,"lanInterfaces":[{"interfaceName":"vni-0/2","unitInfo":[{"vlanId":"0","subOrganization":"Versa-Root","vrfName":"Versa-Root-LAN-VR","networkName":"LAN","subUnit":"0","ipv4Static":True,"ipv4Dhcp":False,"ip6Static":False,"ipv6Dhcp":False,"ipv4DhcpServer":False,"dhcpv4Profile":"","dhcpV4Relay":False,"dhcpV4RelayAddress":""}]}],"providerOrg":{"name":"Versa-Root","nextGenFW":False,"statefulFW":False},"redundantPair":{"enable":False},"routingInstances":[],"siteToSiteTunnels":[],"snmp":{},"solutionTier":"Premier-Elite-SDWAN","splitTunnels":[{"vrfName":"Versa-Root-LAN-VR","wanNetworkName":"ISP-1","dia":True,"gateway":False},{"vrfName":"Versa-Root-LAN-VR","wanNetworkName":"ISP-2","dia":True,"gateway":False}],"subOrgs":[],"templateName":"Edge-Template","templateType":"sdwan-post-staging","wanInterfaces":[{"pppoe":False,"interfaceName":"vni-0/0","unitInfo":[{"vlanId":"0","networkName":"ISP-1","routing":{},"subUnit":"0","ipv4Static":True,"ipv4Dhcp":False,"ip6Static":False,"ipv6Dhcp":False,"transportDomains":["Internet"]}]},{"pppoe":False,"interfaceName":"vni-0/1","unitInfo":[{"vlanId":"0","networkName":"ISP-2","routing":{},"subUnit":"0","ipv4Static":True,"ipv4Dhcp":False,"ip6Static":False,"ipv6Dhcp":False,"transportDomains":["Internet"]}]}],"l2Interfaces":[],"stp":"RSTP"}}
+    data = {"versanms.sdwan-template-workflow":{"analyticsCluster":"Analytics","bandwidth":"100","licensePeriod":"1","controllers":["Controller-01"],"deviceFirmfactor":6,"deviceType":"full-mesh","diaConfig":{"loadBalance":False},"isStaging":False,"lanInterfaces":[{"interfaceName":"vni-0/2","unitInfo":[{"vlanId":"0","subOrganization":"Versa-Root","vrfName":"Versa-Root-LAN-VR","networkName":"LAN","subUnit":"0","ipv4Static":True,"ipv4Dhcp":False,"ip6Static":False,"ipv6Dhcp":False,"ipv4DhcpServer":True,"dhcpv4Profile":"DHCP","dhcpV4Relay":False,"dhcpV4RelayAddress":""}]}],"providerOrg":{"name":"Versa-Root","nextGenFW":False,"statefulFW":False},"redundantPair":{"enable":False},"routingInstances":[],"siteToSiteTunnels":[],"snmp":{},"solutionTier":"Premier-Elite-SDWAN","splitTunnels":[{"vrfName":"Versa-Root-LAN-VR","wanNetworkName":"ISP-1","dia":True,"gateway":False},{"vrfName":"Versa-Root-LAN-VR","wanNetworkName":"ISP-2","dia":True,"gateway":False}],"subOrgs":[],"templateName":"Edge-Template","templateType":"sdwan-post-staging","wanInterfaces":[{"pppoe":False,"interfaceName":"vni-0/0","unitInfo":[{"vlanId":"0","networkName":"ISP-1","routing":{},"subUnit":"0","ipv4Static":True,"ipv4Dhcp":False,"ip6Static":False,"ipv6Dhcp":False,"transportDomains":["Internet"]}]},{"pppoe":False,"interfaceName":"vni-0/1","unitInfo":[{"vlanId":"0","networkName":"ISP-2","routing":{},"subUnit":"0","ipv4Static":True,"ipv4Dhcp":False,"ip6Static":False,"ipv6Dhcp":False,"transportDomains":["Internet"]}]}],"l2Interfaces":[],"stp":"RSTP"}}
     try:
         response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
         response.raise_for_status()
@@ -153,6 +153,53 @@ def versa_create_device_group(director_ip):
     except requests.exceptions.RequestException as e:
         print(f"Configuration failed. Error: {str(e)}")
 
+def versa_create_dhcp_profile(director_ip):
+    url = f"https://{director_ip}:9182/api/config/devices/template/Versa-Root-DataStore/config/orgs/org-services/Versa-Root/dhcp/dhcp4-options-profiles"
+    headers = {
+        "Content-Type": "application/json"
+    }
+    auth = ("Administrator", "versa123")
+
+    data = {"dhcp4-options-profile":{"name":"DHCP","domain-name":"demo.local","custom-options":{"custom-dhcp-option":[]}}}
+    try:
+        response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
+        response.raise_for_status()
+        print("Configuration successful.")
+    except requests.exceptions.RequestException as e:
+        print(f"Configuration failed. Error: {str(e)}")
+
+def versa_deploy_device_workflow(director_ip, site_name):
+    url = f"https://{director_ip}:9182/vnms/sdwan/workflow/devices/device/deploy/{site_name}"
+    headers = {
+        "Content-Type": "application/json"
+    }
+    auth = ("Administrator", "versa123")
+
+    data = {}
+    try:
+        response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
+        response.raise_for_status()
+        print("Configuration successful.")
+    except requests.exceptions.RequestException as e:
+        print(f"Configuration failed. Error: {str(e)}")
+
+def versa_create_site_device_workflow(director_ip, vr_1_route_ip, lan_ip, site_name, site_id, device_serial_number, device_country, device_city, isp_1_ip, isp_1_gateway, isp_2_ip, isp_2_gateway, tvi_0_2_ip, tvi_0_3_ip, latitude, longitude):
+    url = f"https://{director_ip}:9182/vnms/sdwan/workflow/devices/device"
+    headers = {
+        "Content-Type": "application/json"
+    }
+    auth = ("Administrator", "versa123")
+    data = {"versanms.sdwan-device-workflow": {"deviceName": site_name, "siteId": site_id, "orgName": "Versa-Root", "serialNumber": device_serial_number, "deviceGroup": "Sites", "licensePeriod": 1, "deploymentType": "physical", "locationInfo": {"country": device_country, "longitude": longitude, "latitude": latitude, "city": device_city}, "postStagingTemplateInfo": {"templateName": "Edge-Template", "templateData": { "device-template-variable": { "template": "Edge-Template", "variable-binding": {"attrs": [{ "name": "{$v_Site_Id__siteSiteID}", "value": site_id, "isAutogeneratable": True}, { "name": "{$v_Chassis_Id__sitesChassisId}", "value": device_serial_number, "isAutogeneratable": True}, { "name": "{$v_Versa-Root-Control-VR_1_Local_address__vrRouterAddress}", "value": vr_1_route_ip, "isAutogeneratable": True, "isOverwritten": False}, { "name": "{$v_longitude__Idlongitude}", "value": longitude, "isAutogeneratable": True}, { "name": "{$v_LAN_IPv4__staticaddress}", "value": lan_ip, "isAutogeneratable": False}, { "name": "{$v_Versa-Root_Site_Name__sitesSiteName}", "value": site_name, "isAutogeneratable": True}, { "name": "{$v_location__IdLocation}", "value": f"{device_city}, {device_country}", "isAutogeneratable": True}, { "name": "{$v_ISP-1_IPv4__staticaddress}", "value": isp_1_ip, "isAutogeneratable": False}, { "name": "{$v_ISP-2_IPv4__staticaddress}", "value": isp_2_ip, "isAutogeneratable": False}, { "name": "{$v_tvi-0-2_-_Unit_0_Static_address__tunnelStaticAddress}", "value": tvi_0_2_ip, "isAutogeneratable": True, "isOverwritten": False}, { "name": "{$v_ISP-2-Transport-VR_IPv4__vrHopAddress}", "value": isp_2_gateway, "isAutogeneratable": False}, { "name": "{$v_ISP-1-Transport-VR_IPv4__vrHopAddress}", "value": isp_1_gateway, "isAutogeneratable": False}, { "name": "{$v_latitude__IdLatitude}", "value": latitude, "isAutogeneratable": True}, { "name": "{$v_Versa-Root_Controller-01_Local_auth_email_identifier__IKELIdentifier}", "value": f"{site_name}@Versa-Root.com", "isAutogeneratable": True}, { "name": "{$v_Versa-Root-Control-VR_1_Router_ID__vrRouteId}", "value": vr_1_route_ip, "isAutogeneratable": True, "isOverwritten": False}, { "name": "{$v_tvi-0-3_-_Unit_0_Static_address__tunnelStaticAddress}", "value": tvi_0_3_ip, "isAutogeneratable": True, "isOverwritten": False}, { "name": "{$v_identification__IdName}", "value": site_name, "isAutogeneratable": True}, ]}}, "variableMetadata": [{ "variable": "{$v_Site_Id__siteSiteID}", "group": "SDWAN", "overlay": False, "type": "INTEGER", "range": { "start": 100, "end": 16383}}, { "variable": "{$v_Chassis_Id__sitesChassisId}", "group": "SDWAN", "overlay": False, "type": "STRING"}, { "variable": "{$v_Versa-Root-Control-VR_1_Local_address__vrRouterAddress}", "group": "Virtual Routers", "overlay": True, "type": "IPV4"}, { "variable": "{$v_longitude__Idlongitude}", "group": "SDWAN", "overlay": False, "type": "FLOAT", "floatRange": { "start": -180, "end": 180}}, { "variable": "{$v_LAN_IPv4__staticaddress}", "group": "Interfaces", "overlay": False, "type": "IPV4_MASK"}, { "variable": "{$v_Versa-Root_Site_Name__sitesSiteName}", "group": "SDWAN", "overlay": False, "type": "STRING"}, { "variable": "{$v_location__IdLocation}", "group": "SDWAN", "overlay": False, "type": "STRING"}, { "variable": "{$v_ISP-1_IPv4__staticaddress}", "group": "Interfaces", "overlay": False, "type": "IPV4_MASK"}, { "variable": "{$v_ISP-2_IPv4__staticaddress}", "group": "Interfaces", "overlay": False, "type": "IPV4_MASK"}, { "variable": "{$v_tvi-0-2_-_Unit_0_Static_address__tunnelStaticAddress}", "group": "Interfaces", "overlay": True, "type": "IPV4_IPV6_MASK"}, { "variable": "{$v_ISP-2-Transport-VR_IPv4__vrHopAddress}", "group": "Virtual Routers", "overlay": False, "type": "IPV4"}, { "variable": "{$v_ISP-1-Transport-VR_IPv4__vrHopAddress}", "group": "Virtual Routers", "overlay": False, "type": "IPV4"}, { "variable": "{$v_latitude__IdLatitude}", "group": "SDWAN", "overlay": False, "type": "FLOAT", "floatRange": { "start": -90, "end": 90}}, { "variable": "{$v_Versa-Root_Controller-01_Local_auth_email_identifier__IKELIdentifier}", "group": "IPSEC", "overlay": False, "type": "STRING"}, { "variable": "{$v_Versa-Root-Control-VR_1_Router_ID__vrRouteId}", "group": "Virtual Routers", "overlay": True, "type": "IPV4"}, { "variable": "{$v_tvi-0-3_-_Unit_0_Static_address__tunnelStaticAddress}", "group": "Interfaces", "overlay": True, "type": "IPV4_IPV6_MASK"}, { "variable": "{$v_identification__IdName}", "group": "SDWAN", "overlay": False, "type": "STRING"}, { "variable": "{$v_Versa-Root_Controller-01_Local_auth_email_key__IKELKey}", "group": "IPSEC", "overlay": False, "type": "STRING"}]}}, "serviceTemplateInfo": {"templateData": {"device-template-variable": [ {"device": site_name, "template": "Versa-Root-DataStore"}]}}}}
+    try:
+        response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
+        response.raise_for_status()
+        print("Configuration successful.")
+    except requests.exceptions.RequestException as e:
+        print(f"Configuration failed. Error: {str(e)}")
+
+# endregion
+
+# region Old
 def versa_create_site_device_workflow_1(director_ip):
     url = f"https://{director_ip}:9182/vnms/sdwan/workflow/devices/device"
     headers = {
@@ -782,35 +829,4 @@ def versa_create_site_device_workflow_old(director_ip, vr_1_local_ip, vr_1_route
         print("Configuration successful.")
     except requests.exceptions.RequestException as e:
         print(f"Configuration failed. Error: {str(e)}")
-
-def versa_deploy_device_workflow(director_ip, site_name):
-    url = f"https://{director_ip}:9182/vnms/sdwan/workflow/devices/device/deploy/{site_name}"
-    headers = {
-        "Content-Type": "application/json"
-    }
-    auth = ("Administrator", "versa123")
-
-    data = {}
-    try:
-        response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
-        response.raise_for_status()
-        print("Configuration successful.")
-    except requests.exceptions.RequestException as e:
-        print(f"Configuration failed. Error: {str(e)}")
-
-def versa_create_site_device_workflow(director_ip, vr_1_route_ip, lan_ip, site_name, site_id, device_serial_number, device_country, device_city, isp_1_ip, isp_1_gateway, isp_2_ip, isp_2_gateway, tvi_0_2_ip, tvi_0_3_ip, latitude, longitude):
-    url = f"https://{director_ip}:9182/vnms/sdwan/workflow/devices/device"
-    headers = {
-        "Content-Type": "application/json"
-    }
-    auth = ("Administrator", "versa123")
-    data = {"versanms.sdwan-device-workflow": {"deviceName": site_name, "siteId": site_id, "orgName": "Versa-Root", "serialNumber": device_serial_number, "deviceGroup": "Sites", "licensePeriod": 1, "deploymentType": "physical", "locationInfo": {"country": device_country, "longitude": longitude, "latitude": latitude, "city": device_city}, "postStagingTemplateInfo": {"templateName": "Edge-Template", "templateData": { "device-template-variable": { "template": "Edge-Template", "variable-binding": {"attrs": [{ "name": "{$v_Site_Id__siteSiteID}", "value": site_id, "isAutogeneratable": True}, { "name": "{$v_Chassis_Id__sitesChassisId}", "value": device_serial_number, "isAutogeneratable": True}, { "name": "{$v_Versa-Root-Control-VR_1_Local_address__vrRouterAddress}", "value": vr_1_route_ip, "isAutogeneratable": True, "isOverwritten": False}, { "name": "{$v_longitude__Idlongitude}", "value": longitude, "isAutogeneratable": True}, { "name": "{$v_LAN_IPv4__staticaddress}", "value": lan_ip, "isAutogeneratable": False}, { "name": "{$v_Versa-Root_Site_Name__sitesSiteName}", "value": site_name, "isAutogeneratable": True}, { "name": "{$v_location__IdLocation}", "value": f"{device_city}, {device_country}", "isAutogeneratable": True}, { "name": "{$v_ISP-1_IPv4__staticaddress}", "value": isp_1_ip, "isAutogeneratable": False}, { "name": "{$v_ISP-2_IPv4__staticaddress}", "value": isp_2_ip, "isAutogeneratable": False}, { "name": "{$v_tvi-0-2_-_Unit_0_Static_address__tunnelStaticAddress}", "value": tvi_0_2_ip, "isAutogeneratable": True, "isOverwritten": False}, { "name": "{$v_ISP-2-Transport-VR_IPv4__vrHopAddress}", "value": isp_2_gateway, "isAutogeneratable": False}, { "name": "{$v_ISP-1-Transport-VR_IPv4__vrHopAddress}", "value": isp_1_gateway, "isAutogeneratable": False}, { "name": "{$v_latitude__IdLatitude}", "value": latitude, "isAutogeneratable": True}, { "name": "{$v_Versa-Root_Controller-01_Local_auth_email_identifier__IKELIdentifier}", "value": f"{site_name}@Versa-Root.com", "isAutogeneratable": True}, { "name": "{$v_Versa-Root-Control-VR_1_Router_ID__vrRouteId}", "value": vr_1_route_ip, "isAutogeneratable": True, "isOverwritten": False}, { "name": "{$v_tvi-0-3_-_Unit_0_Static_address__tunnelStaticAddress}", "value": tvi_0_3_ip, "isAutogeneratable": True, "isOverwritten": False}, { "name": "{$v_identification__IdName}", "value": site_name, "isAutogeneratable": True}, ]}}, "variableMetadata": [{ "variable": "{$v_Site_Id__siteSiteID}", "group": "SDWAN", "overlay": False, "type": "INTEGER", "range": { "start": 100, "end": 16383}}, { "variable": "{$v_Chassis_Id__sitesChassisId}", "group": "SDWAN", "overlay": False, "type": "STRING"}, { "variable": "{$v_Versa-Root-Control-VR_1_Local_address__vrRouterAddress}", "group": "Virtual Routers", "overlay": True, "type": "IPV4"}, { "variable": "{$v_longitude__Idlongitude}", "group": "SDWAN", "overlay": False, "type": "FLOAT", "floatRange": { "start": -180, "end": 180}}, { "variable": "{$v_LAN_IPv4__staticaddress}", "group": "Interfaces", "overlay": False, "type": "IPV4_MASK"}, { "variable": "{$v_Versa-Root_Site_Name__sitesSiteName}", "group": "SDWAN", "overlay": False, "type": "STRING"}, { "variable": "{$v_location__IdLocation}", "group": "SDWAN", "overlay": False, "type": "STRING"}, { "variable": "{$v_ISP-1_IPv4__staticaddress}", "group": "Interfaces", "overlay": False, "type": "IPV4_MASK"}, { "variable": "{$v_ISP-2_IPv4__staticaddress}", "group": "Interfaces", "overlay": False, "type": "IPV4_MASK"}, { "variable": "{$v_tvi-0-2_-_Unit_0_Static_address__tunnelStaticAddress}", "group": "Interfaces", "overlay": True, "type": "IPV4_IPV6_MASK"}, { "variable": "{$v_ISP-2-Transport-VR_IPv4__vrHopAddress}", "group": "Virtual Routers", "overlay": False, "type": "IPV4"}, { "variable": "{$v_ISP-1-Transport-VR_IPv4__vrHopAddress}", "group": "Virtual Routers", "overlay": False, "type": "IPV4"}, { "variable": "{$v_latitude__IdLatitude}", "group": "SDWAN", "overlay": False, "type": "FLOAT", "floatRange": { "start": -90, "end": 90}}, { "variable": "{$v_Versa-Root_Controller-01_Local_auth_email_identifier__IKELIdentifier}", "group": "IPSEC", "overlay": False, "type": "STRING"}, { "variable": "{$v_Versa-Root-Control-VR_1_Router_ID__vrRouteId}", "group": "Virtual Routers", "overlay": True, "type": "IPV4"}, { "variable": "{$v_tvi-0-3_-_Unit_0_Static_address__tunnelStaticAddress}", "group": "Interfaces", "overlay": True, "type": "IPV4_IPV6_MASK"}, { "variable": "{$v_identification__IdName}", "group": "SDWAN", "overlay": False, "type": "STRING"}, { "variable": "{$v_Versa-Root_Controller-01_Local_auth_email_key__IKELKey}", "group": "IPSEC", "overlay": False, "type": "STRING"}]}}, "serviceTemplateInfo": {"templateData": {"device-template-variable": [ {"device": site_name, "template": "Versa-Root-DataStore"}]}}}}
-    try:
-        response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
-        response.raise_for_status()
-        print("Configuration successful.")
-    except requests.exceptions.RequestException as e:
-        print(f"Configuration failed. Error: {str(e)}")
-
 # endregion
-

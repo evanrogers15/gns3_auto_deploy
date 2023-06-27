@@ -8,6 +8,7 @@ from modules.gns3.gns3_actions import *
 
 def appneta_cli_curl_commands(server_ip, server_name, project_name, deployment_type, console_port, node_name, appn_password, mp_ip_address, appn_site_key, appn_url, mp_lan_address=None, mp_lan_gateway=None):
     tn = telnetlib.Telnet(server_ip, console_port)
+    deployment_step = 'AppNeta Monitoring Point Setup'
     user = "admin"
     set_eth2_command = f'curl -k -u admin:525400E00000 -X POST -H "Content-Type: application/json" -d \'{{"name": "eth2", "family": "inet", "method": "static", "address": "{mp_ip_address}", "netmask": "255.255.255.0"}}\' \'https://127.0.0.1/api/v1/interface/\''
     set_hostname_command = f'curl -k -u admin:525400E00000 -X PUT -H "Content-Type: application/json" -H "Accept: application/json" -d \'{{"hostname": "{node_name}"}}\' "https://127.0.0.1/api/v1/hostname/"'
