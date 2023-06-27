@@ -301,10 +301,10 @@ def viptela_appneta_deploy():
             temp_file_name = "client_interfaces"
             node_id = vedge_node[0]
             mgmt_network_adapter_index = v + 10
-            appneta_node_name = f"Site-{v:03}-AppNeta-vk35" + network_test_node_id[-4:]
             if v == 3 and deploy_appneta == 'y':
                 network_test_node_id = gns3_create_node(gns3_server_data, new_project_id, appneta_template_id,
                                                         client_deploy_data[f"network_test_client_{v:03}_deploy_data"])
+                appneta_node_name = f"Site-{v:03}-AppNeta-vk35" + network_test_node_id[-4:]
                 gns3_update_nodes(gns3_server_data, new_project_id, network_test_node_id,
                                   {"name": appneta_node_name})
                 gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, mgmt_network_adapter_index, network_test_node_id, 2, 0)
@@ -313,6 +313,7 @@ def viptela_appneta_deploy():
             elif v == 4 and deploy_appneta == 'y':
                 network_test_node_id = gns3_create_node(gns3_server_data, new_project_id, appneta_template_id,
                                                         client_deploy_data[f"network_test_client_{v:03}_deploy_data"])
+                appneta_node_name = f"Site-{v:03}-AppNeta-vk35" + network_test_node_id[-4:]
                 gns3_update_nodes(gns3_server_data, new_project_id, network_test_node_id,
                                   {"name": appneta_node_name})
                 gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, mgmt_network_adapter_index,
@@ -987,7 +988,6 @@ def viptela_appneta_deploy():
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
                       f"Starting AppNeta Monitoring Point Configuration")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
-    ve = 101
     v = 1
     for server_ip in server_ips:
         temp_node_name = f'AppNeta'
