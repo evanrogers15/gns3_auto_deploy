@@ -32,7 +32,7 @@ def appneta_cli_curl_commands(server_ip, server_port, server_name, project_id, p
     tn.read_until(b"admin@vk25")
     tn.write(b'echo "vk35-r01" > /var/lib/pathview/ma-platform.force\n')
     tn.read_until(b"$ ")
-    if deployment_type == 'versa':
+    if deployment_type == 'test':
         set_eth0_command = f'curl -k -u admin:525400E00000 -X POST -H "Content-Type: application/json" -d \'{{"name": "eth0", "family": "inet", "method": "static", "address": "{mp_lan_address}", "netmask": "255.255.255.0", "gateway": "{mp_lan_gateway}"}}\' \'https://127.0.0.1/api/v1/interface/\''
         tn.write(set_eth0_command.encode('ascii') + b"\n")
         tn.read_until(b'status":')

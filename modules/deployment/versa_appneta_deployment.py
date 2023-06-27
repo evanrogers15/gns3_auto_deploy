@@ -564,7 +564,7 @@ def versa_appneta_deploy():
     versa_create_dhcp_profile(versa_director_mgmt_ip)
     versa_deploy_controller(versa_director_mgmt_ip)
     time.sleep(30)
-    versa_create_device_template(versa_director_mgmt_ip)
+    versa_create_device_template(versa_director_mgmt_ip, versa_mgmt_subnet_gateway_ip)
     time.sleep(5)
     versa_deploy_device_template(versa_director_mgmt_ip)
     time.sleep(5)

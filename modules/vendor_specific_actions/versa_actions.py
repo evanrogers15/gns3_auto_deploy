@@ -108,7 +108,7 @@ def versa_deploy_controller(director_ip):
     except requests.exceptions.RequestException as e:
         print(f"Configuration failed. Error: {str(e)}")
 
-def versa_create_device_template(director_ip):
+def versa_create_device_template(director_ip, mgmt_subnet_gateway):
     url = f"https://{director_ip}:9182/vnms/sdwan/workflow/templates/template"
     headers = {
         "Content-Type": "application/json"
@@ -119,7 +119,7 @@ def versa_create_device_template(director_ip):
         "versanms.sdwan-template-workflow": {
             "analyticsCluster": "Analytics", "bandwidth": "100", "licensePeriod": "1", "controllers": ["Controller-01"],
             "deviceFirmfactor": 6, "deviceType": "full-mesh", "diaConfig": {"loadBalance": False}, "isStaging": False,
-            "SNMPServers": [{"networkName": "MGMT", "server": "0.0.0.0"}],
+            "SNMPServers": [{"networkName": "MGMT", "server": mgmt_subnet_gateway}],
             "lanInterfaces": [{
                                 "interfaceName": "vni-0/2", "unitInfo": [{
                                     "vlanId": "0",
