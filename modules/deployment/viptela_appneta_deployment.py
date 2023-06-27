@@ -293,7 +293,6 @@ def viptela_appneta_deploy():
     client_node_file_path = 'etc/network/interfaces'
     generate_client_interfaces_file(client_filename)
     vedge_deploy_data, client_deploy_data, site_drawing_deploy_data = generate_vedge_deploy_data(vedge_count)
-    client_every = 1
     v = 1
     vedge_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "vEdge")
     if vedge_nodes:
@@ -301,10 +300,11 @@ def viptela_appneta_deploy():
             temp_file_name = "client_interfaces"
             node_id = vedge_node[0]
             mgmt_network_adapter_index = v + 10
+            appneta_temp_name = f"Site-{v:03}-AppNeta-vk35-"
             if v == 3 and deploy_appneta == 'y':
                 network_test_node_id = gns3_create_node(gns3_server_data, new_project_id, appneta_template_id,
                                                         client_deploy_data[f"network_test_client_{v:03}_deploy_data"])
-                appneta_node_name = f"Site-{v:03}-AppNeta-vk35" + network_test_node_id[-4:]
+                appneta_node_name = appneta_temp_name + network_test_node_id[-4:]
                 gns3_update_nodes(gns3_server_data, new_project_id, network_test_node_id,
                                   {"name": appneta_node_name})
                 gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, mgmt_network_adapter_index, network_test_node_id, 2, 0)
@@ -313,7 +313,7 @@ def viptela_appneta_deploy():
             elif v == 4 and deploy_appneta == 'y':
                 network_test_node_id = gns3_create_node(gns3_server_data, new_project_id, appneta_template_id,
                                                         client_deploy_data[f"network_test_client_{v:03}_deploy_data"])
-                appneta_node_name = f"Site-{v:03}-AppNeta-vk35" + network_test_node_id[-4:]
+                appneta_node_name = appneta_temp_name + network_test_node_id[-4:]
                 gns3_update_nodes(gns3_server_data, new_project_id, network_test_node_id,
                                   {"name": appneta_node_name})
                 gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, mgmt_network_adapter_index,
