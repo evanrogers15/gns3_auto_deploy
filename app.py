@@ -19,25 +19,17 @@ running_thread = None
 def main_page():
     return render_template('main.html')
 
-@app.route('/test')
-def test_main_page():
-    return render_template('test_main.html')
-
 @app.route('/deployment/arista')
 def arista_deploy_render():
     return render_template('deployment/create_arista_evpn.html')
 
-@app.route('/deployment/versa')
-def versa_deploy_render():
+@app.route('/deployment/versa-appneta')
+def versa_appneta_deploy_render():
     return render_template('deployment/create_versa_appneta_sdwan.html')
 
 @app.route('/deploymemt/viptela-appneta')
 def viptela_appneta_deploy_render():
     return render_template('deployment/create_viptela_appneta_sdwan.html')
-
-@app.route('/test/viptela-appneta')
-def test_viptela_appneta_deploy_render():
-    return render_template('test/create_viptela_appneta_sdwan.html')
 
 @app.route('/uc-local')
 def index_uc_index():

@@ -537,8 +537,8 @@ def versa_appneta_deploy():
                 tn.read_until(b"root@director:/home/Administrator#")
                 with open(clustersetup_file, 'r') as f:
                     file_contents = f.read()
-                file_contents = file_contents.replace("{{versa_director_ip}}", versa_director_mgmt_ip)
-                file_contents = file_contents.replace("{{versa_analytics_ip}}", versa_analytics_mgmt_ip)
+                file_contents = file_contents.replace("versa_director_ip", versa_director_mgmt_ip)
+                file_contents = file_contents.replace("versa_analytics_ip", versa_analytics_mgmt_ip)
                 remote_file_path = "/opt/versa/vnms/scripts/van-cluster-config/van_cluster_install/clustersetup.conf"
                 command = f"echo \"{file_contents}\" > {remote_file_path}\n"
                 tn.write(command.encode('utf-8'))
@@ -674,105 +674,11 @@ def versa_appneta_deploy():
         log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
                           f"Completed AppNeta MP Configuration")
     # endregion
+
     end_time = time.time()
     total_time = (end_time - start_time) / 60
     deployment_step = 'Complete'
     deployment_status = 'Complete'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Total time for GNS3 Lab Deployment with {flexvnf_count} FlexVNF Devices: {total_time:.2f} minutes")
-    sys.exit()
-    # region Viptela FlexVNF Final Setup
-    deployment_step = 'FlexVNF Final Setup'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
-                      f"Starting FlexVNF deivce onboarding")
-    server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
-    v = 1
-    for server_ip in server_ips:
-        flexvnf_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "FlexVNF")
-        if matching_nodes:
-            for flexvnf_node in flexvnf_nodes:
-                node_id, console_port, aux = flexvnf_node
-                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
-                                  f"Logging in to console for node {node_name}")
-                node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id',
-                                                           'name', node_id)
-                if v == 1:
-                    command = f"sudo /opt/versa/scripts/staging.py -w 0 -n SN101 -c 172.14.5.2 -s 172.14.6.2/30 -g 172.14.6.1 -l SDWAN-Branch@Versa-Root.com -r Controller-01-staging@Versa-Root.com"
-                elif v == 2:
-                    command = f"sudo /opt/versa/scripts/staging.py -w 0 -n SN102 -c 172.14.5.2 -s 172.14.6.6/30 -g 172.14.6.5 -l SDWAN-Branch@Versa-Root.com -r Controller-01-staging@Versa-Root.com"
-                else:
-                    sys.exit()
-                tn = telnetlib.Telnet(server_ip, console_port)
-                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
-                                  f"Starting FlexVNF Onboarding for {node_name[0]} - FlexVNF {v} of {flexvnf_count}")
-                tn.write(b"\r\n")
-                while True:
-                    tn.write(b"\r\n")
-                    if '[admin@versa-flexvnf: ~] $' in output:
-                        break
-                    tn.read_until(b"versa-flexvnf login:", timeout=1)
-                    tn.write(versa_analytics_username.encode("ascii") + b"\n")
-                    tn.read_until(b"Password:", timeout=5)
-                    tn.write(versa_old_password.encode("ascii") + b"\n")
-                    output = tn.read_until(b"[admin@versa-flexvnf: ~] $", timeout=5).decode('ascii')
-                    if '[admin@versa-flexvnf: ~] $' in output:
-                        break
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
-                                      f"{node_name} not available yet, trying again in 30 seconds")
-                    time.sleep(30)
-                tn.write(b"\r\n")
-                tn.read_until(b"[admin@versa-flexvnf: ~] $")
-                tn.write(b'sudo su\r\n')
-                tn.read_until(b"[sudo] password for admin:")
-                tn.write(versa_old_password.encode("ascii") + b"\n")
-                tn.read_until(b"[root@versa-flexvnf: admin]#")
-                tn.write(command.encode('ascii') + b"\r")
-                tn.read_until(b"[root@versa-flexvnf: admin]#")
-                tn.close()
-                v += 1
-
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
-                      f"Completed FlexVNF Certificate setup and deployment into Viptela Environment")
-    # endregion
-    # region Validation
-    client_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "Client")
-    if client_nodes:
-        for client_node in client_nodes:
-            node_id, console_port, aux = client_node
-            gns3_start_node(gns3_server_data, new_project_id, node_id)
-    wait_time = 10  # minutes
-    deployment_step = 'Validation'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Waiting {wait_time} minutes to validate deployment, to resume at {util_resume_time(wait_time)}")
-    time.sleep(wait_time * 60)
-    server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
-    for server_ip in server_ips:
-        temp_node_name = f'Client_001'
-        flexvnf_nodes = f'FlexVNF-'
-        matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
-        client_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, flexvnf_nodes)
-        client_ip = 101
-        successful_site = 0
-        i = 1
-        if matching_nodes:
-            node_id, console_port, aux = matching_nodes[0]
-            node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id', 'name', node_id)
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting deployment validation on node {node_name[0]}")
-            tn = telnetlib.Telnet(server_ip, console_port)
-            tn.write(b"\r\n")
-            tn.read_until(b"#")
-            for client_node in client_nodes:
-                ping_command = f"ping -c 2 -W 1 172.16.{client_ip}.1"
-                tn.write(ping_command.encode('ascii') + b"\r")
-                output = tn.read_until(b"loss", timeout=5).decode('ascii')
-                if "100% packet" in output:
-                    client_node_name = \
-                    gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id', 'name', client_nodes[i][0])[0]
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Packet Loss to Site {client_ip}")
-                else:
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,f"Successfully connected to Site {client_ip}")
-                    successful_site += 1
-                client_ip += 1
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Successful connection to {successful_site} of {len(client_nodes)} Sites")
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed deployment validation for project {project_name}")
-    # endregion
     # endregion
 
