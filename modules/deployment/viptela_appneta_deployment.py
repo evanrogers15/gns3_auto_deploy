@@ -64,8 +64,8 @@ def viptela_appneta_deploy():
         use_tap = 1
     if appn_url:
         deploy_appneta = 'y'
+        required_qemu_images.add("pathview-amd64-14.0.0.54253.qcow2")
 
-    #mgmt_subnet_ip = '.'.join(mgmt_subnet_ip.split('/')[0].split('.')[:3])
     gns3_server_data = [{"GNS3 Server": server_ip, "Server Name": server_name, "Server Port": server_port,
                     "vManage API IP": vmanage_api_ip, "Project Name": project_name, "Project ID": new_project_id,
                     "Tap Name": tap_name,
