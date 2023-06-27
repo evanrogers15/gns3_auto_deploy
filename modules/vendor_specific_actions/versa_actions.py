@@ -2,7 +2,7 @@ from modules.gns3.gns3_actions import *
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 # region Functions: Viptela API
-def versa_configure_analytics_cluster(director_ip):
+def versa_configure_analytics_cluster(director_ip, analytics_ip):
     url = f"https://{director_ip}:9182/api/config/nms/provider"
     headers = {
         "Content-Type": "application/json"
@@ -15,7 +15,7 @@ def versa_configure_analytics_cluster(director_ip):
             "connector-config": {
                 "port": "8443",
                 "ip-address": [
-                    "172.14.2.6"
+                    analytics_ip
                 ]
             },
             "log-collector-config": {
@@ -62,6 +62,7 @@ def versa_create_overlay_prefix(director_ip):
         print("Configuration successful.")
     except requests.exceptions.RequestException as e:
         print(f"Configuration failed. Error: {str(e)}")
+
 def versa_create_overlay_route(director_ip):
     url = f"https://{director_ip}:9182/api/config/nms/routing-options/static"
     headers = {
@@ -77,14 +78,14 @@ def versa_create_overlay_route(director_ip):
     except requests.exceptions.RequestException as e:
         print(f"Configuration failed. Error: {str(e)}")
     
-def versa_create_controller_workflow(director_ip):
+def versa_create_controller_workflow(director_ip, controller_ip):
     url = f"https://{director_ip}:9182/vnms/sdwan/workflow/controllers/controller"
     headers = {
         "Content-Type": "application/json"
     }
     auth = ("Administrator", "versa123")
 
-    data = { "versanms.sdwan-controller-workflow": { "controllerName": "Controller-01", "siteId": 1, "orgName": "Versa-Root", "resourceType": "Baremetal", "stagingController": True, "postStagingController": True, "baremetalController": { "serverIP": "172.14.2.10", "controllerInterface": { "interfaceName": "vni-0/1", "unitInfoList": [ { "networkName": "Control-Network", "ipv4address": [ "172.14.4.10/24" ], "ipv4gateway": "", "ipv6gateway": "", "ipv4dhcp": False, "ipv6dhcp": False, "vlanId": 0, "wanStaging": True, "poolSize": 256 } ] }, "wanInterfaces": [ { "interfaceName": "vni-0/2", "unitInfoList": [ { "networkName": "ISP-1", "ipv4address": [ "172.14.5.2/30" ], "ipv4gateway": "172.14.5.1", "ipv4dhcp": False, "ipv6dhcp": False, "vlanId": 0, "wanStaging": True, "poolSize": 128, "transportDomainList": [ "Internet" ] } ] }, { "interfaceName": "vni-0/3", "unitInfoList": [ { "networkName": "ISP-2", "ipv4address": [ "172.14.5.6/30" ], "ipv4gateway": "172.14.5.5", "ipv4dhcp": False, "ipv6dhcp": False, "vlanId": 0, "wanStaging": True, "poolSize": 128, "transportDomainList": [ "Internet" ] } ] } ] }, "locationInfo": { "state": "CA", "country": "USA", "city": "San Jose", "longitude": -121.885252, "latitude": 37.33874 }, "analyticsCluster": "Analytics" }}
+    data = { "versanms.sdwan-controller-workflow": { "controllerName": "Controller-01", "siteId": 1, "orgName": "Versa-Root", "resourceType": "Baremetal", "stagingController": True, "postStagingController": True, "baremetalController": { "serverIP": controller_ip, "controllerInterface": { "interfaceName": "vni-0/1", "unitInfoList": [ { "networkName": "Control-Network", "ipv4address": [ "172.14.4.10/24" ], "ipv4gateway": "", "ipv6gateway": "", "ipv4dhcp": False, "ipv6dhcp": False, "vlanId": 0, "wanStaging": True, "poolSize": 256 } ] }, "wanInterfaces": [ { "interfaceName": "vni-0/2", "unitInfoList": [ { "networkName": "ISP-1", "ipv4address": [ "172.14.5.2/30" ], "ipv4gateway": "172.14.5.1", "ipv4dhcp": False, "ipv6dhcp": False, "vlanId": 0, "wanStaging": True, "poolSize": 128, "transportDomainList": [ "Internet" ] } ] }, { "interfaceName": "vni-0/3", "unitInfoList": [ { "networkName": "ISP-2", "ipv4address": [ "172.14.5.6/30" ], "ipv4gateway": "172.14.5.5", "ipv4dhcp": False, "ipv6dhcp": False, "vlanId": 0, "wanStaging": True, "poolSize": 128, "transportDomainList": [ "Internet" ] } ] } ] }, "locationInfo": { "state": "CA", "country": "USA", "city": "San Jose", "longitude": -121.885252, "latitude": 37.33874 }, "analyticsCluster": "Analytics" }}
     try:
         response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
         response.raise_for_status()

@@ -55,7 +55,6 @@ def vmanage_set_cert_type(vmanage_api_ip, vmanage_headers):
     except requests.exceptions.RequestException as e:
         logging.info(response.content)
         logging.info(f"vManage not available: {str(e)}")
-        
 
 def vmanage_set_cert(vmanage_api_ip, vmanage_headers, cert):
     url = f"https://{vmanage_api_ip}/dataservice/settings/configuration/certificate/enterpriserootca"
@@ -69,7 +68,6 @@ def vmanage_set_cert(vmanage_api_ip, vmanage_headers, cert):
     except requests.exceptions.RequestException as e:
         logging.info(response.content)
         logging.info(f"vManage not available: {str(e)}")
-            
 
 def vmanage_install_cert(vmanage_api_ip, vmanage_headers, cert):
     url = f"https://{vmanage_api_ip}/dataservice/certificate/install/signedCert"
@@ -82,7 +80,6 @@ def vmanage_install_cert(vmanage_api_ip, vmanage_headers, cert):
     except requests.exceptions.RequestException as e:
         logging.info(response.content)
         logging.info(f"vManage not available: {str(e)}")
-            
 
 def vmanage_forcesync_rootcert(vmanage_api_ip, vmanage_headers):
     url = f"https://{vmanage_api_ip}/dataservice/certificate/forcesync/rootCert"
@@ -96,7 +93,6 @@ def vmanage_forcesync_rootcert(vmanage_api_ip, vmanage_headers):
     except requests.exceptions.RequestException as e:
         logging.info(response.content)
         logging.info(f"vManage not available: {str(e)}")
-            
 
 def vmanage_sync_rootcertchain(vmanage_api_ip, vmanage_headers):
     url = f"https://{vmanage_api_ip}/dataservice/system/device/sync/rootcertchain"
@@ -109,7 +105,6 @@ def vmanage_sync_rootcertchain(vmanage_api_ip, vmanage_headers):
     except requests.exceptions.RequestException as e:
         logging.info(response.content)
         logging.info(f"vManage not available: {str(e)}")
-            
 
 def vmanage_set_vbond(vmanage_api_ip, vmanage_headers):
     url = f"https://{vmanage_api_ip}/dataservice/settings/configuration/device"
@@ -122,7 +117,6 @@ def vmanage_set_vbond(vmanage_api_ip, vmanage_headers):
         return response
     except requests.exceptions.RequestException as e:
         logging.info(f"vManage not available: {str(e)}")
-            
 
 def vmanage_set_org(vmanage_api_ip, vmanage_headers):
     url = f"https://{vmanage_api_ip}/dataservice/settings/configuration/organization"
@@ -135,7 +129,6 @@ def vmanage_set_org(vmanage_api_ip, vmanage_headers):
         return response
     except requests.exceptions.RequestException as e:
         logging.info(f"vManage not available: {str(e)}")
-            
 
 def vmanage_push_certs(vmanage_api_ip, vmanage_headers):
     url = f"https://{vmanage_api_ip}/dataservice/certificate/vedge/list?action=push"
@@ -148,7 +141,6 @@ def vmanage_push_certs(vmanage_api_ip, vmanage_headers):
         return response
     except requests.exceptions.RequestException as e:
         logging.info(f"vManage not available: {str(e)}")
-            
 
 def vmanage_set_device(vmanage_api_ip, vmanage_headers, vdevice_ip, vdevice_personality):
     url = f"https://{vmanage_api_ip}/dataservice/system/device"

@@ -5,7 +5,6 @@ import threading
 from werkzeug.utils import secure_filename
 
 from modules.deployment.arista_evpn_deploy import *
-from modules.deployment.viptela_deployment import *
 from modules.deployment.viptela_appneta_deployment import *
 from modules.gns3.gns3_actions_old import *
 from modules.use_case.use_cases import *
@@ -19,10 +18,6 @@ running_thread = None
 def main_page():
     return render_template('main.html')
 
-@app.route('/demo')
-def demo_main_page():
-    return render_template('demo_main.html')
-
 @app.route('/test')
 def test_main_page():
     return render_template('test_main.html')
@@ -34,10 +29,6 @@ def arista_deploy_render():
 @app.route('/deployment/versa')
 def versa_deploy_render():
     return render_template('deployment/create_versa_sdwan.html')
-
-@app.route('/deployment/viptela')
-def viptela_deploy_render():
-    return render_template('deployment/create_viptela_sdwan.html')
 
 @app.route('/deploymemt/viptela-appneta')
 def viptela_appneta_deploy_render():
@@ -105,7 +96,6 @@ def update_config():
         c.execute("INSERT INTO config (server_ip, server_port, server_name, project_list, project_names, project_status, project_name, project_id, vmanage_api_ip, site_count, tap_name, mgmt_subnet_ip, appn_url, appn_site_key) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (server_ip, server_port, server_name, json.dumps(project_ids), json.dumps(project_names), json.dumps(project_status), new_project_name, project_id, vmanage_api_ip, site_count, tap_name, mgmt_subnet_ip, appn_url, appn_site_key))
     else:
         c.execute("INSERT INTO config (server_ip, server_port, server_name, project_list, project_names, project_status, project_name, project_id, vmanage_api_ip, site_count, tap_name, mgmt_subnet_ip) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (server_ip, server_port, server_name, json.dumps(project_ids), json.dumps(project_names), json.dumps(project_status), new_project_name, project_id, vmanage_api_ip, site_count, tap_name, mgmt_subnet_ip))
-
     conn.commit()
     conn.close()
     return jsonify({'success': True})

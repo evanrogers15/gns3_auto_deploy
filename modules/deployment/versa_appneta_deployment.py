@@ -1,11 +1,12 @@
-import telnetlib
-import time
-import re
 import sys
-from modules.vendor_specific_actions.viptela_actions import *
+from modules.vendor_specific_actions.versa_actions import *
 from modules.gns3.gns3_dynamic_data import *
 from modules.gns3.gns3_query import *
+from modules.gns3.gns3_variables import *
+from modules.vendor_specific_actions.appneta_actions import *
 
+import telnetlib
+import time
 
 def versa_deploy():
     # region Variables
@@ -34,7 +35,6 @@ def versa_deploy():
     cloud_node_deploy_data = {"x": 25, "y": -554, "name": "MGMT-Cloud-TAP", "node_type": "cloud",
                               "compute_id": "local", "symbol": ":/symbols/cloud.svg"}
     required_qemu_images = {"versa-director-c19c43c-21.2.3.qcow2", "versa-analytics-67ff6c7-21.2.3.qcow2", "versa-flexvnf-67ff6c7-21.2.3.qcow2"}
-    required_iou_images = {"L3-ADVENTERPRISEK9-M-15.5-2T.bin"}
     required_image_response = 201
     # endregion
     conn = sqlite3.connect(db_path)
@@ -56,10 +56,20 @@ def versa_deploy():
         flexvnf_count = row[9]
         tap_name = row[10]
         vmanage_api_ip = row[11]
+        mgmt_subnet_ip = row[12]
+        appn_url = row[13]
+        appn_site_key = row[14]
     if tap_name == 'none':
         use_tap = 0
     else:
         use_tap = 1
+    if appn_url:
+        deploy_appneta = 'y'
+        required_qemu_images.add("pathview-amd64-14.0.0.54253.qcow2")
+    versa_mgmt_subnet_gateway_ip = mgmt_subnet_ip + ".1"
+    versa_director_mgmt_ip = mgmt_subnet_ip + ".2"
+    versa_analytics_mgmt_ip = mgmt_subnet_ip + ".6"
+    versa_controller_mgmt_ip = mgmt_subnet_ip + ".10"
 
     gns3_server_data = [{"GNS3 Server": server_ip, "Server Name": server_name, "Server Port": server_port,
                     "vManage API IP": vmanage_api_ip, "Project Name": project_name, "Project ID": new_project_id,
@@ -84,12 +94,6 @@ def versa_deploy():
             log_and_update_db(server_name, project_name, deployment_type, 'Failed', 'Image Validation',
                               f"{image} image not on GNS3 Server")
             return 404
-    for image in required_iou_images:
-        response_code = gns3_query_get_image(server_ip, server_port, 'iou', image)
-        if response_code != 201:
-            log_and_update_db(server_name, project_name, deployment_type, 'Failed', 'Image Validation',
-                              f"{image} image not on GNS3 Server")
-            return 404
     gns3_actions_versa_remove_templates(gns3_server_data)
     gns3_set_project(gns3_server_data, new_project_id)
     # endregion
@@ -99,7 +103,10 @@ def versa_deploy():
     versa_director_template_id = gns3_create_template(gns3_server_data, versa_director_template_data)
     versa_analytics_template_id = gns3_create_template(gns3_server_data, versa_analytics_template_data)
     versa_flexvnf_template_id = gns3_create_template(gns3_server_data, versa_flexvnf_template_data)
-    cisco_iou_template_id = gns3_create_template(gns3_server_data, cisco_l3_router_template_data)
+    if deploy_appneta == 'y':
+        appneta_template_id = gns3_create_template(gns3_server_data, appneta_mp_template_data)
+    openvswitch_isp_template_id = gns3_create_template(gns3_server_data, openvswitch_isp_template_data)
+    # cisco_iou_template_id = gns3_create_template(gns3_server_data, cisco_l3_router_template_data)
     network_test_tool_template_id = gns3_create_template(gns3_server_data, network_test_tool_template_data)
     openvswitch_template_id = gns3_create_template(gns3_server_data, openvswitch_cloud_template_data)
     temp_hub_data = generate_temp_hub_data(mgmt_main_switchport_count, mgmt_main_hub_template_name)
@@ -111,8 +118,8 @@ def versa_deploy():
     # endregion
     #  region Setup Dynamic Networking
     flexvnf_deploy_data, client_deploy_data, site_drawing_deploy_data = versa_generate_flexvnf_deploy_data(flexvnf_count)
-    isp_deploy_data = generate_isp_deploy_data(isp_switch_count)
     mgmt_switch_deploy_data = generate_mgmt_switch_deploy_data(mgmt_switch_count)
+
     # endregion
     # region Deploy GNS3 Nodes
     deployment_step = 'Deploy GNS3 Nodes'
@@ -122,24 +129,14 @@ def versa_deploy():
     versa_analytics_node_id = gns3_create_node(gns3_server_data, new_project_id, versa_analytics_template_id, versa_analytics_deploy_data)
     versa_controller_node_id = gns3_create_node(gns3_server_data, new_project_id, versa_flexvnf_template_id,
                                                versa_controller_deploy_data)
-    isp_router_node_id = gns3_create_node(gns3_server_data, new_project_id, cisco_iou_template_id,
-                                          isp_router_deploy_data)
+    isp_ovs_node_id = gns3_create_node(gns3_server_data, new_project_id, openvswitch_isp_template_id, openvswitch_isp_deploy_data)
     mgmt_main_switch_node_id = gns3_create_node(gns3_server_data, new_project_id, regular_ethernet_hub_template_id,
                                                 main_mgmt_switch_deploy_data)
     versa_control_switch_node_id = gns3_create_node(gns3_server_data, new_project_id, regular_ethernet_hub_template_id,
                                                 versa_control_switch_deploy_data)
     nat_node_id = gns3_create_cloud_node(gns3_server_data, new_project_id, nat_node_deploy_data)
     cloud_node_id = gns3_create_cloud_node(gns3_server_data, new_project_id, cloud_node_deploy_data)
-    for i in range(1, isp_switch_count + 1):
-        node_name = f"ISP_{i:03}"
-        matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, node_name)
-        if not matching_nodes:
-            node_id, node_name = gns3_create_node_multi_return(gns3_server_data, new_project_id,
-                                                               openvswitch_template_id,
-                                                               isp_deploy_data[f"isp_{i:03}_deploy_data"])
-            isp_switch_nodes.append({'node_name': node_name, 'node_id': node_id})
-        else:
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Node {node_name} already exists in project {project_name}")
+
     for i in range(1, mgmt_switch_count + 1):
         node_name = f"MGMT_switch_{i:03}"
         matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, node_name)
@@ -151,7 +148,7 @@ def versa_deploy():
         else:
             log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Node {node_name} already exists in project {project_name}")
     for i in range(1, flexvnf_count + 1):
-        node_name = f"FlexVNF_{i:03}"
+        node_name = f"FlexVNF-{i:03}"
         matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, node_name)
         if not matching_nodes:
             node_id, node_name = gns3_create_node_multi_return(gns3_server_data, new_project_id, versa_flexvnf_template_id,
@@ -162,17 +159,9 @@ def versa_deploy():
     gns3_update_nodes(gns3_server_data, new_project_id, versa_director_node_id, versa_director_deploy_data)
     gns3_update_nodes(gns3_server_data, new_project_id, versa_analytics_node_id, versa_analytics_deploy_data)
     gns3_update_nodes(gns3_server_data, new_project_id, versa_controller_node_id, versa_controller_deploy_data)
-    gns3_update_nodes(gns3_server_data, new_project_id, isp_router_node_id, isp_router_deploy_data)
+    gns3_update_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, openvswitch_isp_deploy_data)
     gns3_update_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, main_mgmt_switch_deploy_data)
     gns3_update_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, deploy_data_z)
-
-    for i in range(1, isp_switch_count + 1):
-        matching_node = isp_switch_nodes[i - 1]
-        if matching_node:
-            node_id = matching_node['node_id']
-            gns3_update_nodes(gns3_server_data, new_project_id, node_id, isp_deploy_data[f"isp_{i:03}_deploy_data"])
-        else:
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"No nodes found in project {project_name} for isp_switch_{i}")
 
     for i in range(1, mgmt_switch_count + 1):
         matching_node = mgmt_switch_nodes[i - 1]
@@ -200,10 +189,9 @@ def versa_deploy():
     for port in matching_nodes[0]:
         if port["short_name"] == tap_name:
             mgmt_tap_interface = port['port_number']
-    cloud_isp_node_id = isp_switch_nodes[0]['node_id']
-    gns3_connect_nodes(gns3_server_data, new_project_id, nat_node_id, 0, 0, isp_router_node_id, 0, 0)
-    gns3_connect_nodes(gns3_server_data, new_project_id, cloud_isp_node_id, 1, 0, versa_controller_node_id, 2, 0)
-    gns3_connect_nodes(gns3_server_data, new_project_id, cloud_isp_node_id, 2, 0, versa_controller_node_id, 3, 0)
+    gns3_connect_nodes(gns3_server_data, new_project_id, nat_node_id, 0, 0, isp_ovs_node_id, 0, 0)
+    gns3_connect_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, 1, 0, versa_controller_node_id, 3, 0)
+    gns3_connect_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, 2, 0, versa_controller_node_id, 4, 0)
     if use_tap == 1:
         gns3_connect_nodes(gns3_server_data, new_project_id, cloud_node_id, 0, mgmt_tap_interface,
                            mgmt_main_switch_node_id, 0, 0)
@@ -212,15 +200,11 @@ def versa_deploy():
     gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, 3, versa_controller_node_id, 0, 0)
     gns3_connect_nodes(gns3_server_data, new_project_id, versa_control_switch_node_id, 0, 0, versa_director_node_id, 1, 0)
     gns3_connect_nodes(gns3_server_data, new_project_id, versa_control_switch_node_id, 0, 1, versa_analytics_node_id, 1, 0)
-    gns3_connect_nodes(gns3_server_data, new_project_id, versa_control_switch_node_id, 0, 2, versa_controller_node_id, 1, 0)
+    gns3_connect_nodes(gns3_server_data, new_project_id, versa_control_switch_node_id, 0, 2, versa_controller_node_id, 2, 0)
     mgmt_switch_interface = 1
     switch_adapter_a = 5
     switch_adapter_b = (switchport_count // 2) + 4
-    cloud_isp_node_index = 0
     mgmt_switch_node_index = 0
-    for i in range(isp_switch_count):
-        cloud_isp_node_id = isp_switch_nodes[i]['node_id']
-        gns3_connect_nodes(gns3_server_data, new_project_id, cloud_isp_node_id, 0, 0, isp_router_node_id, 0, i + 1)
     for i in range(mgmt_switch_count):
         first_flexvnf_index = i * 30
         last_flexvnf_index = min((i + 1) * 30, flexvnf_count)
@@ -232,16 +216,14 @@ def versa_deploy():
             flexvnf_node_id = flexvnf_info[j]['node_id']
             gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_switch_node_id, 0, mgmt_switch_interface,
                                flexvnf_node_id, 0, 0)
-            cloud_isp_node_id = isp_switch_nodes[cloud_isp_node_index]['node_id']
-            gns3_connect_nodes(gns3_server_data, new_project_id, cloud_isp_node_id, switch_adapter_a, 0, flexvnf_node_id,
+            gns3_connect_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, switch_adapter_a, 0, flexvnf_node_id,
                                1, 0)
-            gns3_connect_nodes(gns3_server_data, new_project_id, cloud_isp_node_id, switch_adapter_b, 0, flexvnf_node_id,
+            gns3_connect_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, switch_adapter_b, 0, flexvnf_node_id,
                                2, 0)
             switch_adapter_a += 1
             switch_adapter_b += 1
             mgmt_switch_interface += 1
             if (j + 1) % 44 == 0:
-                cloud_isp_node_index += 1
                 switch_adapter_a = 5
                 switch_adapter_b = (switchport_count // 2) + 4
                 mgmt_switch_interface = 1
@@ -268,9 +250,9 @@ def versa_deploy():
             flexvnf_isp_1_base_subnet = f'172.14.{starting_subnet}.0/24'
             flexvnf_isp_2_base_subnet = f'172.14.{starting_subnet + 1}.0/24'
             temp_file_name = f'cloud_isp_switch_{switch_index}_interfaces'
-            isp_router_objects = generate_network_objects(isp_router_base_subnet, 30)
-            isp_switch_1_objects = generate_network_objects(flexvnf_isp_1_base_subnet, 30, flexvnf_index)
-            isp_switch_2_objects = generate_network_objects(flexvnf_isp_2_base_subnet, 30, flexvnf_index)
+            isp_router_objects = generate_versa_network_objects(isp_router_base_subnet, 30)
+            isp_switch_1_objects = generate_versa_network_objects(flexvnf_isp_1_base_subnet, 30, flexvnf_index)
+            isp_switch_2_objects = generate_versa_network_objects(flexvnf_isp_2_base_subnet, 30, flexvnf_index)
             isp_1_overall.append(isp_switch_1_objects)
             isp_2_overall.append(isp_switch_2_objects)
             starting_subnet += 2
@@ -301,14 +283,34 @@ def versa_deploy():
     client_node_file_path = 'etc/network/interfaces'
     generate_client_interfaces_file(client_filename)
     flexvnf_deploy_data, client_deploy_data, site_drawing_deploy_data = versa_generate_flexvnf_deploy_data(flexvnf_count)
-    client_every = 1
     v = 1
     flexvnf_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "FlexVNF")
     if flexvnf_nodes:
         for flexvnf_node in flexvnf_nodes:
             temp_file_name = "client_interfaces"
             node_id = flexvnf_node[0]
-            if v % client_every == 0:
+            mgmt_network_adapter_index = v + 10
+            appneta_temp_name = f"Site-{v:03}-AppNeta-vk35-"
+            if v == 3 and deploy_appneta == 'y':
+                network_test_node_id = gns3_create_node(gns3_server_data, new_project_id, appneta_template_id,
+                                                        client_deploy_data[f"network_test_client_{v:03}_deploy_data"])
+                appneta_node_name = appneta_temp_name + network_test_node_id[-4:]
+                gns3_update_nodes(gns3_server_data, new_project_id, network_test_node_id,
+                                  {"name": appneta_node_name})
+                gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, mgmt_network_adapter_index, network_test_node_id, 2, 0)
+                gns3_connect_nodes(gns3_server_data, new_project_id, node_id, 3, 0, network_test_node_id, 0, 0)
+                gns3_start_node(gns3_server_data, new_project_id, network_test_node_id)
+            elif v == 4 and deploy_appneta == 'y':
+                network_test_node_id = gns3_create_node(gns3_server_data, new_project_id, appneta_template_id,
+                                                        client_deploy_data[f"network_test_client_{v:03}_deploy_data"])
+                appneta_node_name = appneta_temp_name + network_test_node_id[-4:]
+                gns3_update_nodes(gns3_server_data, new_project_id, network_test_node_id,
+                                  {"name": appneta_node_name})
+                gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, mgmt_network_adapter_index,
+                                   network_test_node_id, 2, 0)
+                gns3_connect_nodes(gns3_server_data, new_project_id, node_id, 3, 0, network_test_node_id, 0, 0)
+                gns3_start_node(gns3_server_data, new_project_id, network_test_node_id)
+            else:
                 network_test_node_id = gns3_create_node(gns3_server_data, new_project_id, network_test_tool_template_id,
                                                         client_deploy_data[f"network_test_client_{v:03}_deploy_data"])
                 gns3_update_nodes(gns3_server_data, new_project_id, network_test_node_id,
@@ -321,7 +323,6 @@ def versa_deploy():
     # region Versa Director Setup Part 1
     deployment_step = 'Starting Nodes'
     wait_time = 2  # minutes
-
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Waiting {wait_time} mins for devices to come up, to resume at {util_resume_time(wait_time)}")
     time.sleep(wait_time * 60)
     deployment_step = 'Versa Director device Setup'
@@ -360,13 +361,13 @@ def versa_deploy():
                 tn.read_until(b"Enter interface name [eg. eth0]:")
                 tn.write(b'eth0\n')
                 tn.read_until(b"Enter IP Address:")
-                tn.write(b'172.14.2.2\n')
+                tn.write(versa_director_mgmt_ip.encode('ascii') + b"\n")
                 tn.read_until(b"Enter Netmask Address:")
                 tn.write(b'255.255.255.0\n')
                 tn.read_until(b"Configure Gateway Address? (y/n)?")
                 tn.write(b'y\n')
                 tn.read_until(b"Enter Gateway Address:")
-                tn.write(b'172.14.2.1\n')
+                tn.write(versa_mgmt_subnet_gateway_ip.encode('ascii') + b"\n")
                 tn.read_until(b"Configure another interface? (y/n)?")
                 tn.write(b'y\n')
                 tn.read_until(b"Enter interface name [eg. eth0]:")
@@ -375,10 +376,6 @@ def versa_deploy():
                 tn.write(b'172.14.4.2\n')
                 tn.read_until(b"Enter Netmask Address:")
                 tn.write(b'255.255.255.0\n')
-                #tn.read_until(b"Configure Gateway Address? (y/n)?")
-                tn.write(b'n\n')
-                #tn.read_until(b"Enter Gateway Address:")
-                #tn.write(b'172.16.4.1\n')
                 tn.read_until(b"Configure another interface? (y/n)?")
                 tn.write(b'n\n')
                 tn.read_until(b"Configure North-Bound interface (If not configured, default 0.0.0.0 will be accepted) (y/n)?")
@@ -397,24 +394,30 @@ def versa_deploy():
                 tn.write(b'n\n')
                 tn.read_until(b"Edit list of hosts allowed to access Versa GUI? (y/n)?")
                 tn.write(b'n\n')
-                #tn.read_until(b"Press ENTER to continue")
-                #tn.write(b"\r\n")
-                #tn.read_until(b"director login:")
-                #tn.write(versa_director_username.encode("ascii") + b"\n")
-                #tn.read_until(b"Password:")
-                #tn.write(versa_old_password.encode("ascii") + b"\n")
-                #tn.read_until(b"[Administrator@director: ~] $")
-                sys.exit()
+                tn.read_until(b"Press ENTER to continue")
+                tn.write(b"\r\n")
+                tn.read_until(b"director login:")
+                tn.write(versa_director_username.encode("ascii") + b"\n")
+                tn.read_until(b"Password:")
+                tn.write(versa_old_password.encode("ascii") + b"\n")
+                tn.read_until(b"[Administrator@director: ~] $")
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed Director Device Setup Part 1")
     # endregion
     # region Versa Analytics Device Setup
     deployment_step = 'Versa Analytics Setup'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting Versa Analytics Device Setup")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
-    remote_file_name = '/etc/network/interfaces'
-    abs_path = os.path.abspath(__file__)
-    configs_path = os.path.join(os.path.dirname(abs_path), 'configs/versa')
-    local_file_name = os.path.join(configs_path, 'versa_interface_template')
+    versa_interfaces = f"""auto eth0
+    iface eth0 inet static
+    address {versa_analytics_mgmt_ip}
+    netmask 255.255.255.0
+    gateway {versa_mgmt_subnet_gateway_ip}
+    up echo nameserver 192.168.122.1 > /etc/resolv.conf
+    auto eth1
+    iface eth1 inet static
+    address 172.14.4.6
+    netmask 255.255.255.0
+    """
     for server_ip in server_ips:
         temp_node_name = f'Analytics'
         matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
@@ -442,33 +445,24 @@ def versa_deploy():
                 tn.read_until(b"[sudo] password for admin:")
                 tn.write(versa_old_password.encode("ascii") + b"\n")
                 tn.read_until(b"[root@versa-analytics: admin]#")
-                with open(local_file_name, 'r') as local_file:
-                    lines = local_file.readlines()
-                formatted_lines = []
-                for line in lines:
-                    formatted_line = line.format(
-                        eth0_ip_address='172.14.2.6',
-                        eth0_netmask='255.255.255.0',
-                        eth0_gateway='172.14.2.1',
-                        eth1_ip_address='172.14.4.6',
-                        eth1_netmask='255.255.255.0',
-                    )
-                    formatted_lines.append(formatted_line.strip())
-                command = f"echo $'{chr(92)}n'.join([{', '.join(map(repr, formatted_lines))}]) > {remote_file_name}\n"
-                tn.write(command.encode('ascii'))
+                command = f"echo \"{versa_interfaces}\" > /etc/network/interfaces\n"
+                tn.write(command.encode('utf-8'))
                 tn.read_until(b"[root@versa-analytics: admin]#")
+                tn.write(b"ifdown eth0 && ifup eth0 && ifup eth1\n")
                 tn.write(b"exit\n")
-                tn.close()
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed Versa AnalyticsDevice Setup")
     # endregion
-    # region Viptela vBond Setup
+    # region Versa Controller Setup
     deployment_step = 'Versa Controller Device Setup'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting Versa Controller Device Setup")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
-    remote_file_name = '/etc/network/interfaces'
-    abs_path = os.path.abspath(__file__)
-    configs_path = os.path.join(os.path.dirname(abs_path), 'configs/versa')
-    local_file_name = os.path.join(configs_path, 'versa_interface_template')
+    versa_interfaces = f"""auto eth0
+            iface eth0 inet static
+            address {versa_controller_mgmt_ip}
+            netmask 255.255.255.0
+            gateway {versa_mgmt_subnet_gateway_ip}
+            up echo nameserver 192.168.122.1 > /etc/resolv.conf
+            """
     for server_ip in server_ips:
         temp_node_name = f'Controller'
         matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
@@ -498,34 +492,21 @@ def versa_deploy():
                 tn.read_until(b"[sudo] password for admin:")
                 tn.write(versa_old_password.encode("ascii") + b"\n")
                 tn.read_until(b"[root@versa-flexvnf: admin]#")
-                with open(local_file_name, 'r') as local_file:
-                    lines = local_file.readlines()
-                formatted_lines = []
-                for line in lines:
-                    formatted_line = line.format(
-                        eth0_ip_address='172.14.2.10',
-                        eth0_netmask='255.255.255.0',
-                        eth0_gateway='172.14.2.1',
-                        eth1_ip_address='172.14.4.10',
-                        eth1_netmask='255.255.255.0',
-                    )
-                    formatted_lines.append(formatted_line.strip())
-                command = f"echo $'{chr(92)}n'.join([{', '.join(map(repr, formatted_lines))}]) > {remote_file_name}\n"
-                tn.write(command.encode('ascii'))
+                command = f"echo \"{versa_interfaces}\" > /etc/network/interfaces\n"
+                tn.write(command.encode('utf-8'))
                 tn.read_until(b"[root@versa-flexvnf: admin]#")
+                tn.write(b"ifdown eth0 && ifup eth0\n")
                 tn.write(b"exit\n")
-                tn.close()
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed Versa Controller Device Setup")
     # endregion
-    sys.exit()
     # region Viptela Director Setup Part 2
     deployment_step = 'Director Setup Part 2'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting Director setup part 2")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     abs_path = os.path.abspath(__file__)
-    configs_path = os.path.join(os.path.dirname(abs_path), 'configs/versa')
-    file_name = os.path.join(configs_path, 'director_template')
-    vdevices = [6, 10]
+    configs_path = os.path.join(os.path.dirname(abs_path), '../configs/versa')
+    clustersetup_file = os.path.join(configs_path, 'clustersetup.conf')
+    versa_configure_analytics_cluster(versa_director_mgmt_ip, versa_analytics_mgmt_ip)
     for server_ip in server_ips:
         temp_node_name = f'Director'
         matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
@@ -536,6 +517,8 @@ def versa_deploy():
                 tn = telnetlib.Telnet(server_ip, console_port)
                 while True:
                     tn.write(b"\r\n")
+                    if '[Administrator@director: ~] $' in output:
+                        break
                     tn.read_until(b"login:", timeout=1)
                     tn.write(versa_analytics_username.encode("ascii") + b"\n")
                     tn.read_until(b"Password:", timeout=5)
@@ -548,62 +531,56 @@ def versa_deploy():
                     time.sleep(30)
                 tn.write(b"\r\n")
                 tn.read_until(b"[Administrator@director: ~] $")
-                with open(local_file_name, 'r') as local_file:
-                    lines = local_file.readlines()
-                formatted_lines = []
-                for line in lines:
-                    formatted_line = line.format(
-                        eth0_ip_address='172.14.2.10',
-                        eth0_netmask='255.255.255.0',
-                        eth0_gateway='172.14.2.1',
-                        eth1_ip_address='172.16.4.10',
-                        eth1_netmask='255.255.255.252',
-                        eth1_gateway='172.16.4.9',
-                    )
-                    formatted_lines.append(formatted_line)
-                for line in formatted_lines:
-                    tn.write(f"echo '{line}' >> {remote_file_name}\n".encode('ascii'))
-                    tn.read_until(b"[Administrator@director: ~] $")
-                tn.write(b"\r\n")
-                # exit_var = tn.read_until(b"Analytics#").decode('ascii')
-                # if temp_node_name not in exit_var:
-                #        sys.exit()
-                tn.write(b'vshell\r\n')
-                tn.read_until(b'vManage:~$')
-                tn.write(b'openssl genrsa -out SDWAN.key 2048\r\n')
-                tn.read_until(b'vManage:~$')
-                tn.write(
-                    b'openssl req -x509 -new -nodes -key SDWAN.key -sha256 -days 2000 -subj "/C=US/ST=MS/O=sdwan-lab/CN=sdwan-lab" -out SDWAN.pem\r')
-                tn.read_until(b'vManage:~$')
-                tn.write(b'exit\r\n')
-                tn.read_until(b'#')
-                for vdevice in vdevices:
-                    scp_command = f"request execute vpn 512 scp /home/admin/SDWAN.pem admin@172.16.2.{vdevice}:/home/admin"
-                    tn.write(scp_command.encode('ascii') + b"\r")
-                    test_o = tn.read_until(b"?", timeout=2).decode('ascii')
-                    if "fingerprint" in test_o:
-                        tn.write(b'yes\r\n')
-                    else:
-                        tn.write(b"\n")
-                    tn.read_until(b"Password:")
-                    tn.write(versa_old_password.encode("ascii") + b"\n")
-                    tn.read_until(b'#')
-                tn.write(b'exit\r\n')
-                tn.close()
+                tn.write(b'sudo su\r\n')
+                tn.read_until(b"[sudo] password for Administrator:")
+                tn.write(versa_old_password.encode("ascii") + b"\n")
+                tn.read_until(b"root@director:/home/Administrator#")
+                with open(clustersetup_file, 'r') as f:
+                    file_contents = f.read()
+                file_contents = file_contents.replace("{{versa_director_ip}}", versa_director_mgmt_ip)
+                file_contents = file_contents.replace("{{versa_analytics_ip}}", versa_analytics_mgmt_ip)
+                remote_file_path = "/opt/versa/vnms/scripts/van-cluster-config/van_cluster_install/clustersetup.conf"
+                command = f"echo \"{file_contents}\" > {remote_file_path}\n"
+                tn.write(command.encode('utf-8'))
+                tn.read_until(b"root@director:/home/Administrator#")
+                tn.write(b"cd /opt/versa/vnms/scripts/van-cluster-config/van_cluster_install\r\n")
+                tn.read_until(b"root@director:")
+                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                  f"Starting VAN Cluster Install")
+                tn.write(b"./van_cluster_installer.py --force\n")
+                tn.read_until(b"VAN CLUSTER INSTALL COMPLETED")
+                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                  f"Starting Post Install VAN Cluster Setup")
+                tn.write(b"./van_cluster_installer.py --post-setup --gen-vd-cert\r\n")
+                tn.read_until(b"VAN CLUSTER POST-SETUP PROCEDURES COMPLETED")
+                time.sleep(30)
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Starting Director API Tasks")
+    versa_create_provider_org(versa_director_mgmt_ip)
+    versa_create_overlay_prefix(versa_director_mgmt_ip)
+    versa_create_overlay_route(versa_director_mgmt_ip)
+    versa_create_controller_workflow(versa_director_mgmt_ip, versa_controller_mgmt_ip)
+    time.sleep(30)
+    versa_deploy_controller(versa_director_mgmt_ip)
+    time.sleep(30)
+    versa_create_device_template(versa_director_mgmt_ip)
+    time.sleep(5)
+    versa_deploy_device_template(versa_director_mgmt_ip)
+    time.sleep(5)
+    versa_create_device_group(versa_director_mgmt_ip)
+    time.sleep(5)
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, "Completed vManage Device Setup Part 2")
     # endregion
     # region Viptela FlexVNF Device Setup
-    deployment_step = 'FlexVNF Device Setup'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting FlexVNF Device Setup for {flexvnf_count} FlexVNFs")
+    deployment_step = 'FlexVNF Device Onboarding'
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting FlexVNF Device Onbaording for {flexvnf_count} FlexVNFs")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
-    abs_path = os.path.abspath(__file__)
-    configs_path = os.path.join(os.path.dirname(abs_path), 'configs/viptela')
-    file_name = os.path.join(configs_path, 'flexvnf_cloud_site_template')
-    flexvnf_lan_objects = generate_vedge_objects(flexvnf_count, '172.14.2')
+    flexvnf_lan_objects = generate_flexvnf_objects(flexvnf_count, mgmt_subnet_ip)
     isp_index = 0
+    flexvnf_vr_index = 4
     for server_ip in server_ips:
         for i in range(1, flexvnf_count + 1):
-            temp_node_name = f'FlexVNF_{i:003}'
+            temp_node_name = f'FlexVNF-{i:003}'
             matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
             if matching_nodes:
                 for matching_node in matching_nodes:
@@ -619,7 +596,8 @@ def versa_deploy():
                             mgmt_address = flexvnf_lan_object['mgmt_address']
                             mgmt_gateway = flexvnf_lan_object['mgmt_gateway']
                             system_ip = flexvnf_lan_object['system_ip']
-                            site_id = flexvnf_lan_object['site_id']
+                            site_id = f"{flexvnf_lan_object['site_id']}"
+                            device_serial_number = f"SN{site_id}"
                     for dictionary_0 in isp_1_overall[isp_index]:
                         if dictionary_0['flexvnf'] == temp_node_name:
                             vpn_0_ge0_0_ip_address = dictionary_0['flexvnf_address']
@@ -628,348 +606,132 @@ def versa_deploy():
                         if dictionary_1['flexvnf'] == temp_node_name:
                             vpn_0_ge0_1_ip_address = dictionary_1['flexvnf_address']
                             vpn_0_ge0_1_ip_gateway = dictionary_1['router_address']
-                    flexvnf_hostname = f"{temp_node_name}_{city_data[temp_node_name]['city']}"
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting FlexVNF Device Setup for {node_name[0]} - FlexVNF {i} of {flexvnf_count}")
+                    flexvnf_hostname = f"{temp_node_name}-{versa_city_data[temp_node_name]['city']}"
+                    flexvnf_city = versa_city_data[temp_node_name]['city']
+                    flexvnf_country = versa_city_data[temp_node_name]['country']
+                    vr_1_route_ip = f'10.10.0.{flexvnf_vr_index}'
+                    tvi_0_2_ip = f'10.10.0.{flexvnf_vr_index + 1}/32'
+                    tvi_0_3_ip = f'10.10.0.{flexvnf_vr_index}/32'
+                    latitude = versa_city_data[temp_node_name]['latitude']
+                    longitude = versa_city_data[temp_node_name]['longitude']
+                    onboard_command = f"sudo /opt/versa/scripts/staging.py -w 0 -n {device_serial_number} -c 172.14.5.2 -s {vpn_0_ge0_0_ip_address} -g {vpn_0_ge0_0_ip_gateway} -l SDWAN-Branch@Versa-Root.com -r Controller-01-staging@Versa-Root.com"
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting FlexVNF Device Onboarding for {node_name[0]} - FlexVNF {i} of {flexvnf_count}")
+                    versa_create_site_device_workflow(versa_director_mgmt_ip, vr_1_route_ip, lan_dhcp_pool, flexvnf_hostname, site_id, device_serial_number, flexvnf_country, flexvnf_city, vpn_0_ge0_0_ip_address, vpn_0_ge0_0_ip_gateway, vpn_0_ge0_1_ip_address, vpn_0_ge0_1_ip_gateway, tvi_0_2_ip, tvi_0_3_ip, latitude, longitude)
+                    time.sleep(10)
+                    versa_deploy_device_workflow(versa_director_mgmt_ip, flexvnf_hostname)
+                    time.sleep(10)
                     tn = telnetlib.Telnet(server_ip, console_port)
+                    tn.write(b"\r\n")
                     while True:
                         tn.write(b"\r\n")
-                        output = tn.read_until(b"login:", timeout=1).decode('ascii')
-                        if 'flexvnf#' in output:
-                            tn.write(b"\r\n")
-                            break
-                        tn.write(viptela_username.encode("ascii") + b"\n")
-                        tn.read_until(b"Password:")
+                        tn.read_until(b"versa-flexvnf login:", timeout=2)
+                        tn.write(versa_analytics_username.encode("ascii") + b"\n")
+                        tn.read_until(b"Password:", timeout=5)
                         tn.write(versa_old_password.encode("ascii") + b"\n")
-                        output = tn.read_until(b"Password:", timeout=5).decode('ascii')
-                        if 'Login incorrect' in output:
-                            tn.read_until(b"login:", timeout=1)
-                            tn.write(viptela_username.encode("ascii") + b"\n")
-                            tn.read_until(b"Password:", timeout=1)
-                            tn.write(versa_old_password.encode("ascii") + b"\n")
-                            tn.write(b"\r\n")
+                        output = tn.read_until(b"[admin@versa-flexvnf: ~] $", timeout=5).decode('ascii')
+                        if '[admin@versa-flexvnf: ~] $' in output:
                             break
-                        elif 'Welcome' in output:
-                            tn.write(versa_old_password.encode("ascii") + b"\n")
-                            tn.read_until(b"password:", timeout=2)
-                            tn.write(versa_old_password.encode("ascii") + b"\n")
-                            tn.write(b"\r\n")
-                            break
-                        log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"{temp_node_name} not available yet, trying again in 30 seconds")
+                        log_and_update_db(server_name, project_name, deployment_type, deployment_status,
+                                          deployment_step,
+                                          f"{node_name} not available yet, trying again in 30 seconds")
                         time.sleep(30)
                     tn.write(b"\r\n")
-                    tn.read_until(b"#")
-                    with open(file_name, 'r') as f:
-                        lines = f.readlines()
-                        log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Sending configuration commands to {node_name[0]}")
-                        for line in lines:
-                            formatted_line = line.format(
-                                flexvnf_hostname=flexvnf_hostname,
-                                latitude=city_data[temp_node_name]['latitude'],
-                                longitude=city_data[temp_node_name]['longitude'],
-                                system_ip=system_ip,
-                                site_id=site_id,
-                                org_name=org_name,
-                                vbond_address=vbond_address,
-                                vpn_0_ge0_0_ip_address=vpn_0_ge0_0_ip_address,
-                                vpn_0_ge0_0_ip_gateway=vpn_0_ge0_0_ip_gateway,
-                                vpn_0_ge0_1_ip_address=vpn_0_ge0_1_ip_address,
-                                vpn_0_ge0_1_ip_gateway=vpn_0_ge0_1_ip_gateway,
-                                vpn_1_ge0_2_ip_address=lan_dhcp_pool,
-                                dhcp_pool=lan_subnet_address,
-                                dhcp_exclude=lan_dhcp_exclude,
-                                dhcp_gateway=lan_gateway_address,
-                                client_1_address=client_1_address,
-                                vpn_512_eth0_ip_address=mgmt_address,
-                                vpn_512_eth0_ip_gateway=mgmt_gateway
-                            )
-                            tn.write(formatted_line.encode('ascii') + b"\n")
-                            tn.read_until(b"#")
-                    tn.write(b"\r\n")
-                    output = tn.read_until(b"Commit complete.").decode('ascii')
-                    tn.write(b"exit\r")
-                    tn.read_until(b"exit")
+                    tn.read_until(b"[admin@versa-flexvnf: ~] $")
+                    tn.write(b'sudo su\r\n')
+                    tn.read_until(b"[sudo] password for admin:")
+                    tn.write(versa_old_password.encode("ascii") + b"\n")
+                    tn.read_until(b"[root@versa-flexvnf: admin]#")
+                    tn.write(onboard_command.encode('ascii') + b"\r")
+                    tn.read_until(b"[root@versa-flexvnf: admin]#")
                     tn.close()
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed FlexVNF Device Setup for {temp_node_name}, Remaining - {flexvnf_count - i}")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed FlexVNF Device Onboarding for {temp_node_name}, Remaining - {flexvnf_count - i}")
                     if i % 44 == 0 and i != 0:
                         isp_index += 1
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed FlexVNF Device Setup for {flexvnf_count} FlexVNF devices")
+                    flexvnf_vr_index += 2
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed FlexVNF Device Onboarding for {flexvnf_count} FlexVNF devices")
     # endregion
-    # region Viptela vManage API Setup
-    deployment_step = ' vManage API Setup'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vManage API Setup")
-    auth = Authentication()
-    while True:
-        try:
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Checking if vManage API is available..")
-            response = auth.get_jsessionid(gns3_server_data)
-            break
-        except:
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f'vManage API is yet not available, checking again in 1 minute at {util_resume_time(1)}')
-            time.sleep(60)
-    vmanage_headers = vmanage_create_auth(gns3_server_data)
-    server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
-    for server_ip in server_ips:
-        temp_node_name = f'vManage'
-        matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
-        if matching_nodes:
-            for matching_node in matching_nodes:
-                node_id, console_port, aux = matching_node
-                tn = telnetlib.Telnet(server_ip, console_port)
-                while True:
-                    tn.write(b"\r\n")
-                    output = tn.read_until(b"login:", timeout=2).decode('ascii')
-                    if '#' in output:
-                        tn.write(b"\r\n")
-                        tn.read_until(b"#")
-                        tn.write(b'vshell\r\n')
-                        break
-                    elif ':~$' in output:
-                        tn.write(b"\r\n")
-                        break
-                    tn.write(viptela_username.encode("ascii") + b"\n")
-                    tn.read_until(b"Password:", timeout=1)
-                    tn.write(versa_old_password.encode("ascii") + b"\n")
-                    output = tn.read_until(b"#", timeout=1).decode('ascii')
-                    if '#' in output:
-                        tn.write(b"\r\n")
-                        tn.read_until(b"#")
-                        tn.write(b'vshell\r\n')
-                        break
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"{temp_node_name} not available yet, trying again in 30 seconds")
-                    time.sleep(30)
-                tn.write(b"\r\n")
-                tn.read_until(b'$')
-                tn.write(b"cat SDWAN.pem\r")
-                tn.read_until(b"cat SDWAN.pem")
-                vmanage_root_cert = tn.read_until(b"-----END CERTIFICATE-----")
-                vmanage_root_cert = vmanage_root_cert.decode('ascii').split('\r\n', 1)[1]
-                vmanage_root_cert = vmanage_root_cert.replace('\r\n', '\n')
-                vmanage_set_org(gns3_server_data, vmanage_headers)
-                vmanage_set_cert_type(gns3_server_data, vmanage_headers)
-                vmanage_set_cert(gns3_server_data, vmanage_headers, vmanage_root_cert)
-                vmanage_sync_rootcertchain(gns3_server_data, vmanage_headers)
-                vmanage_set_vbond(gns3_server_data, vmanage_headers)
-                vmanage_csr = vmanage_generate_csr(gns3_server_data, vmanage_headers, vmanage_address, 'vmanage')
-                tn.write(b'exit\r\n')
-                tn.read_until(b'#')
-                tn.write(b'vshell\r\n')
-                tn.read_until(b'$')
-                tn.write(b'echo -n "' + vmanage_csr.encode('ascii') + b'\n" > vdevice.csr\r\n')
-                tn.read_until(b'$')
-                tn.write(b"sed '/^$/d' vdevice.csr\n")
-                tn.read_until(b'$')
-                tn.write(
-                    b'openssl x509 -req -in vdevice.csr -CA SDWAN.pem -CAkey SDWAN.key -CAcreateserial -out vdevice.crt -days 2000 -sha256\r\n')
-                tn.read_until(b'$')
-                tn.write(b"cat vdevice.crt\r")
-                tn.read_until(b"cat vdevice.crt\r")
-                vdevice_cert = tn.read_until(b"-----END CERTIFICATE-----")
-                vdevice_cert = vdevice_cert.decode('ascii').split('\r\n', 1)[1]
-                vdevice_cert = vdevice_cert.replace('\r\n', '\n')
-                vmanage_install_cert(gns3_server_data, vmanage_headers, vdevice_cert)
-                vmanage_set_device(gns3_server_data, vmanage_headers, versa_analytics_address, "versa_analytics")
-                vmanage_set_device(gns3_server_data, vmanage_headers, vbond_address, "vbond")
-                vbond_csr = vmanage_generate_csr(gns3_server_data, vmanage_headers, vbond_address, 'vbond')
-                versa_analytics_csr = vmanage_generate_csr(gns3_server_data, vmanage_headers, versa_analytics_address, 'versa_analytics')
-                tn.write(b'exit\r\n')
-                tn.read_until(b'#')
-                tn.write(b'vshell\r\n')
-                tn.read_until(b'$')
-                tn.write(b'echo -n "' + versa_analytics_csr.encode('ascii') + b'\n" > vdevice.csr\r\n')
-                tn.read_until(b'$')
-                tn.write(b"sed '/^$/d' vdevice.csr\n")
-                tn.read_until(b'$')
-                tn.write(
-                    b'openssl x509 -req -in vdevice.csr -CA SDWAN.pem -CAkey SDWAN.key -CAcreateserial -out vdevice.crt -days 2000 -sha256\r\n')
-                tn.read_until(b'$')
-                tn.write(b"cat vdevice.crt\r")
-                tn.read_until(b"cat vdevice.crt\r")
-                vdevice_cert = tn.read_until(b"-----END CERTIFICATE-----")
-                vdevice_cert = vdevice_cert.decode('ascii').split('\r\n', 1)[1]
-                vdevice_cert = vdevice_cert.replace('\r\n', '\n')
-                vmanage_install_cert(gns3_server_data, vmanage_headers, vdevice_cert)
-                tn.write(b'exit\r\n')
-                tn.read_until(b'#')
-                tn.write(b'vshell\r\n')
-                tn.read_until(b'$')
-                tn.write(b'echo -n "' + vbond_csr.encode('ascii') + b'\n" > vdevice.csr\r\n')
-                tn.read_until(b'$')
-                tn.write(b"sed '/^$/d' vdevice.csr\n")
-                tn.read_until(b'$')
-                tn.write(
-                    b'openssl x509 -req -in vdevice.csr -CA SDWAN.pem -CAkey SDWAN.key -CAcreateserial -out vdevice.crt -days 2000 -sha256\r\n')
-                tn.read_until(b'$')
-                tn.write(b"cat vdevice.crt\r")
-                tn.read_until(b"cat vdevice.crt\r")
-                vdevice_cert = tn.read_until(b"-----END CERTIFICATE-----")
-                vdevice_cert = vdevice_cert.decode('ascii').split('\r\n', 1)[1]
-                vdevice_cert = vdevice_cert.replace('\r\n', '\n')
-                vmanage_install_cert(gns3_server_data, vmanage_headers, vdevice_cert)
-                tn.write(b'exit\r\n')
-                tn.read_until(b'#')
-                tn.close()
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vManage API Setup")
+    # region AppNeta MP Setup
+    if deploy_appneta == 'y':
+        deployment_step = 'AppNeta Monitoring Point Setup'
+        log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                          f"Starting AppNeta Monitoring Point Configuration")
+        server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
+        v = 1
+        for server_ip in server_ips:
+            temp_node_name = f'AppNeta'
+            matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
+            if matching_nodes:
+                for matching_node in matching_nodes:
+                    mp_ip_address = f"{mgmt_subnet_ip}.{v+50}"
+                    node_id, console_port, aux = matching_node
+                    node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id', 'name',
+                                                               node_id)
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                      f"Logging in to console for node {node_name[0]}")
+                    appneta_cli_curl_commands(server_ip, console_port, node_name[0], appneta_mp_mac, mp_ip_address, appn_site_key, appn_url)
+                    v += 1
+
+        log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                          f"Completed AppNeta MP Configuration")
     # endregion
+    end_time = time.time()
+    total_time = (end_time - start_time) / 60
+    deployment_step = 'Complete'
+    deployment_status = 'Complete'
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Total time for GNS3 Lab Deployment with {flexvnf_count} FlexVNF Devices: {total_time:.2f} minutes")
+    sys.exit()
     # region Viptela FlexVNF Final Setup
     deployment_step = 'FlexVNF Final Setup'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting FlexVNF Certificate setup and deployment into Viptela Environment")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Starting FlexVNF deivce onboarding")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
-    ve = 101
     v = 1
     for server_ip in server_ips:
-        temp_node_name = f'vManage'
-        matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
         flexvnf_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "FlexVNF")
         if matching_nodes:
-            for matching_node in matching_nodes:
-                node_id, console_port, aux = matching_node
-                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Logging in to console for node {temp_node_name}")
-                for flexvnf_node in flexvnf_nodes:
-                    flexvnf_id, flexvnf_console, flexvnf_aux = flexvnf_node
-                    node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id', 'name', flexvnf_id)
-                    scp_command = f"request execute vpn 512 scp /home/admin/SDWAN.pem admin@172.16.2.{ve}:/home/admin"
-                    scp_2_command = f"request execute vpn 512 scp /home/admin/flexvnf.crt admin@172.16.2.{ve}:/home/admin"
-                    ssh_command = f"request execute vpn 512 ssh admin@172.16.2.{ve}"
-                    ssh_2_command = f"request execute vpn 512 ssh admin@172.16.2.10"
-                    tn = telnetlib.Telnet(server_ip, console_port)
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting FlexVNF Certificate Setup for {node_name[0]} - FlexVNF {v} of {flexvnf_count}")
-                    while True:
-                        tn.write(b"\r\n")
-                        output = tn.read_until(b"login:", timeout=2).decode('ascii')
-                        if '#' in output:
-                            tn.write(b"\r\n")
-                            tn.read_until(b"#")
-                            tn.write(b'vshell\r\n')
-                            break
-                        elif ':~$' in output:
-                            tn.write(b"\r\n")
-                            break
-                        tn.write(viptela_username.encode("ascii") + b"\n")
-                        tn.read_until(b"Password:", timeout=1)
-                        tn.write(versa_old_password.encode("ascii") + b"\n")
-                        output = tn.read_until(b"#", timeout=1).decode('ascii')
-                        if '#' in output:
-                            tn.write(b"\r\n")
-                            tn.read_until(b"#")
-                            tn.write(b'vshell\r\n')
-                            break
-                        log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"{temp_node_name} not available yet, trying again in 30 seconds")
-                        time.sleep(30)
+            for flexvnf_node in flexvnf_nodes:
+                node_id, console_port, aux = flexvnf_node
+                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                  f"Logging in to console for node {node_name}")
+                node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id',
+                                                           'name', node_id)
+                if v == 1:
+                    command = f"sudo /opt/versa/scripts/staging.py -w 0 -n SN101 -c 172.14.5.2 -s 172.14.6.2/30 -g 172.14.6.1 -l SDWAN-Branch@Versa-Root.com -r Controller-01-staging@Versa-Root.com"
+                elif v == 2:
+                    command = f"sudo /opt/versa/scripts/staging.py -w 0 -n SN102 -c 172.14.5.2 -s 172.14.6.6/30 -g 172.14.6.5 -l SDWAN-Branch@Versa-Root.com -r Controller-01-staging@Versa-Root.com"
+                else:
+                    sys.exit()
+                tn = telnetlib.Telnet(server_ip, console_port)
+                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                  f"Starting FlexVNF Onboarding for {node_name[0]} - FlexVNF {v} of {flexvnf_count}")
+                tn.write(b"\r\n")
+                while True:
                     tn.write(b"\r\n")
-                    tn.read_until(b'$')
-                    tn.write(b'rm -rf flexvnf*\r\n')
-                    tn.read_until(b'$')
-                    tn.write(b'exit\r\n')
-                    # SCP SDWAN.pem to FlexVNF
-                    tn.read_until(b'#')
-                    tn.write(scp_command.encode('ascii') + b"\n")
-                    test_o = tn.read_until(b"?", timeout=2).decode('ascii')
-                    if "fingerprint" in test_o:
-                        tn.write(b'yes\r\n')
-                    else:
-                        tn.write(b"\n")
-                    tn.read_until(b"Password:")
+                    if '[admin@versa-flexvnf: ~] $' in output:
+                        break
+                    tn.read_until(b"versa-flexvnf login:", timeout=1)
+                    tn.write(versa_analytics_username.encode("ascii") + b"\n")
+                    tn.read_until(b"Password:", timeout=5)
                     tn.write(versa_old_password.encode("ascii") + b"\n")
-                    tn.read_until(b'#')
-                    # SSH to FlexVNF
-                    tn.write(ssh_command.encode('ascii') + b"\n")
-                    tn.read_until(b"Password:")
-                    tn.write(versa_old_password.encode("ascii") + b"\n")
-                    tn.read_until(b'#')
-                    tn.write(b'request root-cert-chain install /home/admin/SDWAN.pem\n')
-                    tn.read_until(b'#')
-                    tn.write(b'request csr upload home/admin/flexvnf.csr\n')
-                    tn.read_until(b":")
-                    tn.write(b'sdwan-lab\n')
-                    tn.read_until(b":")
-                    tn.write(b'sdwan-lab\n')
-                    tn.read_until(b'#')
-                    # SCP the FlexVNF.csr to the vManage
-                    tn.write(b'request execute vpn 512 scp /home/admin/flexvnf.csr admin@172.16.2.2:/home/admin\r\n')
-                    test_o = tn.read_until(b"?", timeout=2).decode('ascii')
-                    if "fingerprint" in test_o:
-                        tn.write(b'yes\r\n')
-                    else:
-                        tn.write(b"\n")
-                    tn.read_until(b"Password:")
-                    tn.write(versa_old_password.encode("ascii") + b"\n")
-                    tn.read_until(b'#')
-                    # Drop back to the vManage
-                    tn.write(b'exit\r\n')
-                    tn.read_until(b'vManage#')
-                    tn.write(b'vshell\r\n')
-                    tn.read_until(b'$')
-                    tn.write(
-                        b'openssl x509 -req -in flexvnf.csr -CA SDWAN.pem -CAkey SDWAN.key -CAcreateserial -out flexvnf.crt -days 2000 -sha256\n')
-                    tn.read_until(b'$')
-                    tn.write(b'exit\r\n')
-                    tn.read_until(b'#')
-                    # SCP the FlexVNF.crt to the FlexVNF
-                    tn.write(scp_2_command.encode('ascii') + b"\n")
-                    tn.read_until(b"Password:")
-                    tn.write(versa_old_password.encode("ascii") + b"\n")
-                    tn.read_until(b'#')
-                    # SSH to the FlexVNF to install the new cert
-                    tn.write(ssh_command.encode('ascii') + b"\n")
-                    tn.read_until(b"Password:")
-                    tn.write(versa_old_password.encode("ascii") + b"\n")
-                    tn.read_until(b'#')
-                    while True:
-                        tn.write(b'request certificate install /home/admin/flexvnf.crt\r\n')
-                        tn.read_until(b'#')
-                        tn.write(b'show certificate serial\r\n')
-                        cert_output = tn.read_until(b"#").decode("ascii")
-                        chassis_regex = r"Chassis number: (.+?)\s+serial number:"
-                        serial_regex = r"serial number: ([A-F0-9]+)"
-                        chassis_number = re.search(chassis_regex, cert_output).group(1)
-                        serial_number = re.search(serial_regex, cert_output).group(1)
-                        if chassis_number and serial_number:
-                            break
-                        log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"{node_name[0]} tried to install certificate too quickly, trying again in 10 seconds ")
-                        time.sleep(10)
-                    tn.write(b'exit\r\n')
-                    tn.read_until(b'#')
-                    flexvnf_install_command = f"request flexvnf add chassis-num {chassis_number} serial-num {serial_number}"
-                    tn.write(ssh_2_command.encode('ascii') + b"\n")
-                    tn.read_until(b"Password:")
-                    tn.write(versa_old_password.encode("ascii") + b"\n")
-                    tn.read_until(b'#')
-                    tn.write(flexvnf_install_command.encode('ascii') + b"\n")
-                    tn.read_until(b'#')
-                    tn.write(b'exit\r\n')
-                    tn.read_until(b'#')
-                    tn.write(flexvnf_install_command.encode('ascii') + b"\n")
-                    tn.read_until(b'#')
-                    ve += 1
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed FlexVNF Certificate Setup for {node_name[0]}, Remaining - {flexvnf_count - v}")
-                    tn.close()
-                    v += 1
-    while True:
-        try:
-            auth = Authentication()
-            response = auth.get_jsessionid(gns3_server_data)
-            break
-        except:
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f'vManage API is yet not available')
-            time.sleep(60)
-    vmanage_headers = vmanage_create_auth(gns3_server_data)
-    vmanage_push_certs(gns3_server_data, vmanage_headers)
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed FlexVNF Certificate setup and deployment into Viptela Environment")
-    # endregion
-    # region Push FlexVNF Certs to Control Devices
-    deployment_step = 'Push FlexVNF Certs'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Waiting 5 mins to send final API call to vManage to push FlexVNF certificates to control devices, to resume at {util_resume_time(5)}")
-    time.sleep(300)
-    while True:
-        try:
-            auth = Authentication()
-            response = auth.get_jsessionid(gns3_server_data)
-            break
-        except:
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f'vManage API is yet not available')
-            time.sleep(60)
-    vmanage_headers = vmanage_create_auth(gns3_server_data)
-    vmanage_push_certs(gns3_server_data, vmanage_headers)
+                    output = tn.read_until(b"[admin@versa-flexvnf: ~] $", timeout=5).decode('ascii')
+                    if '[admin@versa-flexvnf: ~] $' in output:
+                        break
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                      f"{node_name} not available yet, trying again in 30 seconds")
+                    time.sleep(30)
+                tn.write(b"\r\n")
+                tn.read_until(b"[admin@versa-flexvnf: ~] $")
+                tn.write(b'sudo su\r\n')
+                tn.read_until(b"[sudo] password for admin:")
+                tn.write(versa_old_password.encode("ascii") + b"\n")
+                tn.read_until(b"[root@versa-flexvnf: admin]#")
+                tn.write(command.encode('ascii') + b"\r")
+                tn.read_until(b"[root@versa-flexvnf: admin]#")
+                tn.close()
+                v += 1
+
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Completed FlexVNF Certificate setup and deployment into Viptela Environment")
     # endregion
     # region Validation
     client_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "Client")
@@ -984,7 +746,7 @@ def versa_deploy():
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     for server_ip in server_ips:
         temp_node_name = f'Client_001'
-        flexvnf_nodes = f'FlexVNF_'
+        flexvnf_nodes = f'FlexVNF-'
         matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
         client_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, flexvnf_nodes)
         client_ip = 101
@@ -1012,11 +774,5 @@ def versa_deploy():
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Successful connection to {successful_site} of {len(client_nodes)} Sites")
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed deployment validation for project {project_name}")
     # endregion
-
-    end_time = time.time()
-    total_time = (end_time - start_time) / 60
-    deployment_step = 'Complete'
-    deployment_status = 'Complete'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Total time for GNS3 Lab Deployment with {flexvnf_count} FlexVNF Devices: {total_time:.2f} minutes")
     # endregion
 

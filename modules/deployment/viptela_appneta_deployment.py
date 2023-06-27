@@ -9,7 +9,6 @@ from modules.vendor_specific_actions.appneta_actions import *
 
 def viptela_appneta_deploy():
     # region Variables
-
     vmanage_headers = {}
     lan_subnet_address = ''
     lan_gateway_address = ''
@@ -28,14 +27,12 @@ def viptela_appneta_deploy():
     isp_2_overall = []
     vedge_nodes = []
     vmanage_root_cert = ""
-    configure_mgmt_tap = 0
     deployment_type = 'viptela'
     deployment_status = 'running'
     deployment_step = '- Action - '
     cloud_node_deploy_data = {"x": 25, "y": -554, "name": "MGMT-Cloud-TAP", "node_type": "cloud",
                               "compute_id": "local", "symbol": ":/symbols/cloud.svg"}
     required_qemu_images = {"viptela-vmanage-li-20.10.1-genericx86-64.qcow2", "empty30G.qcow2", "viptela-smart-li-20.10.1-genericx86-64.qcow2", "viptela-edge-20.10.1-genericx86-64.qcow2"}
-    required_image_response = 201
     deploy_appneta = 'n'
     # endregion
     conn = sqlite3.connect(db_path)
@@ -115,7 +112,8 @@ def viptela_appneta_deploy():
     vbond_template_id = gns3_create_template(gns3_server_data, viptela_vbond_template_data)
     vsmart_template_id = gns3_create_template(gns3_server_data, viptela_vsmart_template_data)
     vedge_template_id = gns3_create_template(gns3_server_data, viptela_vedge_template_data)
-    appneta_template_id = gns3_create_template(gns3_server_data, appneta_mp_template_data)
+    if deploy_appneta == 'y':
+        appneta_template_id = gns3_create_template(gns3_server_data, appneta_mp_template_data)
     network_test_tool_template_id = gns3_create_template(gns3_server_data, network_test_tool_template_data)
     openvswitch_isp_template_id = gns3_create_template(gns3_server_data, openvswitch_isp_template_data)
     temp_hub_data = generate_temp_hub_data(mgmt_main_switchport_count, mgmt_main_hub_template_name)

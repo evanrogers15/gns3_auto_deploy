@@ -1,6 +1,8 @@
 import ipaddress
 import os
 from modules.gns3.gns3_variables import *
+
+# region Generic
 def generate_temp_hub_data(num_ports, template_name):
     ports_mapping = [{"name": f"Ethernet{i}", "port_number": i} for i in range(num_ports)]
 
@@ -38,34 +40,6 @@ def generate_network_objects(base_subnet, subnet_mask, vedge_index=1):
                 'vedge_address': subnet_address_long,
                 'isp_switch_address': vedge_address,
                 'vedge': f'vEdge_{vedge_index:003}'
-            }
-            networks.append(network_dict)
-            vedge_index += 1
-            switch_limit += 1
-    return networks
-
-def generate_versa_network_objects(base_subnet, subnet_mask, vedge_index=1):
-    network = ipaddress.IPv4Network(base_subnet)
-    subnets_64 = list(network.subnets(new_prefix=subnet_mask))
-    networks = []
-    switch_limit = 1
-    for subnet in subnets_64:
-        if subnet.prefixlen == subnet_mask:
-            if switch_limit == 45:
-                break
-            router_address = str(subnet.network_address + 1)
-            vedge_address = str(subnet.network_address + 2)
-            subnet_address = str(
-                ipaddress.IPv4Interface(str(subnet.network_address) + '/' + str(subnet_mask)).netmask)
-            subnet_address_long = str(vedge_address) + '/' + str(subnet_mask)
-            network_dict = {
-                'subnet': str(subnet.network_address),
-                'subnet_mask': str(subnet.prefixlen),
-                'subnet_address': subnet_address,
-                'router_address': router_address,
-                'flexvnf_address': subnet_address_long,
-                'isp_switch_address': vedge_address,
-                'flexvnf': f'FlexVNF-{vedge_index:003}'
             }
             networks.append(network_dict)
             vedge_index += 1
@@ -180,68 +154,6 @@ def generate_interfaces_file_new(interface_data_2, interface_data_3, filename_te
             eth_2 += 1
     logging.info(f"Deploy - Created file {filename_temp}")
 
-def generate_versa_interfaces_file(interface_data_1, router_index, interface_data_2, interface_data_3, filename_temp):
-    abs_path = os.path.abspath(__file__)
-    configs_path = os.path.join(os.path.dirname(abs_path), '../configs/')
-    filename = os.path.join(configs_path, filename_temp)
-    with open(filename, 'w') as f:
-        eth_1 = 0
-        eth_2 = 0
-        f.write(f'#{filename}\n')
-        f.write('auto eth0\n')
-        f.write('iface eth0 inet static\n')
-        # f.write(f'\taddress {interface_data_1[router_index]["isp_switch_address"]}\n')
-        # f.write(f'\tnetmask {interface_data_1[router_index]["subnet_address"]}\n')
-        # f.write(f'\tgateway {interface_data_1[router_index]["router_address"]}\n')
-        f.write(f'\taddress 192.168.122.251\n')
-        f.write(f'\tnetmask 255.255.255.0\n')
-        f.write(f'\tgateway 192.168.122.1\n')
-        f.write('\tup echo nameserver 192.168.122.1 > /etc/resolv.conf\n\n')
-        f.write('auto eth1\n')
-        f.write('iface eth1 inet static\n')
-        if filename_temp == "cloud_isp_switch_0_interfaces":
-            f.write(f'\taddress 172.14.5.1\n')
-            f.write(f'\tnetmask 255.255.255.252\n')
-            f.write('auto eth2\n')
-            f.write('iface eth2 inet static\n')
-            f.write(f'\taddress 172.14.5.5\n')
-            f.write(f'\tnetmask 255.255.255.252\n')
-            f.write('auto eth3\n')
-            f.write('iface eth3 inet static\n')
-            f.write(f'\taddress 172.14.5.9\n')
-            f.write(f'\tnetmask 255.255.255.252\n')
-        for i in range(5, 49):
-            f.write(f'#{interface_data_2[eth_1]["flexvnf"]} interface ge0/0\n')
-            f.write(f'auto eth{i}\n')
-            f.write(f'iface eth{i} inet static\n')
-            f.write(f'\taddress {interface_data_2[eth_1]["router_address"]}\n')
-            f.write(f'\tnetmask {interface_data_2[eth_1]["subnet_address"]}\n')
-            f.write('\n')
-            eth_1 += 1
-        for i in range(51, 95):
-            f.write(f'#{interface_data_3[eth_2]["flexvnf"]} interface ge0/1\n')
-            f.write(f'auto eth{i}\n')
-            f.write(f'iface eth{i} inet static\n')
-            f.write(f'\taddress {interface_data_3[eth_2]["router_address"]}\n')
-            f.write(f'\tnetmask {interface_data_3[eth_2]["subnet_address"]}\n')
-            f.write('\n')
-            eth_2 += 1
-    logging.info(f"Deploy - Created file {filename_temp}")
-
-def generate_arista_interfaces_file(filename_temp, mgmt_network_address, ip_var):
-    abs_path = os.path.abspath(__file__)
-    configs_path = os.path.join(os.path.dirname(abs_path), '../configs/')
-    filename = os.path.join(configs_path, filename_temp)
-
-    with open(filename, 'w') as f:
-        f.write('auto eth0\n')
-        f.write('iface eth0 inet static\n')
-        f.write(f'\taddress {ip_var}\n')
-        f.write('\tnetmask 255.255.255.0\n\n')
-        f.write(f'\tgateway {mgmt_network_address}1\n')
-
-    logging.info(f"Deploy - Created file {filename_temp}")
-
 def generate_isp_deploy_data(num_nodes):
     deploy_data = {}
     x = -154
@@ -254,6 +166,23 @@ def generate_isp_deploy_data(num_nodes):
 
     return deploy_data
 
+def generate_mgmt_switch_deploy_data(num_nodes):
+    deploy_data = {}
+    x = -279
+    y_s = -313
+    for i in range(1, num_nodes + 1):
+        name = f"MGMT_switch_{i:03}"
+        if i == 1:
+            y = y_s
+        else:
+            y = y + 100
+        deploy_data[f"mgmt_switch_{i:03}_deploy_data"] = {"x": x, "y": y, "name": name}
+
+
+    return deploy_data
+
+# endregion
+# region Viptela Specific
 def generate_vedge_objects(vedge_count, mgmt_base_subnet):
     subnet_mask = 24
     k = 101
@@ -781,6 +710,35 @@ def oa_generate_vedge_deploy_data(vedge_count):
                 "svg": "<svg height=\"267\" width=\"169\"><rect fill=\"#aaffff\" fill-opacity=\"1.0\" height=\"267\" stroke=\"#000000\" stroke-width=\"2\" width=\"169\" /></svg>",
                 "x": drawing_x, "y": drawing_y, "z": 0}
     return deploy_data, client_deploy_data, site_drawing_deploy_data
+# endregion
+# region Versa Specific
+def generate_versa_network_objects(base_subnet, subnet_mask, site_index=1):
+    network = ipaddress.IPv4Network(base_subnet)
+    subnets_64 = list(network.subnets(new_prefix=subnet_mask))
+    networks = []
+    switch_limit = 1
+    for subnet in subnets_64:
+        if subnet.prefixlen == subnet_mask:
+            if switch_limit == 45:
+                break
+            router_address = str(subnet.network_address + 1)
+            vedge_address = str(subnet.network_address + 2)
+            subnet_address = str(
+                ipaddress.IPv4Interface(str(subnet.network_address) + '/' + str(subnet_mask)).netmask)
+            subnet_address_long = str(vedge_address) + '/' + str(subnet_mask)
+            network_dict = {
+                'subnet': str(subnet.network_address),
+                'subnet_mask': str(subnet.prefixlen),
+                'subnet_address': subnet_address,
+                'router_address': router_address,
+                'flexvnf_address': subnet_address_long,
+                'isp_switch_address': vedge_address,
+                'flexvnf': f'FlexVNF-{site_index:003}'
+            }
+            networks.append(network_dict)
+            site_index += 1
+            switch_limit += 1
+    return networks
 
 def versa_generate_flexvnf_deploy_data(flexvnf_count):
     deploy_data = {}
@@ -1030,44 +988,68 @@ def generate_flexvnf_objects(vedge_count, mgmt_base_subnet):
             k += 1
     # logging.info(networks)
     return networks
-def generate_mgmt_switch_deploy_data_old(num_nodes):
-    deploy_data = {}
-    e = 1
-    o = 1
-    x_o = -261
-    x_e = 39
-    y = -316
-    z = -1
-    row_count = 10
 
-    for i in range(1, num_nodes + 1):
-        name = f"MGMT_switch_{i:03}"
-        if i == 1:
-            x = x_o
-        elif i == 2:
-            x = x_e
-        elif i <= row_count:
-            if i % 2 == 0:
-                x = x_e + 100 * e
-                e += 1
-            else:
-                x = x_o + -100 * o
-                o += 1
-        deploy_data[f"mgmt_switch_{i:03}_deploy_data"] = {"x": x, "y": y, "name": name}
+def generate_versa_interfaces_file(interface_data_1, router_index, interface_data_2, interface_data_3, filename_temp):
+    abs_path = os.path.abspath(__file__)
+    configs_path = os.path.join(os.path.dirname(abs_path), '../configs/')
+    filename = os.path.join(configs_path, filename_temp)
+    with open(filename, 'w') as f:
+        eth_1 = 0
+        eth_2 = 0
+        f.write(f'#{filename}\n')
+        f.write('auto eth0\n')
+        f.write('iface eth0 inet static\n')
+        # f.write(f'\taddress {interface_data_1[router_index]["isp_switch_address"]}\n')
+        # f.write(f'\tnetmask {interface_data_1[router_index]["subnet_address"]}\n')
+        # f.write(f'\tgateway {interface_data_1[router_index]["router_address"]}\n')
+        f.write(f'\taddress 192.168.122.251\n')
+        f.write(f'\tnetmask 255.255.255.0\n')
+        f.write(f'\tgateway 192.168.122.1\n')
+        f.write('\tup echo nameserver 192.168.122.1 > /etc/resolv.conf\n\n')
+        f.write('auto eth1\n')
+        f.write('iface eth1 inet static\n')
+        if filename_temp == "cloud_isp_switch_0_interfaces":
+            f.write(f'\taddress 172.14.5.1\n')
+            f.write(f'\tnetmask 255.255.255.252\n')
+            f.write('auto eth2\n')
+            f.write('iface eth2 inet static\n')
+            f.write(f'\taddress 172.14.5.5\n')
+            f.write(f'\tnetmask 255.255.255.252\n')
+            f.write('auto eth3\n')
+            f.write('iface eth3 inet static\n')
+            f.write(f'\taddress 172.14.5.9\n')
+            f.write(f'\tnetmask 255.255.255.252\n')
+        for i in range(5, 49):
+            f.write(f'#{interface_data_2[eth_1]["flexvnf"]} interface ge0/0\n')
+            f.write(f'auto eth{i}\n')
+            f.write(f'iface eth{i} inet static\n')
+            f.write(f'\taddress {interface_data_2[eth_1]["router_address"]}\n')
+            f.write(f'\tnetmask {interface_data_2[eth_1]["subnet_address"]}\n')
+            f.write('\n')
+            eth_1 += 1
+        for i in range(51, 95):
+            f.write(f'#{interface_data_3[eth_2]["flexvnf"]} interface ge0/1\n')
+            f.write(f'auto eth{i}\n')
+            f.write(f'iface eth{i} inet static\n')
+            f.write(f'\taddress {interface_data_3[eth_2]["router_address"]}\n')
+            f.write(f'\tnetmask {interface_data_3[eth_2]["subnet_address"]}\n')
+            f.write('\n')
+            eth_2 += 1
+    logging.info(f"Deploy - Created file {filename_temp}")
+# endregion
+# region Arista Specific
+def generate_arista_interfaces_file(filename_temp, mgmt_network_address, ip_var):
+    abs_path = os.path.abspath(__file__)
+    configs_path = os.path.join(os.path.dirname(abs_path), '../configs/')
+    filename = os.path.join(configs_path, filename_temp)
 
-    return deploy_data
+    with open(filename, 'w') as f:
+        f.write('auto eth0\n')
+        f.write('iface eth0 inet static\n')
+        f.write(f'\taddress {ip_var}\n')
+        f.write('\tnetmask 255.255.255.0\n\n')
+        f.write(f'\tgateway {mgmt_network_address}1\n')
 
-def generate_mgmt_switch_deploy_data(num_nodes):
-    deploy_data = {}
-    x = -279
-    y_s = -313
-    for i in range(1, num_nodes + 1):
-        name = f"MGMT_switch_{i:03}"
-        if i == 1:
-            y = y_s
-        else:
-            y = y + 100
-        deploy_data[f"mgmt_switch_{i:03}_deploy_data"] = {"x": x, "y": y, "name": name}
+    logging.info(f"Deploy - Created file {filename_temp}")
 
-
-    return deploy_data
+# endregion
