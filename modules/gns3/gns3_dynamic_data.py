@@ -969,9 +969,11 @@ def generate_flexvnf_objects(vedge_count, mgmt_base_subnet):
                 subnet_address_full = str(
                     ipaddress.IPv4Interface(str(subnet.network_address) + '/' + str(subnet_mask)).netmask)
                 subnet_address_var = str(subnet.network_address) + '/' + str(subnet_mask)
+                subnet_base_var = str(subnet.network_address)
                 dhcp_exclude_var = str(subnet.network_address + 1) + '-' + str(subnet.network_address + 50)
                 client_1_address_var = str(subnet.network_address + 51)
                 network_dict = {
+                    'lan_subnet_base': subnet_base_var.rstrip(".0"),
                     'lan_subnet_address': subnet_address_var,
                     'lan_gateway_address': f'{router_address}/24',
                     'lan_dhcp_pool': f'{vedge_address}/24',
