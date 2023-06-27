@@ -760,7 +760,7 @@ def viptela_appneta_deploy():
                 vmanage_set_cert(gns3_server_data, vmanage_headers, vmanage_root_cert)
                 vmanage_sync_rootcertchain(gns3_server_data, vmanage_headers)
                 vmanage_set_vbond(gns3_server_data, vmanage_headers)
-                vmanage_csr = vmanage_generate_csr(gns3_server_data, vmanage_headers, vmanage_address, 'vmanage')
+                vmanage_csr = vmanage_generate_csr(gns3_server_data, vmanage_headers, vmanage_api_ip, 'vmanage')
                 tn.write(b'exit\r\n')
                 tn.read_until(b'#')
                 tn.write(b'vshell\r\n')

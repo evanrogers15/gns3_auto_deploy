@@ -16,7 +16,7 @@ viptela_old_password = "admin"
 viptela_password = 'PW4netops'
 org_name = 'sdwan-lab'
 vbond_address = '172.16.4.10'
-vmanage_address = '172.16.2.2'
+#vmanage_address = '172.16.2.2'
 vsmart_address = '172.16.4.6'
 switchport_count = 95
 
