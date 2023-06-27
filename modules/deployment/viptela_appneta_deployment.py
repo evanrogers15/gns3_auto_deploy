@@ -997,7 +997,7 @@ def viptela_appneta_deploy():
                                                                node_id)
                     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
                                       f"Logging in to console for node {node_name[0]}")
-                    appneta_cli_curl_commands(server_ip, console_port, node_name[0], appneta_mp_mac, mp_ip_address, appn_site_key, appn_url)
+                    appneta_cli_curl_commands(server_ip, project_name, deployment_type, console_port, node_name[0], appneta_mp_mac, mp_ip_address, appn_site_key, appn_url)
                     v += 1
 
         log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,

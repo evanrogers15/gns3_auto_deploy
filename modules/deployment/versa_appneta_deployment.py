@@ -657,18 +657,21 @@ def versa_appneta_deploy():
                           f"Starting AppNeta Monitoring Point Configuration")
         server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
         v = 1
+        mp_lan_index = 3
         for server_ip in server_ips:
             temp_node_name = f'AppNeta'
             matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
             if matching_nodes:
                 for matching_node in matching_nodes:
                     mp_ip_address = f"{mgmt_subnet_ip}.{v+50}"
+                    mp_lan_address = f"172.14.10{mp_lan_index}.51"
+                    mp_lan_gateway = f"172.14.10{mp_lan_address}.1"
                     node_id, console_port, aux = matching_node
                     node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id', 'name',
                                                                node_id)
                     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
                                       f"Logging in to console for node {node_name[0]}")
-                    appneta_cli_curl_commands(server_ip, console_port, node_name[0], appneta_mp_mac, mp_ip_address, appn_site_key, appn_url)
+                    appneta_cli_curl_commands(server_ip, project_name, deployment_type, console_port, node_name[0], appneta_mp_mac, mp_ip_address, appn_site_key, appn_url, mp_lan_address, mp_lan_gateway)
                     v += 1
 
         log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
