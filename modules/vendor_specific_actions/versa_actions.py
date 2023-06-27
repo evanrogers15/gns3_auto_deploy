@@ -261,6 +261,7 @@ def versa_create_site_device_workflow(director_ip, vr_1_route_ip, lan_ip, lan_dh
     auth = ("Administrator", "versa123")
     lan_dhcp_start = lan_dhcp_base + ".50"
     lan_dhcp_end = lan_dhcp_base + ".100"
+    mgmt_snmp_target_source = mgmt_address.rstrip("/24")
     data = {
         "versanms.sdwan-device-workflow": {
             "deviceName": site_name, "siteId": site_id, "orgName": "Versa-Root", "serialNumber": device_serial_number,
@@ -309,7 +310,7 @@ def versa_create_site_device_workflow(director_ip, vr_1_route_ip, lan_ip, lan_dh
                                 "value": mgmt_address, "isAutogeneratable": False
                             }, {
                                 "name": "{$v_MGMT__snmpTargetSource}",
-                                "value": mgmt_address, "isAutogeneratable": False
+                                "value": mgmt_snmp_target_source, "isAutogeneratable": False
                             }, {
                                 "name": "{$v_Versa-Root_LAN-POOL-LAN_Pool_Range_Begin_IP__apRangeBegin}",
                                 "value": lan_dhcp_start,

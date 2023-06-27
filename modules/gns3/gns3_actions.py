@@ -399,13 +399,14 @@ def gns3_actions_versa_remove_templates(gns3_server_data):
         gns3_delete_template(gns3_server_data, mgmt_hub_template_name)
         gns3_delete_template(gns3_server_data, mgmt_main_hub_template_name)
         gns3_delete_template(gns3_server_data, arista_ceos_template_name)
-        delete_more_than_1_var = 0
+        gns3_delete_template(gns3_server_data, appneta_mp_template_name)
+        delete_more_than_1_var = 1
         if delete_more_than_1_var == 1:
             while True:
-                template_id = gns3_query_get_template_id(server_ip, server_port, arista_ceos_template_name)
+                template_id = gns3_query_get_template_id(server_ip, server_port, appneta_mp_template_name)
                 if not template_id:
                     break
-                gns3_delete_template(gns3_server_data, arista_ceos_template_name)
+                gns3_delete_template(gns3_server_data, appneta_mp_template_name)
 
 # endregion
 
