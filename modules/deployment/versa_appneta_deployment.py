@@ -665,7 +665,7 @@ def versa_appneta_deploy():
                 for matching_node in matching_nodes:
                     mp_ip_address = f"{mgmt_subnet_ip}.{v+50}"
                     mp_lan_address = f"172.14.10{mp_lan_index}.51"
-                    mp_lan_gateway = f"172.14.10{mp_lan_address}.1"
+                    mp_lan_gateway = f"172.14.10{mp_lan_index}.1"
                     node_id, console_port, aux = matching_node
                     node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id', 'name',
                                                                node_id)
@@ -673,6 +673,7 @@ def versa_appneta_deploy():
                                       f"Logging in to console for node {node_name[0]}")
                     appneta_cli_curl_commands(server_ip, project_name, deployment_type, console_port, node_name[0], appneta_mp_mac, mp_ip_address, appn_site_key, appn_url, mp_lan_address, mp_lan_gateway)
                     v += 1
+                    mp_lan_index += 1
 
         log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
                           f"Completed AppNeta MP Configuration")
