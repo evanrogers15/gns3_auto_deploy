@@ -115,7 +115,77 @@ def versa_create_device_template(director_ip):
     }
     auth = ("Administrator", "versa123")
 
-    data = {"versanms.sdwan-template-workflow":{"analyticsCluster":"Analytics","bandwidth":"100","licensePeriod":"1","controllers":["Controller-01"],"deviceFirmfactor":6,"deviceType":"full-mesh","diaConfig":{"loadBalance":False},"isStaging":False,"lanInterfaces":[{"interfaceName":"vni-0/2","unitInfo":[{"vlanId":"0","subOrganization":"Versa-Root","vrfName":"Versa-Root-LAN-VR","networkName":"LAN","subUnit":"0","ipv4Static":True,"ipv4Dhcp":False,"ip6Static":False,"ipv6Dhcp":False,"ipv4DhcpServer":True,"dhcpv4Profile":"DHCP","dhcpV4Relay":False,"dhcpV4RelayAddress":""}]}],"providerOrg":{"name":"Versa-Root","nextGenFW":False,"statefulFW":False},"redundantPair":{"enable":False},"routingInstances":[],"siteToSiteTunnels":[],"snmp":{},"solutionTier":"Premier-Elite-SDWAN","splitTunnels":[{"vrfName":"Versa-Root-LAN-VR","wanNetworkName":"ISP-1","dia":True,"gateway":False},{"vrfName":"Versa-Root-LAN-VR","wanNetworkName":"ISP-2","dia":True,"gateway":False}],"subOrgs":[],"templateName":"Edge-Template","templateType":"sdwan-post-staging","wanInterfaces":[{"pppoe":False,"interfaceName":"vni-0/0","unitInfo":[{"vlanId":"0","networkName":"ISP-1","routing":{},"subUnit":"0","ipv4Static":True,"ipv4Dhcp":False,"ip6Static":False,"ipv6Dhcp":False,"transportDomains":["Internet"]}]},{"pppoe":False,"interfaceName":"vni-0/1","unitInfo":[{"vlanId":"0","networkName":"ISP-2","routing":{},"subUnit":"0","ipv4Static":True,"ipv4Dhcp":False,"ip6Static":False,"ipv6Dhcp":False,"transportDomains":["Internet"]}]}],"l2Interfaces":[],"stp":"RSTP"}}
+    data = {
+        "versanms.sdwan-template-workflow": {
+            "analyticsCluster": "Analytics", "bandwidth": "100", "licensePeriod": "1", "controllers": ["Controller-01"],
+            "deviceFirmfactor": 6, "deviceType": "full-mesh", "diaConfig": {"loadBalance": False}, "isStaging": False,
+            "SNMPServers": [{"networkName": "MGMT", "server": "0.0.0.0"}],
+            "lanInterfaces": [{
+                                "interfaceName": "vni-0/2", "unitInfo": [{
+                                    "vlanId": "0",
+                                    "subOrganization": "Versa-Root",
+                                    "vrfName": "Versa-Root-LAN-VR",
+                                    "networkName": "LAN", "subUnit": "0",
+                                    "ipv4Static": True, "ipv4Dhcp": False,
+                                    "ip6Static": False, "ipv6Dhcp": False,
+                                    "ipv4DhcpServer": True,
+                                    "dhcpv4Profile": "DHCP",
+                                    "dhcpV4Relay": False,
+                                    "dhcpV4RelayAddress": ""
+                                    }]}, {
+                                "interfaceName": "vni-0/4", "unitInfo": [{
+                                    "vlanId": "0",
+                                    "subOrganization": "Versa-Root",
+                                    "vrfName": "Versa-Root-LAN-VR",
+                                    "networkName": "MGMT", "subUnit": "0",
+                                    "ipv4Static": True, "ipv4Dhcp": False,
+                                    "ip6Static": False, "ipv6Dhcp": False,
+                                    "ipv4DhcpServer": False,
+                                    "dhcpv4Profile": "DHCP",
+                                    "dhcpV4Relay": False,
+                                    "dhcpV4RelayAddress": ""
+                }]
+            }],
+            "providerOrg": {"name": "Versa-Root", "nextGenFW": False, "statefulFW": False},
+            "redundantPair": {"enable": False}, "routingInstances": [], "siteToSiteTunnels": [],
+            "solutionTier": "Premier-Elite-SDWAN",
+            "snmp": {
+                "snmpV1": False, "snmpV2": True, "snmpV3": False, "community": "public"
+            },
+            "splitTunnels": [{"vrfName": "Versa-Root-LAN-VR", "wanNetworkName": "ISP-1", "dia": True, "gateway": False},
+                             {
+                                 "vrfName": "Versa-Root-LAN-VR", "wanNetworkName": "ISP-2", "dia": True,
+                                 "gateway": False
+                             }], "subOrgs": [], "templateName": "Edge-Template", "templateType": "sdwan-post-staging",
+            "wanInterfaces": [{
+                                  "pppoe": False, "interfaceName": "vni-0/0", "unitInfo": [{
+                                                                                               "vlanId": "0",
+                                                                                               "networkName": "ISP-1",
+                                                                                               "routing": {},
+                                                                                               "subUnit": "0",
+                                                                                               "ipv4Static": True,
+                                                                                               "ipv4Dhcp": False,
+                                                                                               "ip6Static": False,
+                                                                                               "ipv6Dhcp": False,
+                                                                                               "transportDomains": [
+                                                                                                   "Internet"]
+                                                                                           }]
+                              }, {
+                                  "pppoe": False, "interfaceName": "vni-0/1", "unitInfo": [{
+                                                                                               "vlanId": "0",
+                                                                                               "networkName": "ISP-2",
+                                                                                               "routing": {},
+                                                                                               "subUnit": "0",
+                                                                                               "ipv4Static": True,
+                                                                                               "ipv4Dhcp": False,
+                                                                                               "ip6Static": False,
+                                                                                               "ipv6Dhcp": False,
+                                                                                               "transportDomains": [
+                                                                                                   "Internet"]
+                                                                                           }]
+                              }], "l2Interfaces": [], "stp": "RSTP"
+        }
+    }
     try:
         response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
         response.raise_for_status()
