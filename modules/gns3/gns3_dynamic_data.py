@@ -973,7 +973,7 @@ def generate_flexvnf_objects(vedge_count, mgmt_base_subnet):
                 client_1_address_var = str(subnet.network_address + 51)
                 network_dict = {
                     'lan_subnet_address': subnet_address_var,
-                    'lan_gateway_address': router_address,
+                    'lan_gateway_address': f'{router_address}/24',
                     'lan_dhcp_pool': f'{vedge_address}/24',
                     'lan_dhcp_exclude': dhcp_exclude_var,
                     'client_1_address': client_1_address_var,
