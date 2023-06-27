@@ -312,7 +312,6 @@
         <label for="appn_site_key" id="appn_site_key_label" style="display: none;">AppNeta Site Key:</label>
         <input type="text" id="appn_site_key" name="appn_site_key" style="display: none;">
 
-
         <input type="button" value="Start Deployment" onclick="submitForm()">
       </form>
     </div>
@@ -470,9 +469,6 @@
           }
 
           var appn_site_key = document.getElementById("appn_site_key").value;
-          if (appn_site_key === "custom") {
-            appn_site_key = document.getElementById("appn_site_key_input").value;
-          }
 
          var data;
           if (deploy_appneta == "n") {

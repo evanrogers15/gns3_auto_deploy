@@ -111,8 +111,6 @@ def viptela_appneta_deploy():
     # region Create GNS3 Templates
     deployment_step = 'Creating Templates'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, "Starting Template Creation")
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
-                      f"vManage IP is {vmanage_api_ip}")
     vmanage_template_id = gns3_create_template(gns3_server_data, viptela_vmanage_template_data)
     vbond_template_id = gns3_create_template(gns3_server_data, viptela_vbond_template_data)
     vsmart_template_id = gns3_create_template(gns3_server_data, viptela_vsmart_template_data)
@@ -712,12 +710,12 @@ def viptela_appneta_deploy():
     while True:
         try:
             log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Checking if vManage API is available..")
-            response = auth.get_jsessionid(gns3_server_data)
+            response = auth.get_jsessionid(vmanage_api_ip)
             break
         except:
             log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f'vManage API is yet not available, checking again in 1 minute at {util_resume_time(1)}')
             time.sleep(60)
-    vmanage_headers = vmanage_create_auth(gns3_server_data)
+    vmanage_headers = vmanage_create_auth(vmanage_api_ip)
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     for server_ip in server_ips:
         temp_node_name = f'vManage'
@@ -755,12 +753,12 @@ def viptela_appneta_deploy():
                 vmanage_root_cert = tn.read_until(b"-----END CERTIFICATE-----")
                 vmanage_root_cert = vmanage_root_cert.decode('ascii').split('\r\n', 1)[1]
                 vmanage_root_cert = vmanage_root_cert.replace('\r\n', '\n')
-                vmanage_set_org(gns3_server_data, vmanage_headers)
-                vmanage_set_cert_type(gns3_server_data, vmanage_headers)
-                vmanage_set_cert(gns3_server_data, vmanage_headers, vmanage_root_cert)
-                vmanage_sync_rootcertchain(gns3_server_data, vmanage_headers)
-                vmanage_set_vbond(gns3_server_data, vmanage_headers)
-                vmanage_csr = vmanage_generate_csr(gns3_server_data, vmanage_headers, vmanage_api_ip, 'vmanage')
+                vmanage_set_org(vmanage_api_ip, vmanage_headers)
+                vmanage_set_cert_type(vmanage_api_ip, vmanage_headers)
+                vmanage_set_cert(vmanage_api_ip, vmanage_headers, vmanage_root_cert)
+                vmanage_sync_rootcertchain(vmanage_api_ip, vmanage_headers)
+                vmanage_set_vbond(vmanage_api_ip, vmanage_headers)
+                vmanage_csr = vmanage_generate_csr(vmanage_api_ip, vmanage_headers, vmanage_api_ip, 'vmanage')
                 tn.write(b'exit\r\n')
                 tn.read_until(b'#')
                 tn.write(b'vshell\r\n')
@@ -777,11 +775,11 @@ def viptela_appneta_deploy():
                 vdevice_cert = tn.read_until(b"-----END CERTIFICATE-----")
                 vdevice_cert = vdevice_cert.decode('ascii').split('\r\n', 1)[1]
                 vdevice_cert = vdevice_cert.replace('\r\n', '\n')
-                vmanage_install_cert(gns3_server_data, vmanage_headers, vdevice_cert)
-                vmanage_set_device(gns3_server_data, vmanage_headers, vsmart_address, "vsmart")
-                vmanage_set_device(gns3_server_data, vmanage_headers, vbond_address, "vbond")
-                vbond_csr = vmanage_generate_csr(gns3_server_data, vmanage_headers, vbond_address, 'vbond')
-                vsmart_csr = vmanage_generate_csr(gns3_server_data, vmanage_headers, vsmart_address, 'vsmart')
+                vmanage_install_cert(vmanage_api_ip, vmanage_headers, vdevice_cert)
+                vmanage_set_device(vmanage_api_ip, vmanage_headers, vsmart_address, "vsmart")
+                vmanage_set_device(vmanage_api_ip, vmanage_headers, vbond_address, "vbond")
+                vbond_csr = vmanage_generate_csr(vmanage_api_ip, vmanage_headers, vbond_address, 'vbond')
+                vsmart_csr = vmanage_generate_csr(vmanage_api_ip, vmanage_headers, vsmart_address, 'vsmart')
                 tn.write(b'exit\r\n')
                 tn.read_until(b'#')
                 tn.write(b'vshell\r\n')
@@ -798,7 +796,7 @@ def viptela_appneta_deploy():
                 vdevice_cert = tn.read_until(b"-----END CERTIFICATE-----")
                 vdevice_cert = vdevice_cert.decode('ascii').split('\r\n', 1)[1]
                 vdevice_cert = vdevice_cert.replace('\r\n', '\n')
-                vmanage_install_cert(gns3_server_data, vmanage_headers, vdevice_cert)
+                vmanage_install_cert(vmanage_api_ip, vmanage_headers, vdevice_cert)
                 tn.write(b'exit\r\n')
                 tn.read_until(b'#')
                 tn.write(b'vshell\r\n')
@@ -815,7 +813,7 @@ def viptela_appneta_deploy():
                 vdevice_cert = tn.read_until(b"-----END CERTIFICATE-----")
                 vdevice_cert = vdevice_cert.decode('ascii').split('\r\n', 1)[1]
                 vdevice_cert = vdevice_cert.replace('\r\n', '\n')
-                vmanage_install_cert(gns3_server_data, vmanage_headers, vdevice_cert)
+                vmanage_install_cert(vmanage_api_ip, vmanage_headers, vdevice_cert)
                 tn.write(b'exit\r\n')
                 tn.read_until(b'#')
                 tn.close()
@@ -959,13 +957,13 @@ def viptela_appneta_deploy():
     while True:
         try:
             auth = Authentication()
-            response = auth.get_jsessionid(gns3_server_data)
+            response = auth.get_jsessionid(vmanage_api_ip)
             break
         except:
             log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f'vManage API is yet not available')
             time.sleep(60)
-    vmanage_headers = vmanage_create_auth(gns3_server_data)
-    vmanage_push_certs(gns3_server_data, vmanage_headers)
+    vmanage_headers = vmanage_create_auth(vmanage_api_ip)
+    vmanage_push_certs(vmanage_api_ip, vmanage_headers)
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vEdge Certificate setup and deployment into Viptela Environment")
     # endregion
     # region Push vEdge Certs to Control Devices
@@ -975,35 +973,37 @@ def viptela_appneta_deploy():
     while True:
         try:
             auth = Authentication()
-            response = auth.get_jsessionid(gns3_server_data)
+            response = auth.get_jsessionid(vmanage_api_ip)
             break
         except:
             log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f'vManage API is yet not available')
             time.sleep(60)
-    vmanage_headers = vmanage_create_auth(gns3_server_data)
-    vmanage_push_certs(gns3_server_data, vmanage_headers)
+    vmanage_headers = vmanage_create_auth(vmanage_api_ip)
+    vmanage_push_certs(vmanage_api_ip, vmanage_headers)
     # endregion
     # region AppNeta MP Setup
-    deployment_step = 'AppNeta MP Setup'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
-                      f"Starting AppNeta Monitoring Point Configuration")
-    server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
-    v = 1
-    for server_ip in server_ips:
-        temp_node_name = f'AppNeta'
-        matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
-        if matching_nodes:
-            for matching_node in matching_nodes:
-                mp_ip_address = f"{mgmt_subnet_ip}.{v+50}"
-                node_id, console_port, aux = matching_node
-                node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id', 'name',
-                                                           node_id)
-                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
-                                  f"Logging in to console for node {node_name[0]}")
-                appneta_cli_curl_commands(server_ip, console_port, node_name[0], appneta_mp_mac, mp_ip_address, appn_site_key, appn_url)
+    if deploy_appneta == 'y':
+        deployment_step = 'AppNeta Monitoring Point Setup'
+        log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                          f"Starting AppNeta Monitoring Point Configuration")
+        server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
+        v = 1
+        for server_ip in server_ips:
+            temp_node_name = f'AppNeta'
+            matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
+            if matching_nodes:
+                for matching_node in matching_nodes:
+                    mp_ip_address = f"{mgmt_subnet_ip}.{v+50}"
+                    node_id, console_port, aux = matching_node
+                    node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id', 'name',
+                                                               node_id)
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                      f"Logging in to console for node {node_name[0]}")
+                    appneta_cli_curl_commands(server_ip, console_port, node_name[0], appneta_mp_mac, mp_ip_address, appn_site_key, appn_url)
+                    v += 1
 
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
-                      f"Completed AppNeta MP Configuration")
+        log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                          f"Completed AppNeta MP Configuration")
     # endregion
     # region Validation
     client_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "Site_")
