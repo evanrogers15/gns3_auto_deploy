@@ -517,9 +517,9 @@ def versa_appneta_deploy():
                 tn = telnetlib.Telnet(server_ip, console_port)
                 while True:
                     tn.write(b"\r\n")
+                    output = tn.read_until(b"login:", timeout=2).decode('ascii')
                     if '[Administrator@director: ~] $' in output:
                         break
-                    tn.read_until(b"login:", timeout=1)
                     tn.write(versa_analytics_username.encode("ascii") + b"\n")
                     tn.read_until(b"Password:", timeout=5)
                     tn.write(versa_old_password.encode("ascii") + b"\n")
