@@ -215,7 +215,7 @@ def versa_appneta_deploy():
         for j in range(first_flexvnf_index, last_flexvnf_index):
             flexvnf_node_id = flexvnf_info[j]['node_id']
             gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_switch_node_id, 0, mgmt_switch_interface,
-                               flexvnf_node_id, 0, 0)
+                               flexvnf_node_id, 5, 0)
             gns3_connect_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, switch_adapter_a, 0, flexvnf_node_id,
                                1, 0)
             gns3_connect_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, switch_adapter_b, 0, flexvnf_node_id,
@@ -590,7 +590,7 @@ def versa_appneta_deploy():
                     for flexvnf_lan_object in flexvnf_lan_objects:
                         if flexvnf_lan_object['flexvnf'] == temp_node_name:
                             lan_dhcp_pool = flexvnf_lan_object['lan_dhcp_pool']
-                            lan_subnet_address = flexvnf_lan_object['lan_subnet_address']
+                            lan_subnet_base = flexvnf_lan_object['lan_subnet_base']
                             lan_dhcp_exclude = flexvnf_lan_object['lan_dhcp_exclude']
                             lan_gateway_address = flexvnf_lan_object['lan_gateway_address']
                             client_1_address = flexvnf_lan_object['client_1_address']
@@ -617,7 +617,7 @@ def versa_appneta_deploy():
                     longitude = versa_city_data[temp_node_name]['longitude']
                     onboard_command = f"sudo /opt/versa/scripts/staging.py -w 0 -n {device_serial_number} -c 172.14.5.2 -s {vpn_0_ge0_0_ip_address} -g {vpn_0_ge0_0_ip_gateway} -l SDWAN-Branch@Versa-Root.com -r Controller-01-staging@Versa-Root.com"
                     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting FlexVNF Device Onboarding for {node_name[0]} - FlexVNF {i} of {flexvnf_count}")
-                    versa_create_site_device_workflow(versa_director_mgmt_ip, vr_1_route_ip, lan_gateway_address, flexvnf_hostname, site_id, device_serial_number, flexvnf_country, flexvnf_city, vpn_0_ge0_0_ip_address, vpn_0_ge0_0_ip_gateway, vpn_0_ge0_1_ip_address, vpn_0_ge0_1_ip_gateway, tvi_0_2_ip, tvi_0_3_ip, latitude, longitude)
+                    versa_create_site_device_workflow(versa_director_mgmt_ip, vr_1_route_ip, lan_gateway_address, lan_subnet_base, flexvnf_hostname, site_id, device_serial_number, flexvnf_country, flexvnf_city, vpn_0_ge0_0_ip_address, vpn_0_ge0_0_ip_gateway, vpn_0_ge0_1_ip_address, vpn_0_ge0_1_ip_gateway, tvi_0_2_ip, tvi_0_3_ip, latitude, longitude, mgmt_address)
                     time.sleep(10)
                     versa_deploy_device_workflow(versa_director_mgmt_ip, flexvnf_hostname)
                     time.sleep(10)

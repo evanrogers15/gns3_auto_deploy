@@ -372,13 +372,12 @@ def gns3_actions_remove_templates(gns3_server_data):
         gns3_delete_template(gns3_server_data, vbond_template_name)
         gns3_delete_template(gns3_server_data, vsmart_template_name)
         gns3_delete_template(gns3_server_data, vedge_template_name)
-        gns3_delete_template(gns3_server_data, cisco_l3_router_template_name)
         gns3_delete_template(gns3_server_data, network_test_tool_template_name)
         gns3_delete_template(gns3_server_data, open_vswitch_cloud_template_name)
         gns3_delete_template(gns3_server_data, open_vswitch_isp_template_name)
         gns3_delete_template(gns3_server_data, mgmt_hub_template_name)
         gns3_delete_template(gns3_server_data, mgmt_main_hub_template_name)
-        gns3_delete_template(gns3_server_data, arista_ceos_template_name)
+        gns3_delete_template(gns3_server_data, appneta_mp_template_name)
         delete_more_than_1_var = 0
         if delete_more_than_1_var == 1:
             while True:

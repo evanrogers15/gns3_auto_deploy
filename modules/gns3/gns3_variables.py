@@ -47,6 +47,7 @@ vmanage_template_name = 'vManage'
 vbond_template_name = 'vBond'
 vsmart_template_name = 'vSmart'
 vedge_template_name = 'vEdge'
+c8000v_template_name = 'c8000v'
 open_vswitch_cloud_template_name = 'Open_vSwitch_Cloud'
 open_vswitch_isp_template_name = 'Open_vSwitch_ISP'
 network_test_tool_template_name = 'Network_Test_Tool'
@@ -59,6 +60,7 @@ fortinet_fortigate_template_name = 'Fortigate 7.0.5'
 versa_director_template_name = 'Versa Director 21.2.3'
 versa_analytics_template_name = 'Versa Analytics 21.2.3'
 versa_flexvnf_template_name = 'Versa FlexVNF 21.2.3'
+appneta_mp_template_name = "Appneta-vk35"
 # region Viptela Template Data
 viptela_vmanage_template_data = {"compute_id": "local", "cpus": 16, "adapters": 6,
                                  "symbol": ":/symbols/affinity/circle/blue/server_cluster.svg",
@@ -85,12 +87,18 @@ viptela_vedge_template_data = {"compute_id": "local", "cpus": 1, "adapters": 6,
                                "hda_disk_image": "viptela-edge-20.10.1-genericx86-64.qcow2",
                                "name": vedge_template_name, "ram": 2048, "template_type": "qemu",
                                "hda_disk_interface": "virtio", "options": "-cpu host -smp 2,maxcpus=2"}
+viptela_c8000v_template_data = {"compute_id": "local", "cpus": 1, "adapters": 6,
+                               "symbol": ":/symbols/affinity/square/blue/communications.svg",
+                               "adapter_type": "vmxnet3", "qemu_path": "/usr/bin/qemu-system-x86_64",
+                               "hda_disk_image": "c8000v-universalk9_8G_serial.17.09.01a.qcow2",
+                               "name": c8000v_template_name, "ram": 2048, "template_type": "qemu",
+                               "hda_disk_interface": "virtio", "options": "-cpu host -smp 2,maxcpus=2"}
 # endregion
 # region Misc Template Data
 appneta_mp_template_data = {"compute_id": "local", "cpus": 2, "port_name_format": "eth{0}", "adapters": 3,
                             "adapter_type": "virtio-net-pci","hda_disk_interface": "virtio", "qemu_path": "/usr/bin/qemu-system-x86_64",
                             "mac_address": "52:54:00:E0:00:00", "custom_adapters": [{"adapter_number": 1, "mac_address": "52:54:00:E1:00:00"}, {"adapter_number": 2, "mac_address": "52:54:00:E2:00:00"}],
-                            "hda_disk_image": appneta_pathview_qcow2_name, "name": "Appneta-vk35",
+                            "hda_disk_image": appneta_pathview_qcow2_name, "name": appneta_mp_template_name,
                             "ram": 4096, "template_type": "qemu"}
 openvswitch_template_data = {"compute_id": "local", "adapters": 16, "category": "switch",
                              "image": "gns3/ovs-snmp:latest", "name": "Open vSwitch",

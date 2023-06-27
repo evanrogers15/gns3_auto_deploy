@@ -839,9 +839,10 @@ def viptela_appneta_deploy():
                     scp_3_command = f"request execute vpn 512 scp /home/admin/vedge.csr admin@{mgmt_subnet_ip}.2:/home/admin"
                     ssh_command = f"request execute vpn 512 ssh admin@{mgmt_subnet_ip}.{ve}"
                     ssh_2_command = f"request execute vpn 512 ssh admin@{mgmt_subnet_ip}.10"
-                    tn = telnetlib.Telnet(server_ip, console_port)
+                    # tn = telnetlib.Telnet(server_ip, console_port)
                     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vEdge Certificate Setup for {node_name[0]} - vEdge {v} of {vedge_count}")
                     while True:
+                        tn = telnetlib.Telnet(server_ip, console_port)
                         tn.write(b"\r\n")
                         output = tn.read_until(b"login:", timeout=2).decode('ascii')
                         if '#' in output:
@@ -862,6 +863,7 @@ def viptela_appneta_deploy():
                             tn.write(b'vshell\r\n')
                             break
                         log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"{temp_node_name} not available yet, trying again in 30 seconds")
+                        tn.close()
                         time.sleep(30)
                     tn.write(b"\r\n")
                     tn.read_until(b'$')
