@@ -42,9 +42,14 @@
 </head>
 <body>
     <div class="container">
-        <h1>Deployment Types</h1>
+        <h1>Standard Deployment Types</h1>
         <ul>
             <li><a href="{{ url_for('arista_deploy_render') }}">Arista</a> - Deploy Arista EVPN Lab</li>
+        </ul>
+    </div>
+    <div class="container">
+        <h1>AppNeta Enabled Deployment Types</h1>
+        <ul>
             <li><a href="{{ url_for('versa_appneta_deploy_render') }}">Versa & AppNeta</a> - Deploy Versa SDWAN and AppNeta Monitoring Points Environment</li>
             <li><a href="{{ url_for('viptela_appneta_deploy_render') }}">Viptela & AppNeta</a> - Deploy Viptela SDWAN and AppNeta Monitoring Points Environment</li>
         </ul>
