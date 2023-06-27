@@ -45,8 +45,10 @@ def appneta_cli_curl_commands(server_ip, server_name, project_name, deployment_t
     log_and_update_db(server_name, project_name, deployment_type, 'running', deployment_step,
                       f"Rebooting {node_name}...")
     tn.read_until(b"$ ")
+    tn.close()
     time.sleep(120)
     while True:
+        tn = telnetlib.Telnet(server_ip, console_port)
         tn.write(b"\r\n")
         tn.read_until(b"login:", timeout=1)
         tn.write(user.encode("ascii") + b"\n")
@@ -57,6 +59,7 @@ def appneta_cli_curl_commands(server_ip, server_name, project_name, deployment_t
         log_and_update_db(server_name, 'project_name', "deployment_type", 'running',
                               deployment_step,
                               f"{node_name} not available yet, trying again in 30 seconds..")
+        tn.close()
         time.sleep(30)
     log_and_update_db(server_name, project_name, deployment_type, 'running', deployment_step,
                       f"Setting AppNeta NIS on {node_name}")
