@@ -8,7 +8,7 @@ from modules.vendor_specific_actions.appneta_actions import *
 import telnetlib
 import time
 
-def versa_deploy():
+def versa_appneta_deploy():
     # region Variables
     vmanage_headers = {}
     lan_subnet_address = ''

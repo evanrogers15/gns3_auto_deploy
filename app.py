@@ -8,7 +8,8 @@ from modules.deployment.arista_evpn_deploy import *
 from modules.deployment.viptela_appneta_deployment import *
 from modules.gns3.gns3_actions_old import *
 from modules.use_case.use_cases import *
-from modules.deployment.versa_deployment import versa_deploy
+from modules.deployment.versa_appneta_deployment import *
+
 
 app = Flask(__name__)
 
@@ -28,7 +29,7 @@ def arista_deploy_render():
 
 @app.route('/deployment/versa')
 def versa_deploy_render():
-    return render_template('deployment/create_versa_sdwan.html')
+    return render_template('deployment/create_versa_appneta_sdwan.html')
 
 @app.route('/deploymemt/viptela-appneta')
 def viptela_appneta_deploy_render():
@@ -165,19 +166,6 @@ def get_uploaded_files():
     ios_files = [file for file in os.listdir(ios_dir) if os.path.isfile(os.path.join(ios_dir, file))]
     return jsonify({'qemu_files': qemu_files, 'iou_files': iou_files, 'ios_files': ios_files})
 
-@app.route('/api/tasks/start_viptela_deploy', methods=['PUT'])
-def viptela_deploy_full():
-    global running_thread
-    # Check if a thread is already running
-    if running_thread is not None and running_thread.is_alive():
-        return make_response(jsonify({'message': 'Deployment is already in progress'}), 400)
-
-    # Start a new thread for deployment
-    running_thread = threading.Thread(target=viptela_deploy, args=())
-    running_thread.start()
-
-    return jsonify({'success': True})
-
 @app.route('/api/tasks/start_viptela_appneta_deploy', methods=['PUT'])
 def viptela_appneta_deploy_full():
     global running_thread
@@ -191,7 +179,7 @@ def viptela_appneta_deploy_full():
 
     return jsonify({'success': True})
 
-@app.route('/api/tasks/start_versa_deploy', methods=['PUT'])
+@app.route('/api/tasks/start_versa_appneta_deploy', methods=['PUT'])
 def versa_deploy_full():
     global running_thread
     # Check if a thread is already running
@@ -199,7 +187,7 @@ def versa_deploy_full():
         return make_response(jsonify({'message': 'Deployment is already in progress'}), 400)
 
     # Start a new thread for deployment
-    running_thread = threading.Thread(target=versa_deploy, args=())
+    running_thread = threading.Thread(target=versa_appneta_deploy, args=())
     running_thread.start()
 
     return jsonify({'success': True})
