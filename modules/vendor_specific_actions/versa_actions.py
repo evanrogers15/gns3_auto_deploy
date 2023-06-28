@@ -78,7 +78,7 @@ def versa_create_overlay_route(director_ip, controller_southbound_ip):
     except requests.exceptions.RequestException as e:
         print(f"Configuration failed. Error: {str(e)}")
     
-def versa_create_controller_workflow(director_ip, controller_ip, controller_southbound_ip):
+def versa_create_controller_workflow(director_ip, controller_ip, controller_southbound_ip, isp_1_gateway, isp_1_ip, isp_2_gateway, isp_2_ip):
     url = f"https://{director_ip}:9182/vnms/sdwan/workflow/controllers/controller"
     headers = {
         "Content-Type": "application/json"
@@ -86,8 +86,10 @@ def versa_create_controller_workflow(director_ip, controller_ip, controller_sout
     auth = ("Administrator", "versa123")
 
     controller_southbound_ip = f'{controller_southbound_ip}/24'
+    isp_1_ip = f'{isp_1_ip}/30'
+    isp_2_ip = f'{isp_2_ip}/30'
 
-    data = { "versanms.sdwan-controller-workflow": { "controllerName": "Controller-01", "siteId": 1, "orgName": "Versa-Root", "resourceType": "Baremetal", "stagingController": True, "postStagingController": True, "baremetalController": { "serverIP": controller_ip, "controllerInterface": { "interfaceName": "vni-0/1", "unitInfoList": [ { "networkName": "Control-Network", "ipv4address": [ controller_southbound_ip ], "ipv4gateway": "", "ipv6gateway": "", "ipv4dhcp": False, "ipv6dhcp": False, "vlanId": 0, "wanStaging": True, "poolSize": 256 } ] }, "wanInterfaces": [ { "interfaceName": "vni-0/2", "unitInfoList": [ { "networkName": "ISP-1", "ipv4address": [ "172.14.5.2/30" ], "ipv4gateway": "172.14.5.1", "ipv4dhcp": False, "ipv6dhcp": False, "vlanId": 0, "wanStaging": True, "poolSize": 128, "transportDomainList": [ "Internet" ] } ] }, { "interfaceName": "vni-0/3", "unitInfoList": [ { "networkName": "ISP-2", "ipv4address": [ "172.14.5.6/30" ], "ipv4gateway": "172.14.5.5", "ipv4dhcp": False, "ipv6dhcp": False, "vlanId": 0, "wanStaging": True, "poolSize": 128, "transportDomainList": [ "Internet" ] } ] } ] }, "locationInfo": { "state": "CA", "country": "USA", "city": "San Jose", "longitude": -121.885252, "latitude": 37.33874 }, "analyticsCluster": "Analytics" }}
+    data = { "versanms.sdwan-controller-workflow": { "controllerName": "Controller-01", "siteId": 1, "orgName": "Versa-Root", "resourceType": "Baremetal", "stagingController": True, "postStagingController": True, "baremetalController": { "serverIP": controller_ip, "controllerInterface": { "interfaceName": "vni-0/1", "unitInfoList": [ { "networkName": "Control-Network", "ipv4address": [ controller_southbound_ip ], "ipv4gateway": "", "ipv6gateway": "", "ipv4dhcp": False, "ipv6dhcp": False, "vlanId": 0, "wanStaging": True, "poolSize": 256 } ] }, "wanInterfaces": [ { "interfaceName": "vni-0/2", "unitInfoList": [ { "networkName": "ISP-1", "ipv4address": [ isp_1_ip ], "ipv4gateway": isp_1_gateway, "ipv4dhcp": False, "ipv6dhcp": False, "vlanId": 0, "wanStaging": True, "poolSize": 128, "transportDomainList": [ "Internet" ] } ] }, { "interfaceName": "vni-0/3", "unitInfoList": [ { "networkName": "ISP-2", "ipv4address": [ isp_2_ip ], "ipv4gateway": isp_2_gateway, "ipv4dhcp": False, "ipv6dhcp": False, "vlanId": 0, "wanStaging": True, "poolSize": 128, "transportDomainList": [ "Internet" ] } ] } ] }, "locationInfo": { "state": "CA", "country": "USA", "city": "San Jose", "longitude": -121.885252, "latitude": 37.33874 }, "analyticsCluster": "Analytics" }}
     try:
         response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
         response.raise_for_status()

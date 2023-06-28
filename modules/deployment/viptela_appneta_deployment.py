@@ -76,7 +76,7 @@ def viptela_appneta_deploy():
                     "vManage API IP": vmanage_mgmt_ip, "Project Name": project_name, "Project ID": new_project_id,
                     "Tap Name": tap_name,
                     "Site Count": site_count, "Deployment Type": deployment_type, "Deployment Status": deployment_status, "Deployment Step": deployment_step}]
-    viptela_drawing_data = {
+    info_drawing_data = {
         "drawing_01": {
             "svg": "<svg width=\"297\" height=\"246\"><rect width=\"297\" height=\"246\" fill=\"#6080b3\" fill-opacity=\"0.6399938963912413\" stroke-width=\"2\" stroke=\"#000000\" /></svg>",
             "x": -228, "y": 457, "z": 0},
@@ -243,8 +243,8 @@ def viptela_appneta_deploy():
         gns3_create_drawing(gns3_server_data, new_project_id,
                             site_drawing_deploy_data[f"site_drawing_{i:03}_deploy_data"])
     drawing_index = 1
-    for drawing_data in viptela_drawing_data:
-        gns3_create_drawing(gns3_server_data, new_project_id, viptela_drawing_data[f'drawing_{drawing_index:02}'])
+    for drawing_data in info_drawing_data:
+        gns3_create_drawing(gns3_server_data, new_project_id, info_drawing_data[f'drawing_{drawing_index:02}'])
         drawing_index += 1
     # endregion
     # region Deploy GNS3 Node Config Files

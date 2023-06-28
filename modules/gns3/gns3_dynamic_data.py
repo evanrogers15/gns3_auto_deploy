@@ -91,6 +91,15 @@ def generate_interfaces_file(version, interface_data_2, interface_data_3, filena
             f.write('iface eth3 inet static\n')
             f.write(f'\taddress {mgmt_component_3_gateway_ip}\n')
             f.write(f'\tnetmask 255.255.255.252\n')
+        elif version == "flexvnf":
+            f.write(f'\taddress {mgmt_component_1_gateway_ip}\n')
+            f.write(f'\tnetmask 255.255.255.252\n')
+            f.write('auto eth2\n')
+            f.write('iface eth2 inet static\n')
+            f.write(f'\taddress {mgmt_component_2_gateway_ip}\n')
+            f.write(f'\tnetmask 255.255.255.252\n')
+            f.write('auto eth3\n')
+            f.write('iface eth3 inet static\n')
         for i in range(5, 49):
             f.write(f'#{interface_data_2[eth_1][version]} interface ge0/0\n')
             f.write(f'auto eth{i}\n')
@@ -108,18 +117,6 @@ def generate_interfaces_file(version, interface_data_2, interface_data_3, filena
             f.write('\n')
             eth_2 += 1
     logging.info(f"Deploy - Created file {filename_temp}")
-
-def generate_isp_deploy_data(num_nodes):
-    deploy_data = {}
-    x = -154
-    y = 51
-
-    for i in range(1, num_nodes + 1):
-        name = f"Cloud_ISP_{i:03}"
-        y += 75
-        deploy_data[f"isp_{i:03}_deploy_data"] = {"x": x, "y": y, "name": name}
-
-    return deploy_data
 
 def generate_mgmt_switch_deploy_data(num_nodes):
     deploy_data = {}
@@ -1011,6 +1008,17 @@ def generate_arista_interfaces_file(filename_temp, mgmt_network_address, ip_var)
 
 # endregion
 # region Old
+def generate_isp_deploy_data(num_nodes):
+    deploy_data = {}
+    x = -154
+    y = 51
+
+    for i in range(1, num_nodes + 1):
+        name = f"Cloud_ISP_{i:03}"
+        y += 75
+        deploy_data[f"isp_{i:03}_deploy_data"] = {"x": x, "y": y, "name": name}
+
+    return deploy_data
 def generate_interfaces_file_old(interface_data_1, router_index, interface_data_2, interface_data_3, filename_temp):
     abs_path = os.path.abspath(__file__)
     configs_path = os.path.join(os.path.dirname(abs_path), '../configs/')

@@ -70,10 +70,32 @@ def versa_appneta_deploy():
     controller_southbound_gateway_ip = southbound_subnet + ".1"
     controller_southbound_ip = southbound_subnet + ".10"
 
+    controller_isp_subnet = '172.16.5'
+    controller_isp_1_ip_gateway = controller_isp_subnet + ".1"
+    controller_isp_1_ip = controller_isp_subnet + ".2"
+    controller_isp_2_ip_gateway = controller_isp_subnet + ".5"
+    controller_isp_2_ip = controller_isp_subnet + ".6"
+
     gns3_server_data = [{"GNS3 Server": server_ip, "Server Name": server_name, "Server Port": server_port,
                          "Project Name": project_name, "Project ID": new_project_id, "Tap Name": tap_name,
                          "Site Count": site_count, "Deployment Type": deployment_type,
                          "Deployment Status": deployment_status, "Deployment Step": deployment_step}]
+    info_drawing_data = {
+        "drawing_01": {
+            "svg": "<svg width=\"297\" height=\"246\"><rect width=\"297\" height=\"246\" fill=\"#6080b3\" fill-opacity=\"0.6399938963912413\" stroke-width=\"2\" stroke=\"#000000\" /></svg>",
+            "x": -228, "y": 457, "z": 0
+        }, "drawing_02": {
+            "svg": "<svg width=\"232\" height=\"25\"><text font-family=\"Arial\" font-size=\"14.0\" font-weight=\"bold\" fill=\"#000000\" fill-opacity=\"1.0\">Viptela Management Components</text></svg>",
+            "x": -195, "y": 675, "z": 2
+        }, "drawing_03": {
+            "svg": "<svg width=\"471\" height=\"50\"><text font-family=\"Arial\" font-size=\"36.0\" fill=\"#000000\" fill-opacity=\"1.0\">Viptela SDWAN Environment</text></svg>",
+            "x": -1172, "y": -591, "z": 2
+        }, "drawing_04": {
+            "svg": f"<svg width=\"318\" height=\"50\"><text font-family=\"Arial\" font-size=\"18.0\" fill=\"#000000\" fill-opacity=\"1.0\">Management IP Range: {mgmt_subnet_ip}.0/24\nVersa Director MGMT IP: {director_mgmt_ip}</text></svg>",
+            "x": -1165, "y": -541, "z": 2
+        },
+    }
+
     isp_switch_count = (site_count // 40) + 1
     mgmt_switch_count = (site_count // 30) + 1
     conn = sqlite3.connect(db_path)
@@ -105,7 +127,6 @@ def versa_appneta_deploy():
     if deploy_appneta == 'y':
         appneta_template_id = gns3_create_template(gns3_server_data, appneta_mp_template_data)
     openvswitch_isp_template_id = gns3_create_template(gns3_server_data, openvswitch_isp_template_data)
-    # cisco_iou_template_id = gns3_create_template(gns3_server_data, cisco_l3_router_template_data)
     network_test_tool_template_id = gns3_create_template(gns3_server_data, network_test_tool_template_data)
     # openvswitch_template_id = gns3_create_template(gns3_server_data, openvswitch_cloud_template_data)
     temp_hub_data = generate_temp_hub_data(mgmt_main_switchport_count, mgmt_main_hub_template_name)
@@ -120,7 +141,6 @@ def versa_appneta_deploy():
     # region Deploy GNS3 Nodes
     deployment_step = 'Deploy GNS3 Nodes'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting Node Deployment")
-    
     versa_director_node_id = gns3_create_node(gns3_server_data, new_project_id, versa_director_template_id, versa_director_deploy_data)
     versa_analytics_node_id = gns3_create_node(gns3_server_data, new_project_id, versa_analytics_template_id, versa_analytics_deploy_data)
     versa_controller_node_id = gns3_create_node(gns3_server_data, new_project_id, versa_flexvnf_template_id,
@@ -229,6 +249,10 @@ def versa_appneta_deploy():
     for i in range(1, site_count + 1):
         gns3_create_drawing(gns3_server_data, new_project_id,
                             site_drawing_deploy_data[f"site_drawing_{i:03}_deploy_data"])
+    drawing_index = 1
+    for drawing_data in info_drawing_data:
+        gns3_create_drawing(gns3_server_data, new_project_id, info_drawing_data[f'drawing_{drawing_index:02}'])
+        drawing_index += 1
     # endregion
     # region Deploy GNS3 Node Config Files
     deployment_step = 'Node Configs'
@@ -250,7 +274,7 @@ def versa_appneta_deploy():
             isp_2_overall.append(isp_switch_2_objects)
             starting_subnet += 2
             switch_index += 1
-            generate_interfaces_file('flexvnf', isp_switch_1_objects, isp_switch_2_objects, temp_file_name)
+            generate_interfaces_file('flexvnf', isp_switch_1_objects, isp_switch_2_objects, temp_file_name, controller_isp_1_ip_gateway, controller_isp_2_ip_gateway)
             router_ip += 1
             gns3_upload_file_to_node(gns3_server_data, new_project_id, node_id, "etc/network/interfaces", temp_file_name)
             flexvnf_index += 44
@@ -545,7 +569,7 @@ def versa_appneta_deploy():
     versa_create_provider_org(director_mgmt_ip)
     versa_create_overlay_prefix(director_mgmt_ip)
     versa_create_overlay_route(director_mgmt_ip, controller_southbound_ip)
-    versa_create_controller_workflow(director_mgmt_ip, controller_mgmt_ip, controller_southbound_ip)
+    versa_create_controller_workflow(director_mgmt_ip, controller_mgmt_ip, controller_southbound_ip, controller_isp_1_ip_gateway, controller_isp_1_ip, controller_isp_2_ip_gateway, controller_isp_2_ip)
     time.sleep(30)
     versa_create_dhcp_profile(director_mgmt_ip)
     versa_deploy_controller(director_mgmt_ip)
@@ -601,7 +625,7 @@ def versa_appneta_deploy():
                     tvi_0_3_ip = f'10.10.0.{flexvnf_vr_index}/32'
                     latitude = versa_city_data[temp_node_name]['latitude']
                     longitude = versa_city_data[temp_node_name]['longitude']
-                    onboard_command = f"sudo /opt/versa/scripts/staging.py -w 0 -n {device_serial_number} -c 172.16.5.2 -s {vpn_0_ge0_0_ip_address} -g {vpn_0_ge0_0_ip_gateway} -l SDWAN-Branch@Versa-Root.com -r Controller-01-staging@Versa-Root.com"
+                    onboard_command = f"sudo /opt/versa/scripts/staging.py -w 0 -n {device_serial_number} -c {controller_isp_1_ip} -s {vpn_0_ge0_0_ip_address} -g {vpn_0_ge0_0_ip_gateway} -l SDWAN-Branch@Versa-Root.com -r Controller-01-staging@Versa-Root.com"
                     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting FlexVNF Device Onboarding for {node_name[0]} - FlexVNF {i} of {site_count}")
                     versa_create_site_device_workflow(director_mgmt_ip, vr_1_route_ip, lan_gateway_address, lan_subnet_base, flexvnf_hostname, site_id, device_serial_number, site_country, flexvnf_city, vpn_0_ge0_0_ip_address, vpn_0_ge0_0_ip_gateway, vpn_0_ge0_1_ip_address, vpn_0_ge0_1_ip_gateway, tvi_0_2_ip, tvi_0_3_ip, latitude, longitude, mgmt_address)
                     time.sleep(10)
