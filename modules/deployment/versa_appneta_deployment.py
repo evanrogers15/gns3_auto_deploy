@@ -244,8 +244,8 @@ def versa_appneta_deploy():
             flexvnf_isp_1_base_subnet = f'172.16.{starting_subnet}.0/24'
             flexvnf_isp_2_base_subnet = f'172.16.{starting_subnet + 1}.0/24'
             temp_file_name = f'cloud_isp_switch_{switch_index}_interfaces'
-            isp_switch_1_objects = generate_edge_network_objects('flexvnf', flexvnf_isp_1_base_subnet, 30, flexvnf_index)
-            isp_switch_2_objects = generate_edge_network_objects('flexvnf', flexvnf_isp_2_base_subnet, 30, flexvnf_index)
+            isp_switch_1_objects = generate_versa_network_objects(flexvnf_isp_1_base_subnet, 30, flexvnf_index)
+            isp_switch_2_objects = generate_versa_network_objects(flexvnf_isp_2_base_subnet, 30, flexvnf_index)
             isp_1_overall.append(isp_switch_1_objects)
             isp_2_overall.append(isp_switch_2_objects)
             starting_subnet += 2
