@@ -94,8 +94,8 @@ def gns3_create_project(server_ip, server_port, project_name):
 
 def gns3_create_drawing(gns3_server_data, project_id, node_data):
     for server_record in gns3_server_data:
-        server_ip, server_port, server_name, project_name, vmanage_api_ip, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
-            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['vManage API IP'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
+        server_ip, server_port, server_name, project_name, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
+            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
         node_url = f"http://{server_ip}:{server_port}/v2/projects/{project_id}/drawings"
         node_response = make_request("POST", node_url, data=node_data)
         log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
@@ -103,8 +103,8 @@ def gns3_create_drawing(gns3_server_data, project_id, node_data):
 
 def gns3_create_node(gns3_server_data, project_id, template_id, node_data):
     for server_record in gns3_server_data:
-        server_ip, server_port, server_name, project_name, vmanage_api_ip, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
-            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['vManage API IP'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
+        server_ip, server_port, server_name, project_name, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
+            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
         node_url = f"http://{server_ip}:{server_port}/v2/projects/{project_id}/templates/{template_id}"
         node_response = make_request("POST", node_url, data=node_data)
         node_name = node_response["name"]
@@ -114,8 +114,8 @@ def gns3_create_node(gns3_server_data, project_id, template_id, node_data):
 
 def gns3_create_node_multi_return(gns3_server_data, project_id, template_id, node_data):
     for server_record in gns3_server_data:
-        server_ip, server_port, server_name, project_name, vmanage_api_ip, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
-            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['vManage API IP'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
+        server_ip, server_port, server_name, project_name, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
+            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
         node_url = f"http://{server_ip}:{server_port}/v2/projects/{project_id}/templates/{template_id}"
         node_response = make_request("POST", node_url, data=node_data)
         node_name = node_response["name"]
@@ -125,8 +125,8 @@ def gns3_create_node_multi_return(gns3_server_data, project_id, template_id, nod
 
 def gns3_create_cloud_node(gns3_server_data, project_id, node_data):
     for server_record in gns3_server_data:
-        server_ip, server_port, server_name, project_name, vmanage_api_ip, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
-            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['vManage API IP'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
+        server_ip, server_port, server_name, project_name, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
+            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
         node_url = f"http://{server_ip}:{server_port}/v2/projects/{project_id}/nodes"
         node_response = make_request("POST", node_url, data=node_data)
         node_name = node_response["name"]
@@ -136,8 +136,8 @@ def gns3_create_cloud_node(gns3_server_data, project_id, node_data):
 
 def gns3_create_template(gns3_server_data, template_data):
     for server_record in gns3_server_data:
-        server_ip, server_port, server_name, project_name, vmanage_api_ip, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
-            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['vManage API IP'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
+        server_ip, server_port, server_name, project_name, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
+            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
         node_url = f"http://{server_ip}:{server_port}/v2/templates"
         node_response = make_request("POST", node_url, data=template_data)
         template_id = node_response["template_id"]
@@ -147,8 +147,8 @@ def gns3_create_template(gns3_server_data, template_data):
 
 def gns3_connect_nodes(gns3_server_data, project_id, node_a, adapter_a, port_a, node_b, adapter_b, port_b):
     for server_record in gns3_server_data:
-        server_ip, server_port, server_name, project_name, vmanage_api_ip, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
-            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['vManage API IP'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
+        server_ip, server_port, server_name, project_name, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
+            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
         node_url = f"http://{server_ip}:{server_port}/v2/projects/{project_id}/links"
         node_data = {"nodes": [{"adapter_number": adapter_a, "node_id": node_a, "port_number": port_a},
                                {"adapter_number": adapter_b, "node_id": node_b, "port_number": port_b}]}
@@ -160,8 +160,8 @@ def gns3_connect_nodes(gns3_server_data, project_id, node_a, adapter_a, port_a, 
 
 def gns3_delete_nodes(gns3_server_data, project_id, delete_node_name):
     for server_record in gns3_server_data:
-        server_ip, server_port, server_name, project_name, vmanage_api_ip, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
-            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['vManage API IP'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
+        server_ip, server_port, server_name, project_name, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
+            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
         matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, delete_node_name)
         if matching_nodes:
             for node_id, console_port, aux in matching_nodes:
@@ -191,8 +191,8 @@ def gns3_delete_all_drawings(server_ip, server_port, project_id):
 
 def gns3_delete_template(gns3_server_data, template_name):
     for server_record in gns3_server_data:
-        server_ip, server_port, server_name, project_name, vmanage_api_ip, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
-            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['vManage API IP'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
+        server_ip, server_port, server_name, project_name, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
+            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
         template_id = gns3_query_get_template_id(server_ip, server_port, template_name)
         if template_id:
             delete_url = f"http://{server_ip}:{server_port}/v2/templates/{template_id}"
@@ -203,8 +203,8 @@ def gns3_delete_template(gns3_server_data, template_name):
 
 def gns3_delete_project(gns3_server_data):
     for server_record in gns3_server_data:
-        server_ip, server_port, server_name, project_name, vmanage_api_ip, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
-            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['vManage API IP'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
+        server_ip, server_port, server_name, project_name, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
+            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
         project_id = gns3_query_get_project_id(server_ip, server_port)
         if project_id:
             delete_url = f"http://{server_ip}:{server_port}/v2/projects/{project_id}"
@@ -223,16 +223,16 @@ def gns3_delete_project_static(server_ip, server_port, project_name, project_id)
 
 def gns3_reload_node(gns3_server_data, project_id, node_id):
     for server_record in gns3_server_data:
-        server_ip, server_port, server_name, project_name, vmanage_api_ip, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
-            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['vManage API IP'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
+        server_ip, server_port, server_name, project_name, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
+            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
         node_url = f"http://{server_ip}:{server_port}/v2/projects/{project_id}/nodes/{node_id}/reload"
         response = make_request("POST", node_url, data={})
         log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Reloaded node {node_id}")
 
 def gns3_upload_symbol(gns3_server_data, symbol_file, symbol_name):
     for server_record in gns3_server_data:
-        server_ip, server_port, server_name, project_name, vmanage_api_ip, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
-            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['vManage API IP'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
+        server_ip, server_port, server_name, project_name, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
+            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
         url = f'http://{server_ip}:{server_port}/v2/symbols/{symbol_name}/raw'
         headers = {"accept": "*/*"}
         response = requests.post(url, headers=headers, data=symbol_file)
@@ -247,8 +247,8 @@ def gns3_upload_file_to_node(gns3_server_data, project_id, node_id, file_path_va
     configs_path = os.path.join(os.path.dirname(abs_path), '../configs/')
     file_path = os.path.join(configs_path, filename_temp)
     for server_record in gns3_server_data:
-        server_ip, server_port, server_name, project_name, vmanage_api_ip, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
-            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['vManage API IP'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
+        server_ip, server_port, server_name, project_name, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
+            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
         # Set the file path and name to be written to the node
         node_name = gns3_query_find_nodes_by_field(server_ip, server_port, project_id, 'node_id', 'name', node_id)
 
@@ -277,8 +277,8 @@ def gns3_upload_image(gns3_server_data, image_type, filename):
     image_file_path = f'/app/images/{image_type}'
     file_path = os.path.join(image_file_path, filename)
     for server_record in gns3_server_data:
-        server_ip, server_port, server_name, project_name, vmanage_api_ip, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
-            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['vManage API IP'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
+        server_ip, server_port, server_name, project_name, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
+            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
         url = f'http://{server_ip}:{server_port}/v2/compute/{image_type}/images/{filename}'
         response = gns3_query_get_image(server_ip, server_port, image_type, filename)
         if response == 200:
@@ -294,8 +294,8 @@ def gns3_upload_image(gns3_server_data, image_type, filename):
 
 def gns3_update_nodes(gns3_server_data, project_id, node_id, request_data):
     for server_record in gns3_server_data:
-        server_ip, server_port, server_name, project_name, vmanage_api_ip, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
-            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['vManage API IP'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
+        server_ip, server_port, server_name, project_name, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
+            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
         request_url = f"http://{server_ip}:{server_port}/v2/projects/{project_id}/nodes/{node_id}"
         node_name = gns3_query_find_nodes_by_field(server_ip, server_port, project_id, 'node_id', 'name', node_id)
         request_response = make_request("PUT", request_url, data=request_data)
@@ -304,8 +304,8 @@ def gns3_update_nodes(gns3_server_data, project_id, node_id, request_data):
 
 def gns3_start_node(gns3_server_data, project_id, node_id):
     for server_record in gns3_server_data:
-        server_ip, server_port, server_name, project_name, vmanage_api_ip, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
-            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['vManage API IP'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
+        server_ip, server_port, server_name, project_name, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
+            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
         template_data = {}
         node_url = f"http://{server_ip}:{server_port}/v2/projects/{project_id}/nodes/{node_id}/start"
         node_response = make_request("POST", node_url, data=template_data)
@@ -313,8 +313,8 @@ def gns3_start_node(gns3_server_data, project_id, node_id):
 
 def gns3_stop_node(gns3_server_data, project_id, node_id):
     for server_record in gns3_server_data:
-        server_ip, server_port, server_name, project_name, vmanage_api_ip, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
-            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['vManage API IP'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
+        server_ip, server_port, server_name, project_name, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
+            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
         template_data = {}
         node_url = f"http://{server_ip}:{server_port}/v2/projects/{project_id}/nodes/{node_id}/stop"
         node_response = make_request("POST", node_url, data=template_data)
@@ -322,8 +322,8 @@ def gns3_stop_node(gns3_server_data, project_id, node_id):
 
 def gns3_start_all_nodes(gns3_server_data, project_id):
     for server_record in gns3_server_data:
-        server_ip, server_port, server_name, project_name, vmanage_api_ip, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
-            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['vManage API IP'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
+        server_ip, server_port, server_name, project_name, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
+            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
         template_data = {}
         log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting all nodes in project {project_name}")
         node_url = f"http://{server_ip}:{server_port}/v2/projects/{project_id}/nodes/start"
@@ -333,8 +333,8 @@ def gns3_start_all_nodes(gns3_server_data, project_id):
 
 def gns3_set_project(gns3_server_data, project_id):
     for server_record in gns3_server_data:
-        server_ip, server_port, server_name, project_name, vmanage_api_ip, deployment_type, deployment_status, deployment_step, vedge_count = server_record['GNS3 Server'], server_record[
-            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['vManage API IP'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step'], server_record['Site Count']
+        server_ip, server_port, server_name, project_name, deployment_type, deployment_status, deployment_step, vedge_count = server_record['GNS3 Server'], server_record[
+            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step'], server_record['Site Count']
         if vedge_count is None:
             project_zoom = 80
             project_scene_height = 1000
@@ -366,8 +366,8 @@ def gns3_actions_upload_images(gns3_server_data):
 
 def gns3_actions_remove_templates(gns3_server_data):
     for server_record in gns3_server_data:
-        server_ip, server_port, server_name, project_name, vmanage_api_ip, deployment_type, deployment_status, deployment_step, vedge_count = server_record['GNS3 Server'], server_record[
-            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['vManage API IP'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step'], server_record['Site Count']
+        server_ip, server_port, server_name, project_name, deployment_type, deployment_status, deployment_step, vedge_count = server_record['GNS3 Server'], server_record[
+            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step'], server_record['Site Count']
         gns3_delete_template(gns3_server_data, vmanage_template_name)
         gns3_delete_template(gns3_server_data, vbond_template_name)
         gns3_delete_template(gns3_server_data, vsmart_template_name)
@@ -388,8 +388,8 @@ def gns3_actions_remove_templates(gns3_server_data):
 
 def gns3_actions_versa_remove_templates(gns3_server_data):
     for server_record in gns3_server_data:
-        server_ip, server_port, server_name, project_name, vmanage_api_ip, deployment_type, deployment_status, deployment_step, vedge_count = server_record['GNS3 Server'], server_record[
-            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['vManage API IP'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step'], server_record['Site Count']
+        server_ip, server_port, server_name, project_name, deployment_type, deployment_status, deployment_step, vedge_count = server_record['GNS3 Server'], server_record[
+            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step'], server_record['Site Count']
         gns3_delete_template(gns3_server_data, versa_director_template_name)
         gns3_delete_template(gns3_server_data, versa_analytics_template_name)
         gns3_delete_template(gns3_server_data, versa_flexvnf_template_name)
