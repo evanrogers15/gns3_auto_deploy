@@ -32,16 +32,12 @@ def arista_deploy():
         new_project_id = row[8]
         site_count = row[9]
         tap_name = row[10]
-        vmanage_api_ip = row[11]
-    if tap_name == 'none':
-        use_tap = 0
-    else:
-        use_tap = 1
+        mgmt_subnet_ip = row[11]
 
     gns3_server_data = [{"GNS3 Server": server_ip, "Server Name": server_name, "Server Port": server_port,
-                         "vManage API IP": vmanage_api_ip, "Project Name": project_name, "Project ID": new_project_id,
+                         "Project Name": project_name, "Project ID": new_project_id,
                          "Tap Name": tap_name,
-                         "Site Count": site_count, "Use Tap": use_tap, "Deployment Type": deployment_type,
+                         "Site Count": site_count, "Deployment Type": deployment_type,
                          "Deployment Status": deployment_status, "Deployment Step": deployment_step}]
     isp_switch_count = (site_count // 40) + 1
     mgmt_switch_count = (site_count // 30) + 1
@@ -85,14 +81,13 @@ def arista_deploy():
     deployment_step = 'Connect'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
                       "Connect Nodes")
-    if use_tap == 1:
-        matching_nodes = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'name', 'ports', 'MGMT-Cloud-TAP')
-        mgmt_tap_interface = 0
-        for port in matching_nodes[0]:
-            if port["short_name"] == tap_name:
-                mgmt_tap_interface = port['port_number']
-        gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, 0, cloud_node_id, 0,
-                           mgmt_tap_interface)
+    matching_nodes = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'name', 'ports', 'MGMT-Cloud-TAP')
+    mgmt_tap_interface = 0
+    for port in matching_nodes[0]:
+        if port["short_name"] == tap_name:
+            mgmt_tap_interface = port['port_number']
+    gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, 0, cloud_node_id, 0,
+                       mgmt_tap_interface)
     for i in range(1, arista_count + 1):
         gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, i + 5,
                            arista_deploy_data[f"arista_{i:02}_deploy_data"]["node_id"], 19, 0)
@@ -121,8 +116,8 @@ def arista_deploy():
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
                       "Creating Drawings")
     drawing_index = 1
-    for drawing_data in drawing_deploy_data:
-        gns3_create_drawing(gns3_server_data, new_project_id, drawing_deploy_data[f'drawing_{drawing_index:02}'])
+    for drawing_data in arista_drawing_deploy_data:
+        gns3_create_drawing(gns3_server_data, new_project_id, arista_drawing_deploy_data[f'drawing_{drawing_index:02}'])
         drawing_index += 1
     # endregion
     # region Configure

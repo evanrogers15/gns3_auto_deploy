@@ -214,7 +214,7 @@ local_switch_deploy_data = {
     "switch_04_deploy_data": {"x": 199, "y": 237, "name": "switch-4"},
     "switch_05_deploy_data": {"x": 499, "y": 237, "name": "switch-5"},
 }
-drawing_deploy_data = {
+arista_drawing_deploy_data = {
     "drawing_01": {
         "svg": "<svg width=\"374.71428571428567\" height=\"146.57142857142856\"><ellipse cx=\"187\" rx=\"188\" cy=\"73\" ry=\"74\" fill=\"#00fdff\" fill-opacity=\"0.20602731364919508\" stroke-width=\"2\" stroke=\"#000000\" /></svg>",
         "x": -600, "y": 26, "z": 0},

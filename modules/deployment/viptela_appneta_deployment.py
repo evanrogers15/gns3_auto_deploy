@@ -69,7 +69,7 @@ def viptela_appneta_deploy():
     vmanage_vpn_0_ip = vpn_0_subnet + ".2"
     vsmart_vpn_0_gateway_ip = vpn_0_subnet + ".5"
     vsmart_vpn_0_ip = vpn_0_subnet + ".6"
-    vbond_vpn_0_gateway_ip = vpn_0_subnet + ".1"
+    vbond_vpn_0_gateway_ip = vpn_0_subnet + ".9"
     vbond_vpn_0_ip = vpn_0_subnet + ".10"
 
     gns3_server_data = [{"GNS3 Server": server_ip, "Server Name": server_name, "Server Port": server_port,
@@ -496,7 +496,7 @@ def viptela_appneta_deploy():
                             vbond_address=vbond_vpn_0_ip,
                             vpn_0_eth1_ip_address=f'{vbond_vpn_0_ip}/30',
                             vpn_0_eth1_ip_gateway=vbond_vpn_0_gateway_ip,
-                            vpn_512_eth0_ip_address=vbond_mgmt_ip,
+                            vpn_512_eth0_ip_address=f'{vbond_mgmt_ip}/24',
                             vpn_512_eth0_ip_gateway=mgmt_subnet_gateway_ip
                         )
                         tn.write(formatted_line.encode('ascii') + b"\n")
