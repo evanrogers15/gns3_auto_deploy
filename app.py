@@ -61,7 +61,6 @@ def update_config():
     tap_name = req_data.get('tap_name')
     mgmt_subnet_ip = req_data.get('mgmt_subnet_ip')
     mgmt_subnet_ip = '.'.join(mgmt_subnet_ip.split('/')[0].split('.')[:3])
-    vmanage_api_ip = mgmt_subnet_ip + ".2"
     projects = gns3_query_get_projects(server_ip, server_port)
     server_name = gns3_query_get_computes_name(server_ip, server_port)
     if req_data.get('use_existing_project') == 'n':
@@ -86,9 +85,9 @@ def update_config():
     if req_data.get('deploy_appneta') == 'y':
         appn_url = req_data.get('appn_url')
         appn_site_key = req_data.get('appn_site_key')
-        c.execute("INSERT INTO config (server_ip, server_port, server_name, project_list, project_names, project_status, project_name, project_id, vmanage_api_ip, site_count, tap_name, mgmt_subnet_ip, appn_url, appn_site_key) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (server_ip, server_port, server_name, json.dumps(project_ids), json.dumps(project_names), json.dumps(project_status), new_project_name, project_id, vmanage_api_ip, site_count, tap_name, mgmt_subnet_ip, appn_url, appn_site_key))
+        c.execute("INSERT INTO config (server_ip, server_port, server_name, project_list, project_names, project_status, project_name, project_id, site_count, tap_name, mgmt_subnet_ip, appn_url, appn_site_key) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (server_ip, server_port, server_name, json.dumps(project_ids), json.dumps(project_names), json.dumps(project_status), new_project_name, project_id, site_count, tap_name, mgmt_subnet_ip, appn_url, appn_site_key))
     else:
-        c.execute("INSERT INTO config (server_ip, server_port, server_name, project_list, project_names, project_status, project_name, project_id, vmanage_api_ip, site_count, tap_name, mgmt_subnet_ip) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (server_ip, server_port, server_name, json.dumps(project_ids), json.dumps(project_names), json.dumps(project_status), new_project_name, project_id, vmanage_api_ip, site_count, tap_name, mgmt_subnet_ip))
+        c.execute("INSERT INTO config (server_ip, server_port, server_name, project_list, project_names, project_status, project_name, project_id, site_count, tap_name, mgmt_subnet_ip) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (server_ip, server_port, server_name, json.dumps(project_ids), json.dumps(project_names), json.dumps(project_status), new_project_name, project_id, site_count, tap_name, mgmt_subnet_ip))
     conn.commit()
     conn.close()
     return jsonify({'success': True})

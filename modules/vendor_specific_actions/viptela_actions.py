@@ -106,14 +106,14 @@ def vmanage_sync_rootcertchain(vmanage_api_ip, vmanage_headers):
         logging.info(response.content)
         logging.info(f"vManage not available: {str(e)}")
 
-def vmanage_set_vbond(vmanage_api_ip, vmanage_headers):
+def vmanage_set_vbond(vmanage_api_ip, vmanage_headers, vbond_ip):
     url = f"https://{vmanage_api_ip}/dataservice/settings/configuration/device"
-    response_data = {'domainIp': vbond_address, 'port': '12346'}
+    response_data = {'domainIp': vbond_ip, 'port': '12346'}
     try:
         response = requests.post(url, data=json.dumps(response_data), headers=vmanage_headers, verify=False,
                                  timeout=20)
         response.raise_for_status()
-        logging.info(f"Deploy - Set vBond {vbond_address} for vManage {vmanage_api_ip} in configuration settings")
+        logging.info(f"Deploy - Set vBond {vbond_ip} for vManage {vmanage_api_ip} in configuration settings")
         return response
     except requests.exceptions.RequestException as e:
         logging.info(f"vManage not available: {str(e)}")

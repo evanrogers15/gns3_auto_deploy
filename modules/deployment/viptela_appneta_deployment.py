@@ -35,10 +35,10 @@ def viptela_appneta_deploy():
     required_qemu_images = {"viptela-vmanage-li-20.10.1-genericx86-64.qcow2", "empty30G.qcow2", "viptela-smart-li-20.10.1-genericx86-64.qcow2", "viptela-edge-20.10.1-genericx86-64.qcow2"}
     deploy_appneta = 'n'
     # endregion
-    conn = sqlite3.connect(db_path)
     # region Runtime
     start_time = time.time()
     # region GNS3 Lab Setup
+    conn = sqlite3.connect(db_path)
     c = conn.cursor()
     c.execute("SELECT * FROM config")
     row = c.fetchone()
@@ -49,24 +49,33 @@ def viptela_appneta_deploy():
         server_port = row[3]
         project_name = row[7]
         new_project_id = row[8]
-        vedge_count = row[9]
+        site_count = row[9]
         tap_name = row[10]
-        vmanage_api_ip = row[11]
-        mgmt_subnet_ip = row[12]
-        appn_url = row[13]
-        appn_site_key = row[14]
-    if tap_name == 'none':
-        use_tap = 0
-    else:
-        use_tap = 1
+        mgmt_subnet_ip = row[11]
+        appn_url = row[12]
+        appn_site_key = row[13]
+
     if appn_url:
         deploy_appneta = 'y'
         required_qemu_images.add("pathview-amd64-14.0.0.54253.qcow2")
+        
+    mgmt_subnet_gateway_ip = mgmt_subnet_ip + ".1"
+    vmanage_mgmt_ip = mgmt_subnet_ip + ".2"
+    vsmart_mgmt_ip = mgmt_subnet_ip + ".6"
+    vbond_mgmt_ip = mgmt_subnet_ip + ".10"
+
+    vpn_0_subnet = '172.16.4'
+    vmanage_vpn_0_gateway_ip = vpn_0_subnet + ".1"
+    vmanage_vpn_0_ip = vpn_0_subnet + ".2"
+    vsmart_vpn_0_gateway_ip = vpn_0_subnet + ".5"
+    vsmart_vpn_0_ip = vpn_0_subnet + ".6"
+    vbond_vpn_0_gateway_ip = vpn_0_subnet + ".1"
+    vbond_vpn_0_ip = vpn_0_subnet + ".10"
 
     gns3_server_data = [{"GNS3 Server": server_ip, "Server Name": server_name, "Server Port": server_port,
-                    "vManage API IP": vmanage_api_ip, "Project Name": project_name, "Project ID": new_project_id,
+                    "vManage API IP": vmanage_mgmt_ip, "Project Name": project_name, "Project ID": new_project_id,
                     "Tap Name": tap_name,
-                    "Site Count": vedge_count, "Use Tap": use_tap, "Deployment Type": deployment_type, "Deployment Status": deployment_status, "Deployment Step": deployment_step}]
+                    "Site Count": site_count, "Deployment Type": deployment_type, "Deployment Status": deployment_status, "Deployment Step": deployment_step}]
     viptela_drawing_data = {
         "drawing_01": {
             "svg": "<svg width=\"297\" height=\"246\"><rect width=\"297\" height=\"246\" fill=\"#6080b3\" fill-opacity=\"0.6399938963912413\" stroke-width=\"2\" stroke=\"#000000\" /></svg>",
@@ -78,12 +87,12 @@ def viptela_appneta_deploy():
             "svg": "<svg width=\"471\" height=\"50\"><text font-family=\"Arial\" font-size=\"36.0\" fill=\"#000000\" fill-opacity=\"1.0\">Viptela SDWAN Environment</text></svg>",
             "x": -1172, "y": -591, "z": 2},
         "drawing_04": {
-            "svg": f"<svg width=\"318\" height=\"50\"><text font-family=\"Arial\" font-size=\"18.0\" fill=\"#000000\" fill-opacity=\"1.0\">Management IP Range: {mgmt_subnet_ip}.0/24\nViptela vManage MGMT IP: {mgmt_subnet_ip}.2</text></svg>",
+            "svg": f"<svg width=\"318\" height=\"50\"><text font-family=\"Arial\" font-size=\"18.0\" fill=\"#000000\" fill-opacity=\"1.0\">Management IP Range: {mgmt_subnet_ip}.0/24\nViptela vManage MGMT IP: {vmanage_mgmt_ip}</text></svg>",
             "x": -1165, "y": -541, "z": 2},
     }
 
-    isp_switch_count = (vedge_count // 40) + 1
-    mgmt_switch_count = (vedge_count // 30) + 1
+    isp_switch_count = (site_count // 40) + 1
+    mgmt_switch_count = (site_count // 30) + 1
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
     c.execute("DELETE FROM deployments")
@@ -120,11 +129,9 @@ def viptela_appneta_deploy():
     regular_ethernet_hub_template_id = gns3_create_template(gns3_server_data, temp_hub_data)
     temp_hub_data = generate_temp_hub_data(mgmt_switchport_count, mgmt_hub_template_name)
     hub_template_id = gns3_create_template(gns3_server_data, temp_hub_data)
-    nat_node_template_id = gns3_query_get_template_id(server_ip, server_port, "NAT")
-    cloud_node_template_id = gns3_query_get_template_id(server_ip, server_port, "Cloud")
     # endregion
     #  region Setup Dynamic Networking
-    vedge_deploy_data, client_deploy_data, site_drawing_deploy_data = generate_vedge_deploy_data(vedge_count)
+    vedge_deploy_data, client_deploy_data, site_drawing_deploy_data = generate_vedge_deploy_data(site_count)
     mgmt_switch_deploy_data = generate_mgmt_switch_deploy_data(mgmt_switch_count)
     # endregion
     # region Deploy GNS3 Nodes
@@ -149,7 +156,7 @@ def viptela_appneta_deploy():
             mgmt_switch_nodes.append({'node_name': node_name, 'node_id': node_id})
         else:
             log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Node {node_name} already exists in project {project_name}")
-    for i in range(1, vedge_count + 1):
+    for i in range(1, site_count + 1):
         node_name = f"vEdge_{i:03}"
         matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, node_name)
         if not matching_nodes:
@@ -175,7 +182,7 @@ def viptela_appneta_deploy():
         else:
             log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"No nodes found in project {project_name} for MGMT_switch_{i}")
 
-    for i in range(1, vedge_count + 1):
+    for i in range(1, site_count + 1):
         matching_node = vedge_info[i - 1]
         if matching_node:
             node_id = matching_node['node_id']
@@ -195,9 +202,8 @@ def viptela_appneta_deploy():
     gns3_connect_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, 1, 0, vmanage_node_id, 1, 0)
     gns3_connect_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, 2, 0, vsmart_node_id, 1, 0)
     gns3_connect_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, 3, 0, vbond_node_id, 1, 0)
-    if use_tap == 1:
-        gns3_connect_nodes(gns3_server_data, new_project_id, cloud_node_id, 0, mgmt_tap_interface,
-                           mgmt_main_switch_node_id, 0, 0)
+    gns3_connect_nodes(gns3_server_data, new_project_id, cloud_node_id, 0, mgmt_tap_interface,
+                       mgmt_main_switch_node_id, 0, 0)
     gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, 1, vmanage_node_id, 0, 0)
     gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, 2, vsmart_node_id, 0, 0)
     gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, 3, vbond_node_id, 0, 0)
@@ -208,7 +214,7 @@ def viptela_appneta_deploy():
     mgmt_switch_node_index = 0
     for i in range(mgmt_switch_count):
         first_vedge_index = i * 30
-        last_vedge_index = min((i + 1) * 30, vedge_count)
+        last_vedge_index = min((i + 1) * 30, site_count)
         mgmt_switch_node_id = mgmt_switch_nodes[mgmt_switch_node_index]['node_id']
         mgmt_switch_index = i + 5
         gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_switch_node_id, 0, 0, mgmt_main_switch_node_id, 0,
@@ -233,7 +239,7 @@ def viptela_appneta_deploy():
     # endregion
     # region Create GNS3 Drawings
     gns3_create_drawing(gns3_server_data, new_project_id, big_block_deploy_data)
-    for i in range(1, vedge_count + 1):
+    for i in range(1, site_count + 1):
         gns3_create_drawing(gns3_server_data, new_project_id,
                             site_drawing_deploy_data[f"site_drawing_{i:03}_deploy_data"])
     drawing_index = 1
@@ -252,19 +258,18 @@ def viptela_appneta_deploy():
     if matching_nodes:
         for matching_node in matching_nodes:
             node_id = matching_node[0]
-            isp_router_base_subnet = '172.16.5.0/24'
+            # isp_router_base_subnet = '172.16.5.0/24'
             vedge_isp_1_base_subnet = f'172.16.{starting_subnet}.0/24'
             vedge_isp_2_base_subnet = f'172.16.{starting_subnet + 1}.0/24'
             temp_file_name = f'cloud_isp_switch_{switch_index}_interfaces'
             # isp_router_objects = generate_network_objects(isp_router_base_subnet, 30)
-            isp_switch_1_objects = generate_network_objects(vedge_isp_1_base_subnet, 30, vedge_index)
-            isp_switch_2_objects = generate_network_objects(vedge_isp_2_base_subnet, 30, vedge_index)
+            isp_switch_1_objects = generate_edge_network_objects('vedge', vedge_isp_1_base_subnet, 30, vedge_index)
+            isp_switch_2_objects = generate_edge_network_objects('vedge', vedge_isp_2_base_subnet, 30, vedge_index)
             isp_1_overall.append(isp_switch_1_objects)
             isp_2_overall.append(isp_switch_2_objects)
             starting_subnet += 2
             switch_index += 1
-            generate_interfaces_file_new(isp_switch_1_objects, isp_switch_2_objects,
-                                     temp_file_name)
+            generate_interfaces_file('vedge', isp_switch_1_objects, isp_switch_2_objects, temp_file_name, vmanage_vpn_0_gateway_ip, vsmart_vpn_0_gateway_ip, vbond_vpn_0_gateway_ip)
             router_ip += 1
             gns3_upload_file_to_node(gns3_server_data, new_project_id, node_id, "etc/network/interfaces",
                                      temp_file_name)
@@ -288,7 +293,7 @@ def viptela_appneta_deploy():
     client_filename = 'client_interfaces'
     client_node_file_path = 'etc/network/interfaces'
     generate_client_interfaces_file(client_filename)
-    vedge_deploy_data, client_deploy_data, site_drawing_deploy_data = generate_vedge_deploy_data(vedge_count)
+    vedge_deploy_data, client_deploy_data, site_drawing_deploy_data = generate_vedge_deploy_data(site_count)
     v = 1
     vedge_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "vEdge")
     if vedge_nodes:
@@ -418,22 +423,18 @@ def viptela_appneta_deploy():
                             hostname=temp_node_name,
                             latitude='40.758701',
                             longitude='-111.876183',
-                            system_ip=f'{mgmt_subnet_ip}.6',
+                            system_ip=vsmart_mgmt_ip,
                             org_name=org_name,
-                            vbond_address=vbond_address,
-                            vpn_0_eth1_ip_address='172.16.4.6/30',
-                            vpn_0_eth1_ip_gateway='172.16.4.5',
-                            vpn_512_eth0_ip_address=f'{mgmt_subnet_ip}.6/24',
-                            vpn_512_eth0_ip_gateway=f'{mgmt_subnet_ip}.1'
+                            vbond_address=vbond_vpn_0_ip,
+                            vpn_0_eth1_ip_address=f'{vsmart_vpn_0_ip}/30',
+                            vpn_0_eth1_ip_gateway=vsmart_vpn_0_gateway_ip,
+                            vpn_512_eth0_ip_address=f'{vsmart_mgmt_ip}/24',
+                            vpn_512_eth0_ip_gateway=mgmt_subnet_gateway_ip
                         )
                         tn.write(formatted_line.encode('ascii') + b"\n")
                         tn.read_until(b"#")
                 tn.write(b"\r\n")
-                output = tn.read_until(b"Commit complete.").decode('ascii')
-                # tn.write(b"\r\n")
-                # exit_var = tn.read_until(b"vSmart#").decode('ascii')
-                # if temp_node_name not in exit_var:
-                #        sys.exit()
+                tn.read_until(b"Commit complete.")
                 tn.write(b"exit\r")
                 tn.read_until(b"exit")
                 tn.close()
@@ -490,22 +491,18 @@ def viptela_appneta_deploy():
                             hostname=temp_node_name,
                             latitude='40.758701',
                             longitude='-111.876183',
-                            system_ip=f'{mgmt_subnet_ip}.10',
+                            system_ip=vbond_mgmt_ip,
                             org_name=org_name,
-                            vbond_address=vbond_address,
-                            vpn_0_eth1_ip_address='172.16.4.10/30',
-                            vpn_0_eth1_ip_gateway='172.16.4.9',
-                            vpn_512_eth0_ip_address=f'{mgmt_subnet_ip}.10/24',
-                            vpn_512_eth0_ip_gateway=f'{mgmt_subnet_ip}.1'
+                            vbond_address=vbond_vpn_0_ip,
+                            vpn_0_eth1_ip_address=f'{vbond_vpn_0_ip}/30',
+                            vpn_0_eth1_ip_gateway=vbond_vpn_0_gateway_ip,
+                            vpn_512_eth0_ip_address=vbond_mgmt_ip,
+                            vpn_512_eth0_ip_gateway=mgmt_subnet_gateway_ip
                         )
                         tn.write(formatted_line.encode('ascii') + b"\n")
                         tn.read_until(b"#")
                 tn.write(b"\r\n")
-                output = tn.read_until(b"Commit complete.").decode('ascii')
-                # tn.write(b"\r\n")
-                # exit_var = tn.read_until(b"vSmart#").decode('ascii')
-                # if temp_node_name not in exit_var:
-                #        sys.exit()
+                tn.read_until(b"Commit complete.")
                 tn.write(b"exit\r")
                 tn.read_until(b"exit")
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vBond Device Setup")
@@ -553,13 +550,13 @@ def viptela_appneta_deploy():
                             hostname=temp_node_name,
                             latitude='40.758701',
                             longitude='-111.876183',
-                            system_ip=f'{mgmt_subnet_ip}.2',
+                            system_ip=vmanage_mgmt_ip,
                             org_name=org_name,
-                            vbond_address=vbond_address,
-                            vpn_0_eth1_ip_address='172.16.4.2/30',
-                            vpn_0_eth1_ip_gateway='172.16.4.1',
-                            vpn_512_eth0_ip_address=f'{mgmt_subnet_ip}.2/24',
-                            vpn_512_eth0_ip_gateway=f'{mgmt_subnet_ip}.1'
+                            vbond_address=vbond_vpn_0_ip,
+                            vpn_0_eth1_ip_address=f'{vmanage_vpn_0_ip}/30',
+                            vpn_0_eth1_ip_gateway=vmanage_vpn_0_gateway_ip,
+                            vpn_512_eth0_ip_address=f'{vmanage_mgmt_ip}/24',
+                            vpn_512_eth0_ip_gateway=mgmt_subnet_gateway_ip
                         )
                         tn.write(formatted_line.encode('ascii') + b"\n")
                         tn.read_until(b"#")
@@ -594,15 +591,15 @@ def viptela_appneta_deploy():
     # endregion
     # region Viptela vEdge Device Setup
     deployment_step = 'vEdge Device Setup'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vEdge Device Setup for {vedge_count} vEdges")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vEdge Device Setup for {site_count} vEdges")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     abs_path = os.path.abspath(__file__)
     configs_path = os.path.join(os.path.dirname(abs_path), '../configs/viptela')
     file_name = os.path.join(configs_path, 'vedge_cloud_site_template_no_restrict')
-    vedge_lan_objects = generate_vedge_objects(vedge_count, f'{mgmt_subnet_ip}')
+    vedge_lan_objects = generate_vedge_objects(site_count, f'{mgmt_subnet_ip}')
     isp_index = 0
     for server_ip in server_ips:
-        for i in range(1, vedge_count + 1):
+        for i in range(1, site_count + 1):
             temp_node_name = f'vEdge_{i:003}'
             matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
             if matching_nodes:
@@ -635,7 +632,7 @@ def viptela_appneta_deploy():
                         client_1_mac_address = "52:54:00:E0:00:00"
                     else:
                         client_1_mac_address = "4C:D7:17:00:00:00"
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vEdge Device Setup for {node_name[0]} - vEdge {i} of {vedge_count}")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vEdge Device Setup for {node_name[0]} - vEdge {i} of {site_count}")
                     tn = telnetlib.Telnet(server_ip, console_port)
                     while True:
                         tn.write(b"\r\n")
@@ -675,7 +672,7 @@ def viptela_appneta_deploy():
                                 system_ip=system_ip,
                                 site_id=site_id,
                                 org_name=org_name,
-                                vbond_address=vbond_address,
+                                vbond_address=vbond_vpn_0_ip,
                                 vpn_0_ge0_0_ip_address=vpn_0_ge0_0_ip_address,
                                 vpn_0_ge0_0_ip_gateway=vpn_0_ge0_0_ip_gateway,
                                 vpn_0_ge0_1_ip_address=vpn_0_ge0_1_ip_address,
@@ -696,10 +693,10 @@ def viptela_appneta_deploy():
                     tn.write(b"exit\r")
                     tn.read_until(b"exit")
                     tn.close()
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vEdge Device Setup for {temp_node_name}, Remaining - {vedge_count - i}")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vEdge Device Setup for {temp_node_name}, Remaining - {site_count - i}")
                     if i % 44 == 0 and i != 0:
                         isp_index += 1
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vEdge Device Setup for {vedge_count} vEdge devices")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vEdge Device Setup for {site_count} vEdge devices")
     # endregion
     # region Viptela vManage API Setup
     deployment_step = ' vManage API Setup'
@@ -708,12 +705,12 @@ def viptela_appneta_deploy():
     while True:
         try:
             log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Checking if vManage API is available..")
-            response = auth.get_jsessionid(vmanage_api_ip)
+            response = auth.get_jsessionid(vmanage_mgmt_ip)
             break
         except:
             log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f'vManage API is yet not available, checking again in 1 minute at {util_resume_time(1)}')
             time.sleep(60)
-    vmanage_headers = vmanage_create_auth(vmanage_api_ip)
+    vmanage_headers = vmanage_create_auth(vmanage_mgmt_ip)
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     for server_ip in server_ips:
         temp_node_name = f'vManage'
@@ -751,12 +748,12 @@ def viptela_appneta_deploy():
                 vmanage_root_cert = tn.read_until(b"-----END CERTIFICATE-----")
                 vmanage_root_cert = vmanage_root_cert.decode('ascii').split('\r\n', 1)[1]
                 vmanage_root_cert = vmanage_root_cert.replace('\r\n', '\n')
-                vmanage_set_org(vmanage_api_ip, vmanage_headers)
-                vmanage_set_cert_type(vmanage_api_ip, vmanage_headers)
-                vmanage_set_cert(vmanage_api_ip, vmanage_headers, vmanage_root_cert)
-                vmanage_sync_rootcertchain(vmanage_api_ip, vmanage_headers)
-                vmanage_set_vbond(vmanage_api_ip, vmanage_headers)
-                vmanage_csr = vmanage_generate_csr(vmanage_api_ip, vmanage_headers, vmanage_api_ip, 'vmanage')
+                vmanage_set_org(vmanage_mgmt_ip, vmanage_headers)
+                vmanage_set_cert_type(vmanage_mgmt_ip, vmanage_headers)
+                vmanage_set_cert(vmanage_mgmt_ip, vmanage_headers, vmanage_root_cert)
+                vmanage_sync_rootcertchain(vmanage_mgmt_ip, vmanage_headers)
+                vmanage_set_vbond(vmanage_mgmt_ip, vmanage_headers, vbond_vpn_0_ip)
+                vmanage_csr = vmanage_generate_csr(vmanage_mgmt_ip, vmanage_headers, vmanage_mgmt_ip, 'vmanage')
                 tn.write(b'exit\r\n')
                 tn.read_until(b'#')
                 tn.write(b'vshell\r\n')
@@ -773,11 +770,11 @@ def viptela_appneta_deploy():
                 vdevice_cert = tn.read_until(b"-----END CERTIFICATE-----")
                 vdevice_cert = vdevice_cert.decode('ascii').split('\r\n', 1)[1]
                 vdevice_cert = vdevice_cert.replace('\r\n', '\n')
-                vmanage_install_cert(vmanage_api_ip, vmanage_headers, vdevice_cert)
-                vmanage_set_device(vmanage_api_ip, vmanage_headers, vsmart_address, "vsmart")
-                vmanage_set_device(vmanage_api_ip, vmanage_headers, vbond_address, "vbond")
-                vbond_csr = vmanage_generate_csr(vmanage_api_ip, vmanage_headers, vbond_address, 'vbond')
-                vsmart_csr = vmanage_generate_csr(vmanage_api_ip, vmanage_headers, vsmart_address, 'vsmart')
+                vmanage_install_cert(vmanage_mgmt_ip, vmanage_headers, vdevice_cert)
+                vmanage_set_device(vmanage_mgmt_ip, vmanage_headers, vsmart_vpn_0_ip, "vsmart")
+                vmanage_set_device(vmanage_mgmt_ip, vmanage_headers, vbond_vpn_0_ip, "vbond")
+                vbond_csr = vmanage_generate_csr(vmanage_mgmt_ip, vmanage_headers, vbond_vpn_0_ip, 'vbond')
+                vsmart_csr = vmanage_generate_csr(vmanage_mgmt_ip, vmanage_headers, vsmart_vpn_0_ip, 'vsmart')
                 tn.write(b'exit\r\n')
                 tn.read_until(b'#')
                 tn.write(b'vshell\r\n')
@@ -794,7 +791,7 @@ def viptela_appneta_deploy():
                 vdevice_cert = tn.read_until(b"-----END CERTIFICATE-----")
                 vdevice_cert = vdevice_cert.decode('ascii').split('\r\n', 1)[1]
                 vdevice_cert = vdevice_cert.replace('\r\n', '\n')
-                vmanage_install_cert(vmanage_api_ip, vmanage_headers, vdevice_cert)
+                vmanage_install_cert(vmanage_mgmt_ip, vmanage_headers, vdevice_cert)
                 tn.write(b'exit\r\n')
                 tn.read_until(b'#')
                 tn.write(b'vshell\r\n')
@@ -811,7 +808,7 @@ def viptela_appneta_deploy():
                 vdevice_cert = tn.read_until(b"-----END CERTIFICATE-----")
                 vdevice_cert = vdevice_cert.decode('ascii').split('\r\n', 1)[1]
                 vdevice_cert = vdevice_cert.replace('\r\n', '\n')
-                vmanage_install_cert(vmanage_api_ip, vmanage_headers, vdevice_cert)
+                vmanage_install_cert(vmanage_mgmt_ip, vmanage_headers, vdevice_cert)
                 tn.write(b'exit\r\n')
                 tn.read_until(b'#')
                 tn.close()
@@ -838,9 +835,9 @@ def viptela_appneta_deploy():
                     scp_2_command = f"request execute vpn 512 scp /home/admin/vedge.crt admin@{mgmt_subnet_ip}.{ve}:/home/admin"
                     scp_3_command = f"request execute vpn 512 scp /home/admin/vedge.csr admin@{mgmt_subnet_ip}.2:/home/admin"
                     ssh_command = f"request execute vpn 512 ssh admin@{mgmt_subnet_ip}.{ve}"
-                    ssh_2_command = f"request execute vpn 512 ssh admin@{mgmt_subnet_ip}.10"
+                    ssh_2_command = f"request execute vpn 512 ssh admin@{vbond_mgmt_ip}"
                     # tn = telnetlib.Telnet(server_ip, console_port)
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vEdge Certificate Setup for {node_name[0]} - vEdge {v} of {vedge_count}")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vEdge Certificate Setup for {node_name[0]} - vEdge {v} of {site_count}")
                     while True:
                         tn = telnetlib.Telnet(server_ip, console_port)
                         tn.write(b"\r\n")
@@ -951,19 +948,19 @@ def viptela_appneta_deploy():
                     tn.write(vedge_install_command.encode('ascii') + b"\n")
                     tn.read_until(b'#')
                     ve += 1
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vEdge Certificate Setup for {node_name[0]}, Remaining - {vedge_count - v}")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vEdge Certificate Setup for {node_name[0]}, Remaining - {site_count - v}")
                     tn.close()
                     v += 1
     while True:
         try:
             auth = Authentication()
-            response = auth.get_jsessionid(vmanage_api_ip)
+            response = auth.get_jsessionid(vmanage_mgmt_ip)
             break
         except:
             log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f'vManage API is yet not available')
             time.sleep(60)
-    vmanage_headers = vmanage_create_auth(vmanage_api_ip)
-    vmanage_push_certs(vmanage_api_ip, vmanage_headers)
+    vmanage_headers = vmanage_create_auth(vmanage_mgmt_ip)
+    vmanage_push_certs(vmanage_mgmt_ip, vmanage_headers)
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vEdge Certificate setup and deployment into Viptela Environment")
     # endregion
     # region Push vEdge Certs to Control Devices
@@ -973,13 +970,13 @@ def viptela_appneta_deploy():
     while True:
         try:
             auth = Authentication()
-            response = auth.get_jsessionid(vmanage_api_ip)
+            response = auth.get_jsessionid(vmanage_mgmt_ip)
             break
         except:
             log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f'vManage API is yet not available')
             time.sleep(60)
-    vmanage_headers = vmanage_create_auth(vmanage_api_ip)
-    vmanage_push_certs(vmanage_api_ip, vmanage_headers)
+    vmanage_headers = vmanage_create_auth(vmanage_mgmt_ip)
+    vmanage_push_certs(vmanage_mgmt_ip, vmanage_headers)
     # endregion
     # region AppNeta MP Setup
     if deploy_appneta == 'y':
@@ -1051,6 +1048,6 @@ def viptela_appneta_deploy():
     total_time = (end_time - start_time) / 60
     deployment_step = 'Complete'
     deployment_status = 'Complete'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Total time for GNS3 Lab Deployment with {vedge_count} vEdge Devices: {total_time:.2f} minutes")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Total time for GNS3 Lab Deployment with {site_count} vEdge Devices: {total_time:.2f} minutes")
     # endregion
 

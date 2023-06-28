@@ -10,7 +10,6 @@ import time
 
 def versa_appneta_deploy():
     # region Variables
-    vmanage_headers = {}
     lan_subnet_address = ''
     lan_gateway_address = ''
     lan_dhcp_exclude = ''
@@ -27,22 +26,17 @@ def versa_appneta_deploy():
     isp_1_overall = []
     isp_2_overall = []
     flexvnf_nodes = []
-    vmanage_root_cert = ""
-    configure_mgmt_tap = 0
     deployment_type = 'versa'
     deployment_status = 'running'
     deployment_step = '- Action - '
     cloud_node_deploy_data = {"x": 25, "y": -554, "name": "MGMT-Cloud-TAP", "node_type": "cloud",
                               "compute_id": "local", "symbol": ":/symbols/cloud.svg"}
     required_qemu_images = {"versa-director-c19c43c-21.2.3.qcow2", "versa-analytics-67ff6c7-21.2.3.qcow2", "versa-flexvnf-67ff6c7-21.2.3.qcow2"}
-    required_image_response = 201
     # endregion
-    conn = sqlite3.connect(db_path)
-    c = conn.cursor()
     # region Runtime
     start_time = time.time()
     # region GNS3 Lab Setup
-    # time.sleep(10)
+    conn = sqlite3.connect(db_path)
     c = conn.cursor()
     c.execute("SELECT * FROM config")
     row = c.fetchone()
@@ -53,30 +47,35 @@ def versa_appneta_deploy():
         server_port = row[3]
         project_name = row[7]
         new_project_id = row[8]
-        flexvnf_count = row[9]
+        site_count = row[9]
         tap_name = row[10]
-        vmanage_api_ip = row[11]
-        mgmt_subnet_ip = row[12]
-        appn_url = row[13]
-        appn_site_key = row[14]
-    if tap_name == 'none':
-        use_tap = 0
-    else:
-        use_tap = 1
+        mgmt_subnet_ip = row[11]
+        appn_url = row[12]
+        appn_site_key = row[13]
+
     if appn_url:
         deploy_appneta = 'y'
         required_qemu_images.add("pathview-amd64-14.0.0.54253.qcow2")
-    versa_mgmt_subnet_gateway_ip = mgmt_subnet_ip + ".1"
-    versa_director_mgmt_ip = mgmt_subnet_ip + ".2"
-    versa_analytics_mgmt_ip = mgmt_subnet_ip + ".6"
-    versa_controller_mgmt_ip = mgmt_subnet_ip + ".10"
+
+    mgmt_subnet_gateway_ip = mgmt_subnet_ip + ".1"
+    director_mgmt_ip = mgmt_subnet_ip + ".2"
+    analytics_mgmt_ip = mgmt_subnet_ip + ".6"
+    controller_mgmt_ip = mgmt_subnet_ip + ".10"
+
+    southbound_subnet = '172.16.1'
+    director_southbound_gateway_ip = southbound_subnet + ".1"
+    director_southbound_ip = southbound_subnet + ".2"
+    analytics_southbound_gateway_ip = southbound_subnet + ".5"
+    analytics_southbound_ip = southbound_subnet + ".6"
+    controller_southbound_gateway_ip = southbound_subnet + ".1"
+    controller_southbound_ip = southbound_subnet + ".10"
 
     gns3_server_data = [{"GNS3 Server": server_ip, "Server Name": server_name, "Server Port": server_port,
-                    "vManage API IP": vmanage_api_ip, "Project Name": project_name, "Project ID": new_project_id,
-                    "Tap Name": tap_name,
-                    "Site Count": flexvnf_count, "Use Tap": use_tap, "Deployment Type": deployment_type, "Deployment Status": deployment_status, "Deployment Step": deployment_step}]
-    isp_switch_count = (flexvnf_count // 40) + 1
-    mgmt_switch_count = (flexvnf_count // 30) + 1
+                         "Project Name": project_name, "Project ID": new_project_id, "Tap Name": tap_name,
+                         "Site Count": site_count, "Deployment Type": deployment_type,
+                         "Deployment Status": deployment_status, "Deployment Step": deployment_step}]
+    isp_switch_count = (site_count // 40) + 1
+    mgmt_switch_count = (site_count // 30) + 1
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
     c.execute("DELETE FROM deployments")
@@ -108,18 +107,15 @@ def versa_appneta_deploy():
     openvswitch_isp_template_id = gns3_create_template(gns3_server_data, openvswitch_isp_template_data)
     # cisco_iou_template_id = gns3_create_template(gns3_server_data, cisco_l3_router_template_data)
     network_test_tool_template_id = gns3_create_template(gns3_server_data, network_test_tool_template_data)
-    openvswitch_template_id = gns3_create_template(gns3_server_data, openvswitch_cloud_template_data)
+    # openvswitch_template_id = gns3_create_template(gns3_server_data, openvswitch_cloud_template_data)
     temp_hub_data = generate_temp_hub_data(mgmt_main_switchport_count, mgmt_main_hub_template_name)
     regular_ethernet_hub_template_id = gns3_create_template(gns3_server_data, temp_hub_data)
     temp_hub_data = generate_temp_hub_data(mgmt_switchport_count, mgmt_hub_template_name)
     hub_template_id = gns3_create_template(gns3_server_data, temp_hub_data)
-    nat_node_template_id = gns3_query_get_template_id(server_ip, server_port, "NAT")
-    cloud_node_template_id = gns3_query_get_template_id(server_ip, server_port, "Cloud")
     # endregion
     #  region Setup Dynamic Networking
-    flexvnf_deploy_data, client_deploy_data, site_drawing_deploy_data = versa_generate_flexvnf_deploy_data(flexvnf_count)
+    flexvnf_deploy_data, client_deploy_data, site_drawing_deploy_data = versa_generate_flexvnf_deploy_data(site_count)
     mgmt_switch_deploy_data = generate_mgmt_switch_deploy_data(mgmt_switch_count)
-
     # endregion
     # region Deploy GNS3 Nodes
     deployment_step = 'Deploy GNS3 Nodes'
@@ -147,7 +143,7 @@ def versa_appneta_deploy():
             mgmt_switch_nodes.append({'node_name': node_name, 'node_id': node_id})
         else:
             log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Node {node_name} already exists in project {project_name}")
-    for i in range(1, flexvnf_count + 1):
+    for i in range(1, site_count + 1):
         node_name = f"FlexVNF-{i:03}"
         matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, node_name)
         if not matching_nodes:
@@ -173,7 +169,7 @@ def versa_appneta_deploy():
         else:
             log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"No nodes found in project {project_name} for MGMT_switch_{i}")
 
-    for i in range(1, flexvnf_count + 1):
+    for i in range(1, site_count + 1):
         matching_node = flexvnf_info[i - 1]
         if matching_node:
             node_id = matching_node['node_id']
@@ -192,8 +188,7 @@ def versa_appneta_deploy():
     gns3_connect_nodes(gns3_server_data, new_project_id, nat_node_id, 0, 0, isp_ovs_node_id, 0, 0)
     gns3_connect_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, 1, 0, versa_controller_node_id, 3, 0)
     gns3_connect_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, 2, 0, versa_controller_node_id, 4, 0)
-    if use_tap == 1:
-        gns3_connect_nodes(gns3_server_data, new_project_id, cloud_node_id, 0, mgmt_tap_interface,
+    gns3_connect_nodes(gns3_server_data, new_project_id, cloud_node_id, 0, mgmt_tap_interface,
                            mgmt_main_switch_node_id, 0, 0)
     gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, 1, versa_director_node_id, 0, 0)
     gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, 2, versa_analytics_node_id, 0, 0)
@@ -207,7 +202,7 @@ def versa_appneta_deploy():
     mgmt_switch_node_index = 0
     for i in range(mgmt_switch_count):
         first_flexvnf_index = i * 30
-        last_flexvnf_index = min((i + 1) * 30, flexvnf_count)
+        last_flexvnf_index = min((i + 1) * 30, site_count)
         mgmt_switch_node_id = mgmt_switch_nodes[mgmt_switch_node_index]['node_id']
         mgmt_switch_index = i + 5
         gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_switch_node_id, 0, 0, mgmt_main_switch_node_id, 0,
@@ -231,7 +226,7 @@ def versa_appneta_deploy():
     # endregion
     # region Create GNS3 Drawings
     gns3_create_drawing(gns3_server_data, new_project_id, big_block_deploy_data)
-    for i in range(1, flexvnf_count + 1):
+    for i in range(1, site_count + 1):
         gns3_create_drawing(gns3_server_data, new_project_id,
                             site_drawing_deploy_data[f"site_drawing_{i:03}_deploy_data"])
     # endregion
@@ -246,29 +241,19 @@ def versa_appneta_deploy():
     if matching_nodes:
         for matching_node in matching_nodes:
             node_id = matching_node[0]
-            isp_router_base_subnet = '172.14.3.0/24'
-            flexvnf_isp_1_base_subnet = f'172.14.{starting_subnet}.0/24'
-            flexvnf_isp_2_base_subnet = f'172.14.{starting_subnet + 1}.0/24'
+            flexvnf_isp_1_base_subnet = f'172.16.{starting_subnet}.0/24'
+            flexvnf_isp_2_base_subnet = f'172.16.{starting_subnet + 1}.0/24'
             temp_file_name = f'cloud_isp_switch_{switch_index}_interfaces'
-            isp_router_objects = generate_versa_network_objects(isp_router_base_subnet, 30)
-            isp_switch_1_objects = generate_versa_network_objects(flexvnf_isp_1_base_subnet, 30, flexvnf_index)
-            isp_switch_2_objects = generate_versa_network_objects(flexvnf_isp_2_base_subnet, 30, flexvnf_index)
+            isp_switch_1_objects = generate_edge_network_objects('flexvnf', flexvnf_isp_1_base_subnet, 30, flexvnf_index)
+            isp_switch_2_objects = generate_edge_network_objects('flexvnf', flexvnf_isp_2_base_subnet, 30, flexvnf_index)
             isp_1_overall.append(isp_switch_1_objects)
             isp_2_overall.append(isp_switch_2_objects)
             starting_subnet += 2
             switch_index += 1
-            generate_versa_interfaces_file(isp_router_objects, router_ip, isp_switch_1_objects, isp_switch_2_objects,
-                                     temp_file_name)
+            generate_interfaces_file('flexvnf', isp_switch_1_objects, isp_switch_2_objects, temp_file_name)
             router_ip += 1
-            gns3_upload_file_to_node(gns3_server_data, new_project_id, node_id, "etc/network/interfaces",
-                                     temp_file_name)
+            gns3_upload_file_to_node(gns3_server_data, new_project_id, node_id, "etc/network/interfaces", temp_file_name)
             flexvnf_index += 44
-    matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "ISP-Router")
-    if matching_nodes:
-        for matching_node in matching_nodes:
-            temp_file_name = "versa_ISP-Router"
-            node_id = matching_node[0]
-            gns3_upload_file_to_node(gns3_server_data, new_project_id, node_id, "startup-config.cfg", temp_file_name)
     # endregion
     # region Start All GNS3 Nodes
     deployment_step = 'Starting Nodes'
@@ -282,7 +267,7 @@ def versa_appneta_deploy():
     client_filename = 'client_interfaces'
     client_node_file_path = 'etc/network/interfaces'
     generate_client_interfaces_file(client_filename)
-    flexvnf_deploy_data, client_deploy_data, site_drawing_deploy_data = versa_generate_flexvnf_deploy_data(flexvnf_count)
+    flexvnf_deploy_data, client_deploy_data, site_drawing_deploy_data = versa_generate_flexvnf_deploy_data(site_count)
     v = 1
     flexvnf_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "FlexVNF")
     if flexvnf_nodes:
@@ -361,19 +346,19 @@ def versa_appneta_deploy():
                 tn.read_until(b"Enter interface name [eg. eth0]:")
                 tn.write(b'eth0\n')
                 tn.read_until(b"Enter IP Address:")
-                tn.write(versa_director_mgmt_ip.encode('ascii') + b"\n")
+                tn.write(director_mgmt_ip.encode('ascii') + b"\n")
                 tn.read_until(b"Enter Netmask Address:")
                 tn.write(b'255.255.255.0\n')
                 tn.read_until(b"Configure Gateway Address? (y/n)?")
                 tn.write(b'y\n')
                 tn.read_until(b"Enter Gateway Address:")
-                tn.write(versa_mgmt_subnet_gateway_ip.encode('ascii') + b"\n")
+                tn.write(mgmt_subnet_gateway_ip.encode('ascii') + b"\n")
                 tn.read_until(b"Configure another interface? (y/n)?")
                 tn.write(b'y\n')
                 tn.read_until(b"Enter interface name [eg. eth0]:")
                 tn.write(b'eth1\n')
                 tn.read_until(b"Enter IP Address:")
-                tn.write(b'172.14.4.2\n')
+                tn.write(director_southbound_ip.encode('ascii') + b"\n")
                 tn.read_until(b"Enter Netmask Address:")
                 tn.write(b'255.255.255.0\n')
                 tn.read_until(b"Configure another interface? (y/n)?")
@@ -409,13 +394,13 @@ def versa_appneta_deploy():
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     versa_interfaces = f"""auto eth0
     iface eth0 inet static
-    address {versa_analytics_mgmt_ip}
+    address {analytics_mgmt_ip}
     netmask 255.255.255.0
-    gateway {versa_mgmt_subnet_gateway_ip}
+    gateway {mgmt_subnet_gateway_ip}
     up echo nameserver 192.168.122.1 > /etc/resolv.conf
     auto eth1
     iface eth1 inet static
-    address 172.14.4.6
+    address {analytics_southbound_ip}
     netmask 255.255.255.0
     """
     for server_ip in server_ips:
@@ -458,9 +443,9 @@ def versa_appneta_deploy():
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     versa_interfaces = f"""auto eth0
             iface eth0 inet static
-            address {versa_controller_mgmt_ip}
+            address {controller_mgmt_ip}
             netmask 255.255.255.0
-            gateway {versa_mgmt_subnet_gateway_ip}
+            gateway {mgmt_subnet_gateway_ip}
             up echo nameserver 192.168.122.1 > /etc/resolv.conf
             """
     for server_ip in server_ips:
@@ -506,7 +491,7 @@ def versa_appneta_deploy():
     abs_path = os.path.abspath(__file__)
     configs_path = os.path.join(os.path.dirname(abs_path), '../configs/versa')
     clustersetup_file = os.path.join(configs_path, 'clustersetup.conf')
-    versa_configure_analytics_cluster(versa_director_mgmt_ip, versa_analytics_mgmt_ip)
+    versa_configure_analytics_cluster(director_mgmt_ip, analytics_mgmt_ip, analytics_southbound_ip)
     for server_ip in server_ips:
         temp_node_name = f'Director'
         matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
@@ -537,8 +522,9 @@ def versa_appneta_deploy():
                 tn.read_until(b"root@director:/home/Administrator#")
                 with open(clustersetup_file, 'r') as f:
                     file_contents = f.read()
-                file_contents = file_contents.replace("versa_director_ip", versa_director_mgmt_ip)
-                file_contents = file_contents.replace("versa_analytics_ip", versa_analytics_mgmt_ip)
+                file_contents = file_contents.replace("versa_director_ip", director_mgmt_ip)
+                file_contents = file_contents.replace("versa_analytics_ip", analytics_mgmt_ip)
+                file_contents = file_contents.replace("analytics_southbound_ip", analytics_southbound_ip)
                 remote_file_path = "/opt/versa/vnms/scripts/van-cluster-config/van_cluster_install/clustersetup.conf"
                 command = f"echo \"{file_contents}\" > {remote_file_path}\n"
                 tn.write(command.encode('utf-8'))
@@ -556,31 +542,31 @@ def versa_appneta_deploy():
                 time.sleep(30)
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
                       f"Starting Director API Tasks")
-    versa_create_provider_org(versa_director_mgmt_ip)
-    versa_create_overlay_prefix(versa_director_mgmt_ip)
-    versa_create_overlay_route(versa_director_mgmt_ip)
-    versa_create_controller_workflow(versa_director_mgmt_ip, versa_controller_mgmt_ip)
+    versa_create_provider_org(director_mgmt_ip)
+    versa_create_overlay_prefix(director_mgmt_ip)
+    versa_create_overlay_route(director_mgmt_ip, controller_southbound_ip)
+    versa_create_controller_workflow(director_mgmt_ip, controller_mgmt_ip, controller_southbound_ip)
     time.sleep(30)
-    versa_create_dhcp_profile(versa_director_mgmt_ip)
-    versa_deploy_controller(versa_director_mgmt_ip)
+    versa_create_dhcp_profile(director_mgmt_ip)
+    versa_deploy_controller(director_mgmt_ip)
     time.sleep(30)
-    versa_create_device_template(versa_director_mgmt_ip, versa_mgmt_subnet_gateway_ip)
+    versa_create_device_template(director_mgmt_ip, mgmt_subnet_gateway_ip)
     time.sleep(5)
-    versa_deploy_device_template(versa_director_mgmt_ip)
+    versa_deploy_device_template(director_mgmt_ip)
     time.sleep(5)
-    versa_create_device_group(versa_director_mgmt_ip)
+    versa_create_device_group(director_mgmt_ip)
     time.sleep(5)
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, "Completed vManage Device Setup Part 2")
     # endregion
     # region Viptela FlexVNF Device Setup
     deployment_step = 'FlexVNF Device Onboarding'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting FlexVNF Device Onbaording for {flexvnf_count} FlexVNFs")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting FlexVNF Device Onbaording for {site_count} FlexVNFs")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
-    flexvnf_lan_objects = generate_flexvnf_objects(flexvnf_count, mgmt_subnet_ip)
+    flexvnf_lan_objects = generate_flexvnf_objects(site_count, mgmt_subnet_ip)
     isp_index = 0
     flexvnf_vr_index = 4
     for server_ip in server_ips:
-        for i in range(1, flexvnf_count + 1):
+        for i in range(1, site_count + 1):
             temp_node_name = f'FlexVNF-{i:003}'
             matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
             if matching_nodes:
@@ -609,17 +595,17 @@ def versa_appneta_deploy():
                             vpn_0_ge0_1_ip_gateway = dictionary_1['router_address']
                     flexvnf_hostname = f"{temp_node_name}-{versa_city_data[temp_node_name]['city']}"
                     flexvnf_city = versa_city_data[temp_node_name]['city']
-                    flexvnf_country = versa_city_data[temp_node_name]['country']
+                    site_country = versa_city_data[temp_node_name]['country']
                     vr_1_route_ip = f'10.10.0.{flexvnf_vr_index}'
                     tvi_0_2_ip = f'10.10.0.{flexvnf_vr_index + 1}/32'
                     tvi_0_3_ip = f'10.10.0.{flexvnf_vr_index}/32'
                     latitude = versa_city_data[temp_node_name]['latitude']
                     longitude = versa_city_data[temp_node_name]['longitude']
-                    onboard_command = f"sudo /opt/versa/scripts/staging.py -w 0 -n {device_serial_number} -c 172.14.5.2 -s {vpn_0_ge0_0_ip_address} -g {vpn_0_ge0_0_ip_gateway} -l SDWAN-Branch@Versa-Root.com -r Controller-01-staging@Versa-Root.com"
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting FlexVNF Device Onboarding for {node_name[0]} - FlexVNF {i} of {flexvnf_count}")
-                    versa_create_site_device_workflow(versa_director_mgmt_ip, vr_1_route_ip, lan_gateway_address, lan_subnet_base, flexvnf_hostname, site_id, device_serial_number, flexvnf_country, flexvnf_city, vpn_0_ge0_0_ip_address, vpn_0_ge0_0_ip_gateway, vpn_0_ge0_1_ip_address, vpn_0_ge0_1_ip_gateway, tvi_0_2_ip, tvi_0_3_ip, latitude, longitude, mgmt_address)
+                    onboard_command = f"sudo /opt/versa/scripts/staging.py -w 0 -n {device_serial_number} -c 172.16.5.2 -s {vpn_0_ge0_0_ip_address} -g {vpn_0_ge0_0_ip_gateway} -l SDWAN-Branch@Versa-Root.com -r Controller-01-staging@Versa-Root.com"
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting FlexVNF Device Onboarding for {node_name[0]} - FlexVNF {i} of {site_count}")
+                    versa_create_site_device_workflow(director_mgmt_ip, vr_1_route_ip, lan_gateway_address, lan_subnet_base, flexvnf_hostname, site_id, device_serial_number, site_country, flexvnf_city, vpn_0_ge0_0_ip_address, vpn_0_ge0_0_ip_gateway, vpn_0_ge0_1_ip_address, vpn_0_ge0_1_ip_gateway, tvi_0_2_ip, tvi_0_3_ip, latitude, longitude, mgmt_address)
                     time.sleep(10)
-                    versa_deploy_device_workflow(versa_director_mgmt_ip, flexvnf_hostname)
+                    versa_deploy_device_workflow(director_mgmt_ip, flexvnf_hostname)
                     time.sleep(10)
                     tn = telnetlib.Telnet(server_ip, console_port)
                     tn.write(b"\r\n")
@@ -645,11 +631,11 @@ def versa_appneta_deploy():
                     tn.write(onboard_command.encode('ascii') + b"\r")
                     tn.read_until(b"[root@versa-flexvnf: admin]#")
                     tn.close()
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed FlexVNF Device Onboarding for {temp_node_name}, Remaining - {flexvnf_count - i}")
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed FlexVNF Device Onboarding for {temp_node_name}, Remaining - {site_count - i}")
                     if i % 44 == 0 and i != 0:
                         isp_index += 1
                     flexvnf_vr_index += 2
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed FlexVNF Device Onboarding for {flexvnf_count} FlexVNF devices")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed FlexVNF Device Onboarding for {site_count} FlexVNF devices")
     # endregion
     # region AppNeta MP Setup
     if deploy_appneta == 'y':
@@ -665,8 +651,8 @@ def versa_appneta_deploy():
             if matching_nodes:
                 for matching_node in matching_nodes:
                     mp_ip_address = f"{mgmt_subnet_ip}.{v+50}"
-                    mp_lan_address = f"172.14.10{mp_lan_index}.51"
-                    mp_lan_gateway = f"172.14.10{mp_lan_index}.1"
+                    mp_lan_address = f"172.16.10{mp_lan_index}.51"
+                    mp_lan_gateway = f"172.16.10{mp_lan_index}.1"
                     node_id, console_port, aux = matching_node
                     node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id', 'name',
                                                                node_id)
@@ -684,6 +670,6 @@ def versa_appneta_deploy():
     total_time = (end_time - start_time) / 60
     deployment_step = 'Complete'
     deployment_status = 'Complete'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Total time for GNS3 Lab Deployment with {flexvnf_count} FlexVNF Devices: {total_time:.2f} minutes")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Total time for GNS3 Lab Deployment with {site_count} FlexVNF Devices: {total_time:.2f} minutes")
     # endregion
 
