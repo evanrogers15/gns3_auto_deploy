@@ -54,7 +54,7 @@ def generate_client_interfaces_file(filename_temp, ip=None):
     with open(filename, 'w') as f:
         f.write('auto eth0\n')
         f.write('iface eth0 inet dhcp\n')
-        f.write('\tup echo nameserver 192.168.122.1 > /etc/resolv.conf\n')
+        # f.write('\tup echo nameserver 192.168.122.1 > /etc/resolv.conf\n')
         f.write('\thwaddress ether 4C:D7:17:00:00:00\n\n')
         if ip:
             f.write('auto eth1\n')
