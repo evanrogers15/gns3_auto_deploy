@@ -1,7 +1,8 @@
+import logging.handlers
 from modules.gns3.gns3_actions import *
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-# region Functions: Viptela API
+# region Functions: Versa API
 def versa_configure_analytics_cluster(director_ip, analytics_ip, analytics_southbound_ip):
     url = f"https://{director_ip}:9182/api/config/nms/provider"
     headers = {
@@ -29,9 +30,10 @@ def versa_configure_analytics_cluster(director_ip, analytics_ip, analytics_south
     try:
         response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
         response.raise_for_status()
-        print("Configuration successful.")
+        logging.info(f"Deploy - Configured Analytics Cluster on Director {director_ip}")
+        return response
     except requests.exceptions.RequestException as e:
-        print(f"Configuration failed. Error: {str(e)}")
+        logging.info(f"Versa Director API Call Failed: {str(e)}")
 
 def versa_create_provider_org(director_ip):
     url = f"https://{director_ip}:9182/nextgen/organization"
@@ -44,9 +46,10 @@ def versa_create_provider_org(director_ip):
     try:
         response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
         response.raise_for_status()
-        print("Configuration successful.")
+        logging.info(f"Deploy - Created Provider Organization on Director {director_ip}")
+        return response
     except requests.exceptions.RequestException as e:
-        print(f"Configuration failed. Error: {str(e)}")
+        logging.info(f"Versa Director API Call Failed: {str(e)}")
 
 def versa_create_overlay_prefix(director_ip):
     url = f"https://{director_ip}:9182/vnms/ipam/overlay/prefixes"
@@ -59,9 +62,10 @@ def versa_create_overlay_prefix(director_ip):
     try:
         response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
         response.raise_for_status()
-        print("Configuration successful.")
+        logging.info(f"Deploy - Created Overlay Prefix on Director {director_ip}")
+        return response
     except requests.exceptions.RequestException as e:
-        print(f"Configuration failed. Error: {str(e)}")
+        logging.info(f"Versa Director API Call Failed: {str(e)}")
 
 def versa_create_overlay_route(director_ip, controller_southbound_ip):
     url = f"https://{director_ip}:9182/api/config/nms/routing-options/static"
@@ -74,9 +78,10 @@ def versa_create_overlay_route(director_ip, controller_southbound_ip):
     try:
         response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
         response.raise_for_status()
-        print("Configuration successful.")
+        logging.info(f"Deploy - Created Overlay Route on Director {director_ip}")
+        return response
     except requests.exceptions.RequestException as e:
-        print(f"Configuration failed. Error: {str(e)}")
+        logging.info(f"Versa Director API Call Failed: {str(e)}")
     
 def versa_create_controller_workflow(director_ip, controller_ip, controller_southbound_ip, isp_1_gateway, isp_1_ip, isp_2_gateway, isp_2_ip):
     url = f"https://{director_ip}:9182/vnms/sdwan/workflow/controllers/controller"
@@ -93,9 +98,10 @@ def versa_create_controller_workflow(director_ip, controller_ip, controller_sout
     try:
         response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
         response.raise_for_status()
-        print("Configuration successful.")
+        logging.info(f"Deploy - Created Controller Workflow on Director {director_ip}")
+        return response
     except requests.exceptions.RequestException as e:
-        print(f"Configuration failed. Error: {str(e)}")
+        logging.info(f"Versa Director API Call Failed: {str(e)}")
         
 def versa_deploy_controller(director_ip):
     url = f"https://{director_ip}:9182/vnms/sdwan/workflow/controllers/controller/deploy/Controller-01"
@@ -108,9 +114,10 @@ def versa_deploy_controller(director_ip):
     try:
         response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
         response.raise_for_status()
-        print("Configuration successful.")
+        logging.info(f"Deploy - Deployed Controller on Director {director_ip}")
+        return response
     except requests.exceptions.RequestException as e:
-        print(f"Configuration failed. Error: {str(e)}")
+        logging.info(f"Versa Director API Call Failed: {str(e)}")
 
 def versa_create_device_template(director_ip, mgmt_subnet_gateway):
     url = f"https://{director_ip}:9182/vnms/sdwan/workflow/templates/template"
@@ -193,9 +200,10 @@ def versa_create_device_template(director_ip, mgmt_subnet_gateway):
     try:
         response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
         response.raise_for_status()
-        print("Configuration successful.")
+        logging.info(f"Deploy - Created Site Device Template on Director {director_ip}")
+        return response
     except requests.exceptions.RequestException as e:
-        print(f"Configuration failed. Error: {str(e)}")
+        logging.info(f"Versa Director API Call Failed: {str(e)}")
         
 def versa_deploy_device_template(director_ip):
     url = f"https://{director_ip}:9182/vnms/sdwan/workflow/templates/template/deploy/Edge-Template?verifyDiff=True"
@@ -208,9 +216,10 @@ def versa_deploy_device_template(director_ip):
     try:
         response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
         response.raise_for_status()
-        print("Configuration successful.")
+        logging.info(f"Deploy - Deployed Site Device Template on Director {director_ip}")
+        return response
     except requests.exceptions.RequestException as e:
-        print(f"Configuration failed. Error: {str(e)}")
+        logging.info(f"Versa Director API Call Failed: {str(e)}")
 
 def versa_create_device_group(director_ip):
     url = f"https://{director_ip}:9182/nextgen/deviceGroup"
@@ -223,9 +232,10 @@ def versa_create_device_group(director_ip):
     try:
         response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
         response.raise_for_status()
-        print("Configuration successful.")
+        logging.info(f"Deploy - Created Device Group on Director {director_ip}")
+        return response
     except requests.exceptions.RequestException as e:
-        print(f"Configuration failed. Error: {str(e)}")
+        logging.info(f"Versa Director API Call Failed: {str(e)}")
 
 def versa_create_dhcp_profile(director_ip):
     url = f"https://{director_ip}:9182/api/config/devices/template/Versa-Root-DataStore/config/orgs/org-services/Versa-Root/dhcp/dhcp4-options-profiles"
@@ -234,13 +244,14 @@ def versa_create_dhcp_profile(director_ip):
     }
     auth = ("Administrator", "versa123")
 
-    data = {"dhcp4-options-profile":{"name":"DHCP","domain-name":"demo.local","dns-server":["192.168.122.1"]}}
+    data = {"dhcp4-options-profile":{"name":"DHCP","domain-name":"demo.local","dns-server":["8.8.8.8"]}}
     try:
         response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
         response.raise_for_status()
-        print("Configuration successful.")
+        logging.info(f"Deploy - Created DHCP Profile on Director {director_ip}")
+        return response
     except requests.exceptions.RequestException as e:
-        print(f"Configuration failed. Error: {str(e)}")
+        logging.info(f"Versa Director API Call Failed: {str(e)}")
 
 def versa_deploy_device_workflow(director_ip, site_name):
     url = f"https://{director_ip}:9182/vnms/sdwan/workflow/devices/device/deploy/{site_name}"
@@ -253,9 +264,10 @@ def versa_deploy_device_workflow(director_ip, site_name):
     try:
         response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
         response.raise_for_status()
-        print("Configuration successful.")
+        logging.info(f"Deploy - Deployed Site Device Workflow on Director {director_ip}")
+        return response
     except requests.exceptions.RequestException as e:
-        print(f"Configuration failed. Error: {str(e)}")
+        logging.info(f"Versa Director API Call Failed: {str(e)}")
 
 def versa_create_site_device_workflow(director_ip, vr_1_route_ip, lan_ip, lan_dhcp_base, site_name, site_id, device_serial_number, device_country, device_city, isp_1_ip, isp_1_gateway, isp_2_ip, isp_2_gateway, tvi_0_2_ip, tvi_0_3_ip, latitude, longitude, mgmt_address):
     url = f"https://{director_ip}:9182/vnms/sdwan/workflow/devices/device"
@@ -409,640 +421,9 @@ def versa_create_site_device_workflow(director_ip, vr_1_route_ip, lan_ip, lan_dh
     try:
         response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
         response.raise_for_status()
-        print("Configuration successful.")
+        logging.info(f"Deploy - Created Site Device Template on Director {director_ip}")
+        return response
     except requests.exceptions.RequestException as e:
-        print(f"Configuration failed. Error: {str(e)}")
+        logging.info(f"Versa Director API Call Failed: {str(e)}")
 
-# endregion
-
-# region Old
-def versa_create_site_device_workflow_1(director_ip):
-    url = f"https://{director_ip}:9182/vnms/sdwan/workflow/devices/device"
-    headers = {
-        "Content-Type": "application/json"
-    }
-    auth = ("Administrator", "versa123")
-
-    data = {"versanms.sdwan-device-workflow": {"deviceName": "NewYork", "siteId": "101", "orgName": "Versa-Root",
-                                               "serialNumber": "SN101", "deviceGroup": "Sites", "licensePeriod": 1,
-                                               "deploymentType": "physical",
-                                               "locationInfo": {"state": "New York", "country": "US",
-                                                                "longitude": "-74.005973", "latitude": "40.712775",
-                                                                "city": "New York"},
-                                               "postStagingTemplateInfo": {"templateName": "Edge-Template",
-                                                                           "templateData": {
-                                                                               "device-template-variable": {
-                                                                                   "template": "Edge-Template",
-                                                                                   "variable-binding": {"attrs": [{
-                                                                                                                      "name": "{$v_Site_Id__siteSiteID}",
-                                                                                                                      "value": "101",
-                                                                                                                      "isAutogeneratable": True},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_Chassis_Id__sitesChassisId}",
-                                                                                                                      "value": "SN101",
-                                                                                                                      "isAutogeneratable": True},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_Versa-Root-Control-VR_1_Local_address__vrRouterAddress}",
-                                                                                                                      "value": "10.10.0.4",
-                                                                                                                      "isAutogeneratable": True,
-                                                                                                                      "isOverwritten": False},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_longitude__Idlongitude}",
-                                                                                                                      "value": "-74.005973",
-                                                                                                                      "isAutogeneratable": True},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_LAN_IPv4__staticaddress}",
-                                                                                                                      "value": "172.14.101.1/24",
-                                                                                                                      "isAutogeneratable": False},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_Versa-Root_Site_Name__sitesSiteName}",
-                                                                                                                      "value": "NewYork",
-                                                                                                                      "isAutogeneratable": True},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_location__IdLocation}",
-                                                                                                                      "value": "New York, New York, US",
-                                                                                                                      "isAutogeneratable": True},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_ISP-1_IPv4__staticaddress}",
-                                                                                                                      "value": "172.14.6.2/30",
-                                                                                                                      "isAutogeneratable": False},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_ISP-2_IPv4__staticaddress}",
-                                                                                                                      "value": "172.14.7.2/30",
-                                                                                                                      "isAutogeneratable": False},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_tvi-0-2_-_Unit_0_Static_address__tunnelStaticAddress}",
-                                                                                                                      "value": "10.10.0.5/32",
-                                                                                                                      "isAutogeneratable": True,
-                                                                                                                      "isOverwritten": False},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_ISP-2-Transport-VR_IPv4__vrHopAddress}",
-                                                                                                                      "value": "172.14.7.1",
-                                                                                                                      "isAutogeneratable": False},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_ISP-1-Transport-VR_IPv4__vrHopAddress}",
-                                                                                                                      "value": "172.14.6.1",
-                                                                                                                      "isAutogeneratable": False},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_latitude__IdLatitude}",
-                                                                                                                      "value": "40.712775",
-                                                                                                                      "isAutogeneratable": True},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_Versa-Root_Controller-01_Local_auth_email_identifier__IKELIdentifier}",
-                                                                                                                      "value": "NewYork@Versa-Root.com",
-                                                                                                                      "isAutogeneratable": True},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_Versa-Root-Control-VR_1_Router_ID__vrRouteId}",
-                                                                                                                      "value": "10.10.0.4",
-                                                                                                                      "isAutogeneratable": True,
-                                                                                                                      "isOverwritten": False},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_tvi-0-3_-_Unit_0_Static_address__tunnelStaticAddress}",
-                                                                                                                      "value": "10.10.0.4/32",
-                                                                                                                      "isAutogeneratable": True,
-                                                                                                                      "isOverwritten": False},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_identification__IdName}",
-                                                                                                                      "value": "NewYork",
-                                                                                                                      "isAutogeneratable": True},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_Versa-Root_Controller-01_Local_auth_email_key__IKELKey}",
-                                                                                                                      "value": "EFz2vxM/mRsoaS82d+nCg01/jDE5knE1cl10B6sNWJTBGgnFe+hUFIvi9Kz987fm8PK4MhxFw9j89sGXHm1xKK3ZTFVlouUwAWEuuaFeZBOKanA2joKkumDKUDO2cw19iJDzhQ+/OQIE+bzX/p8rULBDlONmszYBLKWpgsXvT5eqfFo5S1awko+Hk+1kATeBjiyqH9MG+XwDEsKLfdZMGcAVtUfnFQv02e+XZ5qQq9RwopgypCJbPbbULMnMDLeb121PjudYh0SkgLXuY74gt++NuxhmCKP/4c2T99wFTMftquTwjhfrylDeYW2pETx3Hs790EL+fpg/XFgiXS7DaQ==",
-                                                                                                                      "isAutogeneratable": True}]}},
-                                                                               "variableMetadata": [{
-                                                                                                        "variable": "{$v_Site_Id__siteSiteID}",
-                                                                                                        "group": "SDWAN",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "INTEGER",
-                                                                                                        "range": {
-                                                                                                            "start": 100,
-                                                                                                            "end": 16383}},
-                                                                                                    {
-                                                                                                        "variable": "{$v_Chassis_Id__sitesChassisId}",
-                                                                                                        "group": "SDWAN",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "STRING"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_Versa-Root-Control-VR_1_Local_address__vrRouterAddress}",
-                                                                                                        "group": "Virtual Routers",
-                                                                                                        "overlay": True,
-                                                                                                        "type": "IPV4"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_longitude__Idlongitude}",
-                                                                                                        "group": "SDWAN",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "FLOAT",
-                                                                                                        "floatRange": {
-                                                                                                            "start": -180,
-                                                                                                            "end": 180}},
-                                                                                                    {
-                                                                                                        "variable": "{$v_LAN_IPv4__staticaddress}",
-                                                                                                        "group": "Interfaces",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "IPV4_MASK"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_Versa-Root_Site_Name__sitesSiteName}",
-                                                                                                        "group": "SDWAN",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "STRING"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_location__IdLocation}",
-                                                                                                        "group": "SDWAN",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "STRING"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_ISP-1_IPv4__staticaddress}",
-                                                                                                        "group": "Interfaces",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "IPV4_MASK"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_ISP-2_IPv4__staticaddress}",
-                                                                                                        "group": "Interfaces",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "IPV4_MASK"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_tvi-0-2_-_Unit_0_Static_address__tunnelStaticAddress}",
-                                                                                                        "group": "Interfaces",
-                                                                                                        "overlay": True,
-                                                                                                        "type": "IPV4_IPV6_MASK"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_ISP-2-Transport-VR_IPv4__vrHopAddress}",
-                                                                                                        "group": "Virtual Routers",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "IPV4"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_ISP-1-Transport-VR_IPv4__vrHopAddress}",
-                                                                                                        "group": "Virtual Routers",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "IPV4"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_latitude__IdLatitude}",
-                                                                                                        "group": "SDWAN",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "FLOAT",
-                                                                                                        "floatRange": {
-                                                                                                            "start": -90,
-                                                                                                            "end": 90}},
-                                                                                                    {
-                                                                                                        "variable": "{$v_Versa-Root_Controller-01_Local_auth_email_identifier__IKELIdentifier}",
-                                                                                                        "group": "IPSEC",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "STRING"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_Versa-Root-Control-VR_1_Router_ID__vrRouteId}",
-                                                                                                        "group": "Virtual Routers",
-                                                                                                        "overlay": True,
-                                                                                                        "type": "IPV4"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_tvi-0-3_-_Unit_0_Static_address__tunnelStaticAddress}",
-                                                                                                        "group": "Interfaces",
-                                                                                                        "overlay": True,
-                                                                                                        "type": "IPV4_IPV6_MASK"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_identification__IdName}",
-                                                                                                        "group": "SDWAN",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "STRING"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_Versa-Root_Controller-01_Local_auth_email_key__IKELKey}",
-                                                                                                        "group": "IPSEC",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "STRING"}]}},
-                                               "serviceTemplateInfo": {"templateData": {"device-template-variable": [
-                                                   {"device": "NewYork", "template": "Versa-Root-DataStore"}]}}}}
-    try:
-        response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
-        response.raise_for_status()
-        print("Configuration successful.")
-    except requests.exceptions.RequestException as e:
-        print(f"Configuration failed. Error: {str(e)}")
-
-def versa_deploy_device_workflow_1(director_ip):
-    url = f"https://{director_ip}:9182/vnms/sdwan/workflow/devices/device/deploy/NewYork"
-    headers = {
-        "Content-Type": "application/json"
-    }
-    auth = ("Administrator", "versa123")
-
-    data = {}
-    try:
-        response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
-        response.raise_for_status()
-        print("Configuration successful.")
-    except requests.exceptions.RequestException as e:
-        print(f"Configuration failed. Error: {str(e)}")
-
-def versa_create_site_device_workflow_2(director_ip):
-    url = f"https://{director_ip}:9182/vnms/sdwan/workflow/devices/device"
-    headers = {
-        "Content-Type": "application/json"
-    }
-    auth = ("Administrator", "versa123")
-
-    data = {"versanms.sdwan-device-workflow": {"deviceName": "Cairns", "siteId": "102", "orgName": "Versa-Root",
-                                               "serialNumber": "SN102", "deviceGroup": "Sites", "licensePeriod": 1,
-                                               "deploymentType": "physical",
-                                               "locationInfo": {"country": "France",
-                                                                "longitude": "145.770953", "latitude": "-16.920348",
-                                                                "city": "Cairns"},
-                                               "postStagingTemplateInfo": {"templateName": "Edge-Template",
-                                                                           "templateData": {
-                                                                               "device-template-variable": {
-                                                                                   "template": "Edge-Template",
-                                                                                   "variable-binding": {"attrs": [{
-                                                                                                                      "name": "{$v_Site_Id__siteSiteID}",
-                                                                                                                      "value": "102",
-                                                                                                                      "isAutogeneratable": True},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_Chassis_Id__sitesChassisId}",
-                                                                                                                      "value": "SN102",
-                                                                                                                      "isAutogeneratable": True},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_Versa-Root-Control-VR_1_Local_address__vrRouterAddress}",
-                                                                                                                      "value": "10.10.0.6",
-                                                                                                                      "isAutogeneratable": True,
-                                                                                                                      "isOverwritten": False},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_longitude__Idlongitude}",
-                                                                                                                      "longitude": "145.770953",
-                                                                                                                      "isAutogeneratable": True},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_LAN_IPv4__staticaddress}",
-                                                                                                                      "value": "172.14.102.1/24",
-                                                                                                                      "isAutogeneratable": False},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_Versa-Root_Site_Name__sitesSiteName}",
-                                                                                                                      "value": "Cairns",
-                                                                                                                      "isAutogeneratable": True},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_location__IdLocation}",
-                                                                                                                      "value": "Cairns, France",
-                                                                                                                      "isAutogeneratable": True},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_ISP-1_IPv4__staticaddress}",
-                                                                                                                      "value": "172.14.6.6/30",
-                                                                                                                      "isAutogeneratable": False},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_ISP-2_IPv4__staticaddress}",
-                                                                                                                      "value": "172.14.7.6/30",
-                                                                                                                      "isAutogeneratable": False},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_tvi-0-2_-_Unit_0_Static_address__tunnelStaticAddress}",
-                                                                                                                      "value": "10.10.0.7/32",
-                                                                                                                      "isAutogeneratable": True,
-                                                                                                                      "isOverwritten": False},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_ISP-2-Transport-VR_IPv4__vrHopAddress}",
-                                                                                                                      "value": "172.14.7.5",
-                                                                                                                      "isAutogeneratable": False},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_ISP-1-Transport-VR_IPv4__vrHopAddress}",
-                                                                                                                      "value": "172.14.6.5",
-                                                                                                                      "isAutogeneratable": False},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_latitude__IdLatitude}",
-                                                                                                                      "latitude": "-16.920348",
-                                                                                                                      "isAutogeneratable": True},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_Versa-Root_Controller-01_Local_auth_email_identifier__IKELIdentifier}",
-                                                                                                                      "value": "Cairns@Versa-Root.com",
-                                                                                                                      "isAutogeneratable": True},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_Versa-Root-Control-VR_1_Router_ID__vrRouteId}",
-                                                                                                                      "value": "10.10.0.6",
-                                                                                                                      "isAutogeneratable": True,
-                                                                                                                      "isOverwritten": False},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_tvi-0-3_-_Unit_0_Static_address__tunnelStaticAddress}",
-                                                                                                                      "value": "10.10.0.6/32",
-                                                                                                                      "isAutogeneratable": True,
-                                                                                                                      "isOverwritten": False},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_identification__IdName}",
-                                                                                                                      "value": "Cairns",
-                                                                                                                      "isAutogeneratable": True},
-                                                                                                                  ]}},
-                                                                               "variableMetadata": [{
-                                                                                                        "variable": "{$v_Site_Id__siteSiteID}",
-                                                                                                        "group": "SDWAN",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "INTEGER",
-                                                                                                        "range": {
-                                                                                                            "start": 100,
-                                                                                                            "end": 16383}},
-                                                                                                    {
-                                                                                                        "variable": "{$v_Chassis_Id__sitesChassisId}",
-                                                                                                        "group": "SDWAN",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "STRING"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_Versa-Root-Control-VR_1_Local_address__vrRouterAddress}",
-                                                                                                        "group": "Virtual Routers",
-                                                                                                        "overlay": True,
-                                                                                                        "type": "IPV4"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_longitude__Idlongitude}",
-                                                                                                        "group": "SDWAN",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "FLOAT",
-                                                                                                        "floatRange": {
-                                                                                                            "start": -180,
-                                                                                                            "end": 180}},
-                                                                                                    {
-                                                                                                        "variable": "{$v_LAN_IPv4__staticaddress}",
-                                                                                                        "group": "Interfaces",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "IPV4_MASK"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_Versa-Root_Site_Name__sitesSiteName}",
-                                                                                                        "group": "SDWAN",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "STRING"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_location__IdLocation}",
-                                                                                                        "group": "SDWAN",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "STRING"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_ISP-1_IPv4__staticaddress}",
-                                                                                                        "group": "Interfaces",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "IPV4_MASK"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_ISP-2_IPv4__staticaddress}",
-                                                                                                        "group": "Interfaces",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "IPV4_MASK"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_tvi-0-2_-_Unit_0_Static_address__tunnelStaticAddress}",
-                                                                                                        "group": "Interfaces",
-                                                                                                        "overlay": True,
-                                                                                                        "type": "IPV4_IPV6_MASK"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_ISP-2-Transport-VR_IPv4__vrHopAddress}",
-                                                                                                        "group": "Virtual Routers",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "IPV4"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_ISP-1-Transport-VR_IPv4__vrHopAddress}",
-                                                                                                        "group": "Virtual Routers",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "IPV4"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_latitude__IdLatitude}",
-                                                                                                        "group": "SDWAN",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "FLOAT",
-                                                                                                        "floatRange": {
-                                                                                                            "start": -90,
-                                                                                                            "end": 90}},
-                                                                                                    {
-                                                                                                        "variable": "{$v_Versa-Root_Controller-01_Local_auth_email_identifier__IKELIdentifier}",
-                                                                                                        "group": "IPSEC",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "STRING"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_Versa-Root-Control-VR_1_Router_ID__vrRouteId}",
-                                                                                                        "group": "Virtual Routers",
-                                                                                                        "overlay": True,
-                                                                                                        "type": "IPV4"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_tvi-0-3_-_Unit_0_Static_address__tunnelStaticAddress}",
-                                                                                                        "group": "Interfaces",
-                                                                                                        "overlay": True,
-                                                                                                        "type": "IPV4_IPV6_MASK"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_identification__IdName}",
-                                                                                                        "group": "SDWAN",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "STRING"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_Versa-Root_Controller-01_Local_auth_email_key__IKELKey}",
-                                                                                                        "group": "IPSEC",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "STRING"}]}},
-                                               "serviceTemplateInfo": {"templateData": {"device-template-variable": [
-                                                   {"device": "Cairns", "template": "Versa-Root-DataStore"}]}}}}
-    try:
-        response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
-        response.raise_for_status()
-        print("Configuration successful.")
-        print(response)
-    except requests.exceptions.RequestException as e:
-        print(f"Configuration failed. Error: {str(e)}")
-        print(response)
-
-def versa_deploy_device_workflow_2(director_ip):
-    url = f"https://{director_ip}:9182/vnms/sdwan/workflow/devices/device/deploy/Cairns"
-    headers = {
-        "Content-Type": "application/json"
-    }
-    auth = ("Administrator", "versa123")
-
-    data = {}
-    try:
-        response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
-        response.raise_for_status()
-        print("Configuration successful.")
-    except requests.exceptions.RequestException as e:
-        print(f"Configuration failed. Error: {str(e)}")
-
-def versa_create_site_device_workflow_old(director_ip, vr_1_local_ip, vr_1_route_id, lan_ip, site_name, site_id, device_serial_number, device_country, device_city, isp_1_ip, isp_1_gateway, isp_2_ip, isp_2_gateway, tvi_0_2_ip, tvi_0_3_ip, latitude, longitude):
-    # print(director_ip, vr_1_local_ip, vr_1_route_id, lan_ip, site_name, site_id, device_serial_number, device_country, device_city, isp_1_ip, isp_1_gateway, isp_2_ip, isp_2_gateway, tvi_0_2_ip, tvi_0_3_ip, latitude, longitude)
-    url = f"https://{director_ip}:9182/vnms/sdwan/workflow/devices/device"
-    headers = {
-        "Content-Type": "application/json"
-    }
-    auth = ("Administrator", "versa123")
-
-    data = {"versanms.sdwan-device-workflow": {"deviceName": site_name, "siteId": site_id, "orgName": "Versa-Root",
-                                               "serialNumber": device_serial_number, "deviceGroup": "Sites", "licensePeriod": 1,
-                                               "deploymentType": "physical",
-                                               "locationInfo": {"country": device_country,
-                                                                "longitude": longitude, "latitude": latitude,
-                                                                "city": device_city},
-                                               "postStagingTemplateInfo": {"templateName": "Edge-Template",
-                                                                           "templateData": {
-                                                                               "device-template-variable": {
-                                                                                   "template": "Edge-Template",
-                                                                                   "variable-binding": {"attrs": [{
-                                                                                                                      "name": "{$v_Site_Id__siteSiteID}",
-                                                                                                                      "value": site_id,
-                                                                                                                      "isAutogeneratable": True},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_Chassis_Id__sitesChassisId}",
-                                                                                                                      "value": device_serial_number,
-                                                                                                                      "isAutogeneratable": True},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_Versa-Root-Control-VR_1_Local_address__vrRouterAddress}",
-                                                                                                                      "value": vr_1_local_ip,
-                                                                                                                      "isAutogeneratable": True,
-                                                                                                                      "isOverwritten": False},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_longitude__Idlongitude}",
-                                                                                                                      "value": longitude,
-                                                                                                                      "isAutogeneratable": True},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_LAN_IPv4__staticaddress}",
-                                                                                                                      "value": lan_ip,
-                                                                                                                      "isAutogeneratable": False},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_Versa-Root_Site_Name__sitesSiteName}",
-                                                                                                                      "value": site_name,
-                                                                                                                      "isAutogeneratable": True},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_location__IdLocation}",
-                                                                                                                      "value": f"{device_city}, {device_country}",
-                                                                                                                      "isAutogeneratable": True},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_ISP-1_IPv4__staticaddress}",
-                                                                                                                      "value": isp_1_ip,
-                                                                                                                      "isAutogeneratable": False},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_ISP-2_IPv4__staticaddress}",
-                                                                                                                      "value": isp_2_ip,
-                                                                                                                      "isAutogeneratable": False},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_tvi-0-2_-_Unit_0_Static_address__tunnelStaticAddress}",
-                                                                                                                      "value": tvi_0_2_ip,
-                                                                                                                      "isAutogeneratable": True,
-                                                                                                                      "isOverwritten": False},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_ISP-2-Transport-VR_IPv4__vrHopAddress}",
-                                                                                                                      "value": isp_2_gateway,
-                                                                                                                      "isAutogeneratable": False},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_ISP-1-Transport-VR_IPv4__vrHopAddress}",
-                                                                                                                      "value": isp_1_gateway,
-                                                                                                                      "isAutogeneratable": False},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_latitude__IdLatitude}",
-                                                                                                                      "value": latitude,
-                                                                                                                      "isAutogeneratable": True},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_Versa-Root_Controller-01_Local_auth_email_identifier__IKELIdentifier}",
-                                                                                                                      "value": f"{site_name}@Versa-Root.com",
-                                                                                                                      "isAutogeneratable": True},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_Versa-Root-Control-VR_1_Router_ID__vrRouteId}",
-                                                                                                                      "value": vr_1_route_id,
-                                                                                                                      "isAutogeneratable": True,
-                                                                                                                      "isOverwritten": False},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_tvi-0-3_-_Unit_0_Static_address__tunnelStaticAddress}",
-                                                                                                                      "value": tvi_0_3_ip,
-                                                                                                                      "isAutogeneratable": True,
-                                                                                                                      "isOverwritten": False},
-                                                                                                                  {
-                                                                                                                      "name": "{$v_identification__IdName}",
-                                                                                                                      "value": site_name,
-                                                                                                                      "isAutogeneratable": True},
-                                                                                                                  ]}},
-                                                                               "variableMetadata": [{
-                                                                                                        "variable": "{$v_Site_Id__siteSiteID}",
-                                                                                                        "group": "SDWAN",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "INTEGER",
-                                                                                                        "range": {
-                                                                                                            "start": 100,
-                                                                                                            "end": 16383}},
-                                                                                                    {
-                                                                                                        "variable": "{$v_Chassis_Id__sitesChassisId}",
-                                                                                                        "group": "SDWAN",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "STRING"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_Versa-Root-Control-VR_1_Local_address__vrRouterAddress}",
-                                                                                                        "group": "Virtual Routers",
-                                                                                                        "overlay": True,
-                                                                                                        "type": "IPV4"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_longitude__Idlongitude}",
-                                                                                                        "group": "SDWAN",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "FLOAT",
-                                                                                                        "floatRange": {
-                                                                                                            "start": -180,
-                                                                                                            "end": 180}},
-                                                                                                    {
-                                                                                                        "variable": "{$v_LAN_IPv4__staticaddress}",
-                                                                                                        "group": "Interfaces",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "IPV4_MASK"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_Versa-Root_Site_Name__sitesSiteName}",
-                                                                                                        "group": "SDWAN",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "STRING"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_location__IdLocation}",
-                                                                                                        "group": "SDWAN",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "STRING"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_ISP-1_IPv4__staticaddress}",
-                                                                                                        "group": "Interfaces",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "IPV4_MASK"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_ISP-2_IPv4__staticaddress}",
-                                                                                                        "group": "Interfaces",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "IPV4_MASK"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_tvi-0-2_-_Unit_0_Static_address__tunnelStaticAddress}",
-                                                                                                        "group": "Interfaces",
-                                                                                                        "overlay": True,
-                                                                                                        "type": "IPV4_IPV6_MASK"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_ISP-2-Transport-VR_IPv4__vrHopAddress}",
-                                                                                                        "group": "Virtual Routers",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "IPV4"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_ISP-1-Transport-VR_IPv4__vrHopAddress}",
-                                                                                                        "group": "Virtual Routers",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "IPV4"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_latitude__IdLatitude}",
-                                                                                                        "group": "SDWAN",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "FLOAT",
-                                                                                                        "floatRange": {
-                                                                                                            "start": -90,
-                                                                                                            "end": 90}},
-                                                                                                    {
-                                                                                                        "variable": "{$v_Versa-Root_Controller-01_Local_auth_email_identifier__IKELIdentifier}",
-                                                                                                        "group": "IPSEC",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "STRING"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_Versa-Root-Control-VR_1_Router_ID__vrRouteId}",
-                                                                                                        "group": "Virtual Routers",
-                                                                                                        "overlay": True,
-                                                                                                        "type": "IPV4"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_tvi-0-3_-_Unit_0_Static_address__tunnelStaticAddress}",
-                                                                                                        "group": "Interfaces",
-                                                                                                        "overlay": True,
-                                                                                                        "type": "IPV4_IPV6_MASK"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_identification__IdName}",
-                                                                                                        "group": "SDWAN",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "STRING"},
-                                                                                                    {
-                                                                                                        "variable": "{$v_Versa-Root_Controller-01_Local_auth_email_key__IKELKey}",
-                                                                                                        "group": "IPSEC",
-                                                                                                        "overlay": False,
-                                                                                                        "type": "STRING"}]}},
-                                               "serviceTemplateInfo": {"templateData": {"device-template-variable": [
-                                                   {"device": {site_name}, "template": "Versa-Root-DataStore"}]}}}}
-    try:
-        response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
-        response.raise_for_status()
-        print("Configuration successful.")
-    except requests.exceptions.RequestException as e:
-        print(f"Configuration failed. Error: {str(e)}")
 # endregion
