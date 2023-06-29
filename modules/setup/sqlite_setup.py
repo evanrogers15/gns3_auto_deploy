@@ -111,10 +111,10 @@ END;
 ''')
 
 conn.execute('''INSERT INTO uc_scenarios (scenario_name, scenario_description)
-                VALUES ('Use Case #1', 'Start / Stop Manually: Causes a 5% degradation to the "biz-internet" uplink on the Site-1 SDWAN Routers as well as starting variable traffic from all site clients.')''')
+                VALUES ('Use Case #1', 'Start / Stop Manually: Causes a 5% degradation to the ISP-1 uplink on the Site-1 SDWAN Router as well as starting variable traffic from all site clients.')''')
 
 conn.execute('''INSERT INTO uc_scenarios (scenario_name, scenario_description)
-                VALUES ('Use Case #2', 'Start / Stop Manually: Causes a 5% degradation to all "biz-internet" uplinks inside of the deployment as well as starting variable traffic from all site clients. ')''')
+                VALUES ('Use Case #2', 'Start / Stop Manually: Causes a 5% degradation to all ISP-1 uplinks inside of the deployment as well as starting variable traffic from all site clients. ')''')
 
 conn.execute('''INSERT INTO uc_scenarios (scenario_name, scenario_description)
                 VALUES ('Use Case #3', 'TBD.')''')
