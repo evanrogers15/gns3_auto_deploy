@@ -651,10 +651,14 @@ def versa_appneta_deploy():
                         time.sleep(30)
                     tn.write(b"\r\n")
                     tn.read_until(b"[admin@versa-flexvnf: ~] $")
-                    tn.write(b'sudo su\r\n')
-                    tn.read_until(b"[sudo] password for admin:")
-                    tn.write(versa_old_password.encode("ascii") + b"\n")
-                    tn.read_until(b"[root@versa-flexvnf: admin]#")
+                    while True:
+                        tn.write(b"\r\n")
+                        tn.write(b'sudo su\r\n')
+                        tn.read_until(b"[sudo] password for admin:", timeout=2)
+                        tn.write(versa_old_password.encode("ascii") + b"\n")
+                        output = tn.read_until(b"[root@versa-flexvnf: admin]#", timeout=5).decode('ascii')
+                        if '[root@versa-flexvnf: admin]#' in output:
+                            break
                     tn.write(onboard_command.encode('ascii') + b"\r")
                     tn.read_until(b"[root@versa-flexvnf: admin]#")
                     tn.close()
