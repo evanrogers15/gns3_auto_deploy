@@ -81,41 +81,4 @@ def appneta_cli_curl_commands(server_ip, server_port, server_name, project_id, p
                       f"Completed configuration on {node_name}")
     tn.close()
 
-def appneta_configure_mp(mp_ip_address, hostname, appn_site_key, appn_url, appn_mp_password):
-    headers = {
-        "accept": "application/json",
-        "Content-Type": "application/json"
-    }
-
-    auth = ('admin', appn_mp_password)
-
-    # Set the hostname
-    url1 = f"https://{mp_ip_address}/api/v1/hostname/"
-    data1 = {
-        "hostname": hostname
-    }
-    response1 = requests.put(url1, headers=headers, auth=auth, json=data1, verify=False)
-    print(f"{hostname} Hostname API call response: {response1.status_code}, {response1.json()}")
-
-    # Set the NIS
-    url2 = f"https://{mp_ip_address}/api/v1/nis/?restart_services=true"
-    data2 = {
-        # "address": "demo.pm.appneta.com",
-        "address": "app-01.pm.appneta.com",
-        "site_key": appn_site_key,
-        "ports": "80,8080",
-        "relay_addresses": f"{appn_url}:443",
-        "ssl": "true",
-        "protocol": "TCP",
-    }
-    response2 = requests.post(url2, headers=headers, auth=auth, json=data2, verify=False)
-    print(f"{hostname} NIS API call response: {response2.status_code}, {response2.json()}")
-
-    # Reboot the appliance
-    url3 = f"https://{mp_ip_address}/api/v1/appliance/?action=reboot"
-    data3 = {
-        "body": "string"
-    }
-    response3 = requests.put(url3, headers=headers, auth=auth, json=data3, verify=False)
-    print(f"{hostname} Host Reboot API call response: {response3.status_code}, {response3.json()}")
 
