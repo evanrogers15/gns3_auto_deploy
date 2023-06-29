@@ -82,8 +82,8 @@ def versa_appneta_deploy():
                          "Deployment Status": deployment_status, "Deployment Step": deployment_step}]
     info_drawing_data = {
         "drawing_01": {
-            "svg": "<svg width=\"297\" height=\"246\"><rect width=\"297\" height=\"246\" fill=\"#6080b3\" fill-opacity=\"0.6399938963912413\" stroke-width=\"2\" stroke=\"#000000\" /></svg>",
-            "x": -228, "y": 457, "z": 0
+            "svg": "<svg width=\"297\" height=\"307\"><rect width=\"297\" height=\"307\" fill=\"#6080b3\" fill-opacity=\"0.6399938963912413\" stroke-width=\"2\" stroke=\"#000000\" /></svg>",
+            "x": -215, "y": 286, "z": 0
         }, "drawing_02": {
             "svg": "<svg width=\"232\" height=\"25\"><text font-family=\"Arial\" font-size=\"14.0\" font-weight=\"bold\" fill=\"#000000\" fill-opacity=\"1.0\">Versa Management Components</text></svg>",
             "x": -195, "y": 675, "z": 2
