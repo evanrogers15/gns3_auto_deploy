@@ -41,7 +41,7 @@ def use_case_remote():
     return render_template('use_case/uc_remote.html')
 
 @app.route('/uc_scenarios')
-def uc_scenariosPage():
+def use_case_scenarios_page():
     return render_template('use_case/uc_scenarios.html')
 
 @app.route('/admin')

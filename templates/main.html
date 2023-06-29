@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>GNS3 Environment Autodeployment</title>
+    <title>GNS3 Environment Autodeployment & Control</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -19,6 +19,7 @@
 
         h1 {
             color: #333333;
+            margin-top: 0;
         }
 
         ul {
@@ -33,40 +34,38 @@
         a {
             text-decoration: none;
             color: #007bff;
+            transition: color 0.3s;
         }
 
         a:hover {
-            text-decoration: underline;
+            color: #0056b3;
         }
     </style>
 </head>
 <body>
-    <h1>GNS3 Autodeployment Lab Environments</h1>
     <div class="container">
-        <h1>Standard Deployment Types</h1>
-        <ul>
-            <li><a href="{{ url_for('arista_deploy_render') }}">Arista</a> - Deploy Arista EVPN Lab</li>
-        </ul>
-    </div>
-    <div class="container">
-        <h1>AppNeta Enabled Deployment Types</h1>
-        <ul>
-            <li><a href="{{ url_for('versa_appneta_deploy_render') }}">Versa SDWAN</a> - Deploy Versa SDWAN and AppNeta Monitoring Points Environment</li>
-            <li><a href="{{ url_for('viptela_appneta_deploy_render') }}">Viptela SDWAN</a> - Deploy Viptela SDWAN and AppNeta Monitoring Points Environment</li>
-        </ul>
-    </div>
- <h1>Use Case Control</h1>
-    <div class="container">
-        <h1>Local GNS3 Server</h1>
-        <ul>
-            <li><a href="{{ url_for('use_case_local') }}">Use Case Control on local GNS3 Server</a></li>
-        </ul>
-    </div>
-<div class="container">
-        <h1>Remote GNS3 Server</h1>
-        <ul>
-            <li><a href="{{ url_for('use_case_remote') }}">Use Case Control on remote GNS3 Server</a></li>
-        </ul>
+        <h1 style="text-align: center;">GNS3 Lab Environment<br>Deployment & Use Case Control</h1>
+        <hr>
+        <div class="container">
+            <h2>Standard Deployment Types</h2>
+            <ul>
+                <li><a href="{{ url_for('arista_deploy_render') }}">Arista</a> - Deploy Arista EVPN Lab</li>
+            </ul>
+        </div>
+        <div class="container">
+            <h2>AppNeta Enabled Deployment Types</h2>
+            <ul>
+                <li><a href="{{ url_for('versa_appneta_deploy_render') }}">Versa SDWAN</a> - Deploy Versa SDWAN and AppNeta Monitoring Points Environment</li>
+                <li><a href="{{ url_for('viptela_appneta_deploy_render') }}">Viptela SDWAN</a> - Deploy Viptela SDWAN and AppNeta Monitoring Points Environment</li>
+            </ul>
+        </div>
+        <div class="container">
+            <h2>Use Case Control</h2>
+            <ul>
+                <li><a href="{{ url_for('use_case_local') }}">Local Server</a> - Control use cases on local GNS3 Server</li>
+                <li><a href="{{ url_for('use_case_remote') }}">Remote Server</a> - Control use cases on remote GNS3 Server</li>
+            </ul>
+        </div>
     </div>
 </body>
 </html>

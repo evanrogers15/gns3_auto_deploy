@@ -3,14 +3,60 @@
 <head>
   <meta charset="UTF-8">
   <title>GNS3 Use Case Control Panel</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <style>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
     body {
       font-family: Arial, sans-serif;
       background-color: #f6f6f6;
       color: #333333;
+      margin: 20px;
     }
-    </style>
+
+    h1 {
+      text-align: center;
+    }
+
+    h3 {
+      margin-bottom: 5px;
+    }
+
+    table {
+      border-collapse: collapse;
+      margin-bottom: 10px;
+    }
+
+    th, td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    form {
+      margin-bottom: 10px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    input[type="text"] {
+      padding: 5px;
+      width: 200px;
+    }
+
+    button {
+      padding: 8px 12px;
+      background-color: #007bff;
+      color: #ffffff;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
 </head>
 <body>
   <h1>GNS3 Use Case Control Panel</h1>
@@ -51,7 +97,7 @@
     </thead>
     <tbody>
     </tbody>
-  </table>  
+  </table>
   <br>
   <h3>Currently Running and Recently Run Scenarios</h3>
   <table id="scenario-status">
@@ -63,13 +109,13 @@
         <th>Project ID</th>
         <th>Scenario ID</th>
         <th>Status</th>
+        <th>Action</th>
       </tr>
     </thead>
     <tbody>
     </tbody>
   </table>
-</body>
-</html>
+
   <script>
     function saveConfig(data) {
       console.log(JSON.stringify(data));
@@ -122,7 +168,7 @@
           });
         })
         .catch(error => console.error(error));
-    }    
+    }
     function getScenarios() {
       const server = document.getElementById("server").value;
       const port = document.getElementById("port").value;
@@ -198,78 +244,78 @@
       })
       .catch(error => console.error(error));
     }
-function updateScenarioStatusTable() {
-  const statusNames = {
-    0: 'Stopped',
-    1: 'Starting',
-    2: 'Running',
-    3: 'Stopping',
-    4: 'Error'
-  };
-  fetch('/api/uc_scenario_status')
-    .then(response => response.json())
-    .then(data => {
-      const tableBody = document.querySelector('#scenario-status tbody');
-      // Clear the existing rows from the table
-      tableBody.innerHTML = '';
-      // Loop through the array of objects and add a new row for each item
-      data.scenario_status.forEach(item => {
-        const row = document.createElement('tr');
-        const serverIpCell = document.createElement('td');
-        serverIpCell.textContent = item.server_ip;
-        const serverNameCell = document.createElement('td');
-        serverNameCell.textContent = item.server_name;
-        const projectNameCell = document.createElement('td');
-        projectNameCell.textContent = item.project_name;
-        const projectIdCell = document.createElement('td');
-        projectIdCell.textContent = item.project_id;
-        const scenarioIdCell = document.createElement('td');
-        scenarioIdCell.textContent = item.scenario_id;
-        const statusCell = document.createElement('td');
-        statusCell.textContent = statusNames[item.status];
-        const actionCell = document.createElement('td');
-        const button = document.createElement('button');
-        button.textContent = (item.status === 2 || item.status === 1) ? 'Stop' : 'Start';
-        button.addEventListener('click', () => {
-          if (item.status === 2 || item.status === 1) {
-            stopScenario(item.scenario_id, item.server_ip, item.server_port, item.project_id);
-          } else {
-            startScenario(item.scenario_id, item.server_ip, item.server_port, item.project_id);
-          }
+    function updateScenarioStatusTable() {
+      const statusNames = {
+        0: 'Stopped',
+        1: 'Starting',
+        2: 'Running',
+        3: 'Stopping',
+        4: 'Error'
+      };
+      fetch('/api/uc_scenario_status')
+        .then(response => response.json())
+        .then(data => {
+          const tableBody = document.querySelector('#scenario-status tbody');
+          // Clear the existing rows from the table
+          tableBody.innerHTML = '';
+          // Loop through the array of objects and add a new row for each item
+          data.scenario_status.forEach(item => {
+            const row = document.createElement('tr');
+            const serverIpCell = document.createElement('td');
+            serverIpCell.textContent = item.server_ip;
+            const serverNameCell = document.createElement('td');
+            serverNameCell.textContent = item.server_name;
+            const projectNameCell = document.createElement('td');
+            projectNameCell.textContent = item.project_name;
+            const projectIdCell = document.createElement('td');
+            projectIdCell.textContent = item.project_id;
+            const scenarioIdCell = document.createElement('td');
+            scenarioIdCell.textContent = item.scenario_id;
+            const statusCell = document.createElement('td');
+            statusCell.textContent = statusNames[item.status];
+            const actionCell = document.createElement('td');
+            const button = document.createElement('button');
+            button.textContent = (item.status === 2 || item.status === 1) ? 'Stop' : 'Start';
+            button.addEventListener('click', () => {
+              if (item.status === 2 || item.status === 1) {
+                stopScenario(item.scenario_id, item.server_ip, item.server_port, item.project_id);
+              } else {
+                startScenario(item.scenario_id, item.server_ip, item.server_port, item.project_id);
+              }
+            });
+            actionCell.appendChild(button);
+            row.appendChild(serverIpCell);
+            row.appendChild(serverNameCell);
+            row.appendChild(projectNameCell);
+            row.appendChild(projectIdCell);
+            row.appendChild(scenarioIdCell);
+            row.appendChild(statusCell);
+            row.appendChild(actionCell);
+            // Add CSS style to the table cells
+            serverIpCell.style.border = '1px solid black';
+            serverIpCell.style.padding = '5px';
+            serverNameCell.style.border = '1px solid black';
+            serverNameCell.style.padding = '5px';
+            projectNameCell.style.border = '1px solid black';
+            projectNameCell.style.padding = '5px';
+            projectIdCell.style.border = '1px solid black';
+            projectIdCell.style.padding = '5px';
+            scenarioIdCell.style.border = '1px solid black';
+            scenarioIdCell.style.padding = '5px';
+            statusCell.style.border = '1px solid black';
+            statusCell.style.padding = '5px';
+            actionCell.style.border = '1px solid black';
+            actionCell.style.padding = '5px';
+            tableBody.appendChild(row);
+          });
+        })
+        .catch(error => {
+          console.error('Error fetching scenario status data:', error);
         });
-        actionCell.appendChild(button);
-        row.appendChild(serverIpCell);
-        row.appendChild(serverNameCell);
-        row.appendChild(projectNameCell);
-        row.appendChild(projectIdCell);
-        row.appendChild(scenarioIdCell);
-        row.appendChild(statusCell);
-        row.appendChild(actionCell);
-        // Add CSS style to the table cells
-        serverIpCell.style.border = '1px solid black';
-        serverIpCell.style.padding = '5px';
-        serverNameCell.style.border = '1px solid black';
-        serverNameCell.style.padding = '5px';
-        projectNameCell.style.border = '1px solid black';
-        projectNameCell.style.padding = '5px';
-        projectIdCell.style.border = '1px solid black';
-        projectIdCell.style.padding = '5px';
-        scenarioIdCell.style.border = '1px solid black';
-        scenarioIdCell.style.padding = '5px';
-        statusCell.style.border = '1px solid black';
-        statusCell.style.padding = '5px';
-        actionCell.style.border = '1px solid black';
-        actionCell.style.padding = '5px';
-        tableBody.appendChild(row);
-      });
-    })
-    .catch(error => {
-      console.error('Error fetching scenario status data:', error);
-    });
-}    
-  window.addEventListener('load', function() {
-    updateScenarioStatusTable();
-    });
-  // Call the updateScenarioStatusTable() function every 10 seconds to refresh the table
-  setInterval(updateScenarioStatusTable, 10000);
+    }
+
+    // Call the updateScenarioStatusTable() function every 2 seconds to refresh the table
+    setInterval(updateScenarioStatusTable, 2000);
   </script>
+</body>
+</html>
