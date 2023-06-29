@@ -275,7 +275,7 @@ def versa_create_site_device_workflow(director_ip, vr_1_route_ip, lan_ip, lan_dh
         "Content-Type": "application/json"
     }
     auth = ("Administrator", "versa123")
-    lan_dhcp_start = lan_dhcp_base + ".50"
+    lan_dhcp_start = lan_dhcp_base + ".51"
     lan_dhcp_end = lan_dhcp_base + ".100"
     mgmt_snmp_target_source = mgmt_address.rstrip("/24")
     data = {

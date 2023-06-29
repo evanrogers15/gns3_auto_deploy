@@ -4,7 +4,6 @@ import os
 import logging.handlers
 import sqlite3
 
-
 from modules.gns3.gns3_variables import *
 from modules.gns3.gns3_query import *
 

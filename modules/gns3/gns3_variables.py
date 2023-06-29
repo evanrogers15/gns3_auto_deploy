@@ -94,7 +94,7 @@ viptela_c8000v_template_data = {"compute_id": "local", "cpus": 1, "adapters": 6,
 # region Misc Template Data
 appneta_mp_template_data = {"compute_id": "local", "cpus": 2, "port_name_format": "eth{0}", "adapters": 3,
                             "adapter_type": "virtio-net-pci","hda_disk_interface": "virtio", "qemu_path": "/usr/bin/qemu-system-x86_64",
-                            "mac_address": "52:54:00:E0:00:00", "custom_adapters": [{"adapter_number": 1, "mac_address": "52:54:00:E1:00:00"}, {"adapter_number": 2, "mac_address": "52:54:00:E2:00:00"}],
+                            "mac_address": "52:54:00:E0:00:00", "custom_adapters": [{"adapter_number": 1, "mac_address": "52:54:00:E1:00:00"}, {"adapter_number": 2, "mac_address": "52:54:00:E2:00:00"}, {"adapter_number": 3, "mac_address": "52:54:00:E3:00:00"}],
                             "hda_disk_image": appneta_pathview_qcow2_name, "name": appneta_mp_template_name,
                             "ram": 4096, "template_type": "qemu"}
 openvswitch_template_data = {"compute_id": "local", "adapters": 16, "category": "switch",

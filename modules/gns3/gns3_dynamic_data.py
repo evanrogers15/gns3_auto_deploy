@@ -1,6 +1,7 @@
 import ipaddress
 import os
-from modules.gns3.gns3_variables import *
+import logging.handlers
+from modules.gns3.gns3_variables import city_data, oa_city_data, versa_city_data
 
 # region Generic
 def generate_temp_hub_data(num_ports, template_name):

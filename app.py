@@ -15,6 +15,7 @@ app = Flask(__name__)
 
 running_thread = None
 
+# region Template Render
 @app.route('/')
 def main_page():
     return render_template('main.html')
@@ -32,11 +33,11 @@ def viptela_appneta_deploy_render():
     return render_template('deployment/create_viptela_appneta_sdwan.html')
 
 @app.route('/uc-local')
-def index_uc_index():
+def use_case_local():
     return render_template('use_case/uc_local.html')
 
 @app.route('/uc-remote')
-def index_multi():
+def use_case_remote():
     return render_template('use_case/uc_remote.html')
 
 @app.route('/uc_scenarios')
@@ -47,6 +48,8 @@ def uc_scenariosPage():
 def adminPage():
     return render_template('admin.html')
 
+# endregion
+# region Configure
 @app.route('/api/config', methods=['POST'])
 def update_config():
     req_data = request.get_json()
@@ -157,6 +160,30 @@ def get_uploaded_files():
     ios_files = [file for file in os.listdir(ios_dir) if os.path.isfile(os.path.join(ios_dir, file))]
     return jsonify({'qemu_files': qemu_files, 'iou_files': iou_files, 'ios_files': ios_files})
 
+@app.route('/api/projects', methods=['GET'])
+def get_project_list():
+    conn = sqlite3.connect(db_path)
+    c = conn.cursor()
+    c.execute("SELECT server_ip, server_port FROM config")
+    row = c.fetchone()
+    if row is None:
+        conn.close()
+        return jsonify({'error': 'Server IP and Port not set in config table'}), 500
+    server_ip = row[0]
+    server_port = row[1]
+    c.execute("SELECT project_list, project_name, project_status FROM config WHERE server_ip=? AND server_port=?", (server_ip, server_port))
+    row = c.fetchone()
+    if row is None:
+        conn.close()
+        return jsonify({'error': 'Project list not found in config file'}), 500
+    project_list = json.loads(row[0])
+    project_name = json.loads(row[1])
+    project_status = json.loads(row[2])
+    project_data = [{'id': project_list[i], 'name': project_name[i], 'status': project_status[i]} for i in range(len(project_list))]
+    conn.close()
+    return jsonify({'projects': project_data})
+# endregion
+# region Deployment
 @app.route('/api/tasks/start_viptela_appneta_deploy', methods=['PUT'])
 def viptela_appneta_deploy_full():
     global running_thread
@@ -195,31 +222,8 @@ def arista_deploy_full():
     running_thread.start()
 
     return jsonify({'success': True})
-
-@app.route('/api/projects', methods=['GET'])
-def get_project_list():
-    conn = sqlite3.connect(db_path)
-    c = conn.cursor()
-    c.execute("SELECT server_ip, server_port FROM config")
-    row = c.fetchone()
-    if row is None:
-        conn.close()
-        return jsonify({'error': 'Server IP and Port not set in config table'}), 500
-    server_ip = row[0]
-    server_port = row[1]
-    c.execute("SELECT project_list, project_name, project_status FROM config WHERE server_ip=? AND server_port=?", (server_ip, server_port))
-    row = c.fetchone()
-    if row is None:
-        conn.close()
-        return jsonify({'error': 'Project list not found in config file'}), 500
-    project_list = json.loads(row[0])
-    project_name = json.loads(row[1])
-    project_status = json.loads(row[2])
-    project_data = [{'id': project_list[i], 'name': project_name[i], 'status': project_status[i]} for i in range(len(project_list))]
-    conn.close()
-    return jsonify({'projects': project_data})
-
-# region UC
+# endregion
+# region Use Case
 @app.route('/api/uc_config', methods=['POST'])
 def uc_update_config():
     req_data = request.get_json()
