@@ -42,13 +42,13 @@ def appneta_cli_curl_commands(server_ip, server_port, server_name, project_id, p
     tn.read_until(b'status":')
     tn.write(set_eth2_command.encode('ascii') + b"\n")
     tn.read_until(b'status":')
-    # tn.write(b'sudo reboot\n')
-    # tn.write(appn_password.encode("ascii") + b"\n")
+    tn.write(b'sudo reboot\n')
+    tn.write(appn_password.encode("ascii") + b"\n")
     log_and_update_db(server_name, project_name, deployment_type, 'running', deployment_step,
                       f"Rebooting {node_name}...")
-    gns3_restart_node(server_ip, server_port, project_id, node_id)
-    # tn.read_until(b"$ ")
-    # tn.close()
+    # gns3_restart_node(server_ip, server_port, project_id, node_id)
+    tn.read_until(b"$ ")
+    tn.close()
     time.sleep(120)
     while True:
         if loop_index == 5:
@@ -58,13 +58,14 @@ def appneta_cli_curl_commands(server_ip, server_port, server_name, project_id, p
             time.sleep(120)
             loop_index = 0
         tn = telnetlib.Telnet(server_ip, console_port)
-        tn.write(b"\r\n")
-        tn.read_until(b"login:", timeout=1)
-        tn.write(user.encode("ascii") + b"\n")
-        output = tn.read_until(b"Password:", timeout=3)
-        if b"Password:" in output:
-            tn.write(appn_password.encode("ascii") + b"\n")
-            break
+        # tn.write(b"\r\n")
+        output = tn.read_until(b"login:", timeout=3).decode('ascii')
+        if 'login:' in output:
+            tn.write(user.encode("ascii") + b"\n")
+            output = tn.read_until(b"Password:", timeout=3).decode('ascii')
+            if "Password:" in output:
+                tn.write(appn_password.encode("ascii") + b"\n")
+                break
         log_and_update_db(server_name, 'project_name', "deployment_type", 'running',
                               deployment_step,
                               f"{node_name} not available yet, trying again in 30 seconds..")

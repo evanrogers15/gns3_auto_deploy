@@ -66,6 +66,19 @@
                 <li><a href="{{ url_for('use_case_remote') }}">Remote Server</a> - Control use cases on remote GNS3 Server</li>
             </ul>
         </div>
+
+        <div class="container">
+    <h2>Versa Images Setup</h2>
+    <ol>
+        <li>Retrieve the Versa Director, Versa Analytics, and VOS (FlexVNF) qcow2.tbz2 images from the Box repository <a href="https://versanetworks.app.box.com/v/21-2-3-GA-GO/folder/168829564793" target="_blank" rel="noopener noreferrer">here</a>.</li>
+        <li>Extract the Versa Director qcow2 from the tar file using the following command (example):</li>
+        <code>tar -xjvf versa-director-c19c43c-21.2.3.qcow2.tbz2</code>
+        <li>Extract the Versa Analytics image from the tar file using the following command (example):</li>
+        <code>tar -xjvf versa-analytics-67ff6c7-21.2.3.qcow2.tbz2</code>
+        <li>Extract the Versa FlexVNF image from the tar file using the following command (example):</li>
+        <code>tar -xjvf versa-flexvnf-67ff6c7-21.2.3.qcow2.tbz2</code>
+        <li>Move the extracted files to your <code>gns3/images/QEMU</code> directory or drag and drop them on the deployment page.</li>
+    </ol>
     </div>
-</body>
+    </body>
 </html>
