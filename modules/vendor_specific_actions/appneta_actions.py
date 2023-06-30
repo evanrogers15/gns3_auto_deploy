@@ -48,7 +48,7 @@ def appneta_cli_curl_commands(server_ip, server_port, server_name, project_id, p
                       f"Rebooting {node_name}...")
     # gns3_restart_node(server_ip, server_port, project_id, node_id)
     tn.read_until(b"$ ")
-    tn.close()
+    # tn.close()
     time.sleep(120)
     while True:
         if loop_index == 5:
@@ -58,14 +58,13 @@ def appneta_cli_curl_commands(server_ip, server_port, server_name, project_id, p
             time.sleep(120)
             loop_index = 0
         tn = telnetlib.Telnet(server_ip, console_port)
-        # tn.write(b"\r\n")
-        output = tn.read_until(b"login:", timeout=3).decode('ascii')
-        if 'login:' in output:
-            tn.write(user.encode("ascii") + b"\n")
-            output = tn.read_until(b"Password:", timeout=3).decode('ascii')
-            if "Password:" in output:
-                tn.write(appn_password.encode("ascii") + b"\n")
-                break
+        tn.write(b"\r\n")
+        tn.read_until(b"login:", timeout=1)
+        tn.write(user.encode("ascii") + b"\n")
+        output = tn.read_until(b"Password:", timeout=3)
+        if b"Password:" in output:
+            tn.write(appn_password.encode("ascii") + b"\n")
+            break
         log_and_update_db(server_name, 'project_name', "deployment_type", 'running',
                               deployment_step,
                               f"{node_name} not available yet, trying again in 30 seconds..")
@@ -82,4 +81,41 @@ def appneta_cli_curl_commands(server_ip, server_port, server_name, project_id, p
                       f"Completed configuration on {node_name}")
     tn.close()
 
+def appneta_configure_mp(mp_ip_address, hostname, appn_site_key, appn_url, appn_mp_password):
+    headers = {
+        "accept": "application/json",
+        "Content-Type": "application/json"
+    }
+
+    auth = ('admin', appn_mp_password)
+
+    # Set the hostname
+    url1 = f"https://{mp_ip_address}/api/v1/hostname/"
+    data1 = {
+        "hostname": hostname
+    }
+    response1 = requests.put(url1, headers=headers, auth=auth, json=data1, verify=False)
+    print(f"{hostname} Hostname API call response: {response1.status_code}, {response1.json()}")
+
+    # Set the NIS
+    url2 = f"https://{mp_ip_address}/api/v1/nis/?restart_services=true"
+    data2 = {
+        # "address": "demo.pm.appneta.com",
+        "address": "app-01.pm.appneta.com",
+        "site_key": appn_site_key,
+        "ports": "80,8080",
+        "relay_addresses": f"{appn_url}:443",
+        "ssl": "true",
+        "protocol": "TCP",
+    }
+    response2 = requests.post(url2, headers=headers, auth=auth, json=data2, verify=False)
+    print(f"{hostname} NIS API call response: {response2.status_code}, {response2.json()}")
+
+    # Reboot the appliance
+    url3 = f"https://{mp_ip_address}/api/v1/appliance/?action=reboot"
+    data3 = {
+        "body": "string"
+    }
+    response3 = requests.put(url3, headers=headers, auth=auth, json=data3, verify=False)
+    print(f"{hostname} Host Reboot API call response: {response3.status_code}, {response3.json()}")
 
