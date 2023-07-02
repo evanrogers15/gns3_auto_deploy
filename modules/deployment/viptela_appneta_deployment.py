@@ -58,6 +58,8 @@ def viptela_appneta_deploy():
     if appn_url:
         deploy_appneta = 'y'
         required_qemu_images.add("pathview-amd64-14.0.0.54253.qcow2")
+    else:
+        deploy_appneta = 'n'
         
     mgmt_subnet_gateway_ip = mgmt_subnet_ip + ".1"
     vmanage_mgmt_ip = mgmt_subnet_ip + ".2"
