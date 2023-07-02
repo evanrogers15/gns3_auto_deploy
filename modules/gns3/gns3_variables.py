@@ -108,7 +108,7 @@ openvswitch_cloud_template_data = {"compute_id": "local", "adapters": switchport
 openvswitch_isp_template_data = {"compute_id": "local", "adapters": switchport_count, "category": "switch",
                                    "image": "evanrogers719/ovs-snmp-nat:latest", "name": open_vswitch_isp_template_name,
                                    "symbol": ":/symbols/cloud.svg", "template_type": "docker",
-                                   "usage": "By default all interfaces are connected to the br0", "start_command": "./bin/boot.sh"}
+                                   "usage": "By default all interfaces are connected to the br0", "start_command": "./bin/boot.sh", "extra_volumes": ["/etc/openvswitch/"]}
 network_test_tool_template_data = {"compute_id": "local", "adapters": 2, "category": "guest",
                                    "image": "evanrogers719/network_test_tool:latest",
                                    "name": network_test_tool_template_name, "symbol": ":/symbols/docker_guest.svg",
