@@ -50,13 +50,16 @@
             <h2>Standard Deployment Types</h2>
             <ul>
                 <li><a href="{{ url_for('arista_deploy_render') }}">Arista</a> - Deploy Arista EVPN Lab</li>
+                <li style="padding-left: 20px;">Requires Arista cEOS Docker image installed prior to auto deployment.</li>
             </ul>
         </div>
         <div class="container">
             <h2>AppNeta Enabled Deployment Types</h2>
             <ul>
                 <li><a href="{{ url_for('versa_appneta_deploy_render') }}">Versa SDWAN</a> - Deploy Versa SDWAN and AppNeta Monitoring Points Environment</li>
+                <li style="padding-left: 20px;">Requires Versa component disk images, retrieval instructions below.</li>
                 <li><a href="{{ url_for('viptela_appneta_deploy_render') }}">Viptela SDWAN</a> - Deploy Viptela SDWAN and AppNeta Monitoring Points Environment</li>
+                <li style="padding-left: 20px;">Requires Viptela component disk images, valid Cisco license required to download images.</li>
             </ul>
         </div>
         <div class="container">
