@@ -121,11 +121,7 @@ def versa_appneta_deploy():
 
     gns3_actions_upload_images(gns3_server_data)
     for image in required_qemu_images:
-        response_code = gns3_query_get_image(server_ip, server_port, 'qemu', image)
-        if response_code != 201:
-            log_and_update_db(server_name, project_name, deployment_type, 'Failed', 'Image Validation',
-                              f"{image} image not on GNS3 Server")
-            return 404
+        gns3_check_for_image(server_ip, server_port, 'qemu', image)
     gns3_actions_versa_remove_templates(gns3_server_data)
     gns3_set_project(gns3_server_data, new_project_id)
     # endregion

@@ -119,7 +119,6 @@ def viptela_appneta_deploy():
     gns3_actions_upload_images(gns3_server_data)
     for image in required_qemu_images:
         gns3_check_for_image(server_ip, server_port, 'qemu', image)
-
     gns3_actions_remove_templates(gns3_server_data)
     gns3_set_project(gns3_server_data, new_project_id)
     # endregion

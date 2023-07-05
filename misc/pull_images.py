@@ -43,7 +43,7 @@ def gns3_get_image(gns3_server_data, image_type, filename):
 #required_iou_images = {"L3-ADVENTERPRISEK9-M-15.5-2T.bin"}
 
 #required_qemu_images = {"c8000v-universalk9_8G_serial.17.09.01a.qcow2"}
-required_qemu_images = {"versa-director-c19c43c-21.2.3.qcow2", "versa-analytics-67ff6c7-21.2.3.qcow2", "versa-flexvnf-67ff6c7-21.2.3.qcow2"}
+required_qemu_images = {"versa-director-c19c43c-21.2.3.qcow2", "versa-analytics-67ff6c7-21.2.3.qcow2", "versa-flexvnf-67ff6c7-21.2.3.qcow2", "pathview-amd64-14.0.0.54253.qcow2"}
 
 
 #for image in required_iou_images:

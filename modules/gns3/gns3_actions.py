@@ -324,7 +324,7 @@ def gns3_check_for_image(server_ip, server_port, version, image):
             return sorted_files[0][0]
         else:
             log_and_update_db(deployment_status='Failed', deployment_step='Image Verification',
-                              log_message=f'{image} not found on GNS3 server. Status code: {response.status_code}')
+                              log_message=f'{image} not found on GNS3 server.')
             raise Exception(f'{image} not found on GNS3 Server')
 
     except requests.exceptions.RequestException as e:
