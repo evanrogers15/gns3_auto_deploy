@@ -1,6 +1,5 @@
 from modules.gns3.gns3_query import *
-from modules.gns3.gns3_actions_old import set_single_packet_filter, remove_single_packet_filter, change_node_state
-from modules.use_case.telnet import run_telnet_command
+from modules.gns3.gns3_actions import *
 import logging.handlers
 
 def use_case_1(server, port, project_id, state):
@@ -29,20 +28,18 @@ def use_case_1(server, port, project_id, state):
             server_ip = f"172.16.102.51"
             client_command_1 = f'nohup sh -c "while true; do rand=\$(shuf -i 5-80 -n 1)m; echo \$rand; iperf3 -c {server_ip} -p 520{index+1} -u -b \$rand -t 30; done" > /dev/null 2>&1 &'
             client_node_id, client_console, client_aux = gns3_query_find_node_by_name(nodes, client)
-            change_node_state(server, port, project_id, client_node_id, 'on')
+            gns3_change_node_state(server, port, project_id, client_node_id, 'on')
             if index == 1: #len(matching_nodes) - 1:
-                run_telnet_command(server, port, project_id, client_node_id, client_console, state, client_command_2)
+                gns3_run_telnet_command(server, port, project_id, client_node_id, client_console, state, client_command_2)
             else:
-                run_telnet_command(server, port, project_id, client_node_id, client_console, state, client_command_1)
-        set_single_packet_filter(server, port, project_id, link_id, filter_type, filter_value)
-        print("Use Case 1 Applied")
+                gns3_run_telnet_command(server, port, project_id, client_node_id, client_console, state, client_command_1)
+        gns3_set_single_packet_filter(server, port, project_id, link_id, filter_type, filter_value)
         return {'message': 'Scenario started successfully.'}, 200
     else:
         for index, client in enumerate(matching_nodes):
             client_node_id, client_node_console, client_node_aux = gns3_query_find_node_by_name(nodes, client)
-            change_node_state(server, port, project_id, client_node_id, 'off')
-        remove_single_packet_filter(server, port, project_id, link_id)
-        print("Use Case 1 Removed")
+            gns3_change_node_state(server, port, project_id, client_node_id, 'off')
+        gns3_remove_single_packet_filter(server, port, project_id, link_id)
         return {'message': 'Scenario started successfully.'}, 200
 
 def use_case_2(server, port, project_id, state):
@@ -70,16 +67,16 @@ def use_case_2(server, port, project_id, state):
             remote_node_id_1, remote_node_console_1, remote_node_aux_1 = gns3_query_find_node_by_name(nodes, remote_node_name_1)
             links = gns3_query_get_links(server, port, project_id, router_node_id)
             link_id = gns3_query_get_node_links(nodes, links, server, port, project_id, router_node_id, remote_node_id_1, '1/0')
-            set_single_packet_filter(server, port, project_id, link_id, filter_type, filter_value)
+            gns3_set_single_packet_filter(server, port, project_id, link_id, filter_type, filter_value)
         for index, client in enumerate(client_nodes):
             server_ip = f"172.16.102.51"
             client_command_1 = f'nohup sh -c "while true; do rand=\$(shuf -i 5-20 -n 1)m; echo \$rand; iperf3 -c {server_ip} -p 520{index + 1} -u -b \$rand -t 30; done" > /dev/null 2>&1 &'
             client_node_id, client_console, client_aux = gns3_query_find_node_by_name(nodes, client)
-            change_node_state(server, port, project_id, client_node_id, 'on')
+            gns3_change_node_state(server, port, project_id, client_node_id, 'on')
             if index == 1:
-                run_telnet_command(server, port, project_id, client_node_id, client_console, state, client_command_2)
+                gns3_run_telnet_command(server, port, project_id, client_node_id, client_console, state, client_command_2)
             else:
-                run_telnet_command(server, port, project_id, client_node_id, client_console, state, client_command_1)
+                gns3_run_telnet_command(server, port, project_id, client_node_id, client_console, state, client_command_1)
         return {'message': 'Scenario started successfully.'}, 200
     else:
         for site in matching_nodes:
@@ -89,11 +86,10 @@ def use_case_2(server, port, project_id, state):
             remote_node_id_1, remote_node_console_1, remote_node_aux_1 = gns3_query_find_node_by_name(nodes, remote_node_name_1)
             links = gns3_query_get_links(server, port, project_id, router_node_id)
             link_id = gns3_query_get_node_links(nodes, links, server, port, project_id, router_node_id, remote_node_id_1, '1/0')
-            remove_single_packet_filter(server, port, project_id, link_id)
-            print(f"Use Case 2 Removed from Site {site}")
+            gns3_remove_single_packet_filter(server, port, project_id, link_id)
         for index, client in enumerate(client_nodes):
             client_node_id, client_node_console, client_node_aux = gns3_query_find_node_by_name(nodes, client)
-            change_node_state(server, port, project_id, client_node_id, 'off')
+            gns3_change_node_state(server, port, project_id, client_node_id, 'off')
         return {'message': 'Scenario started successfully.'}, 200
 def use_case_3(server, port, project_id, state):
     matching_nodes = gns3_query_find_nodes_by_field(server, port, project_id, 'name', 'name', 'vEdge')
@@ -111,16 +107,16 @@ def use_case_3(server, port, project_id, state):
             remote_node_id_1, remote_node_console_1, remote_node_aux_1 = gns3_query_find_node_by_name(nodes, remote_node_name_1)
             links = gns3_query_get_links(server, port, project_id, router_node_id)
             link_id = gns3_query_get_node_links(nodes, links, server, port, project_id, router_node_id, remote_node_id_1, '1/0')
-            set_single_packet_filter(server, port, project_id, link_id, filter_type, filter_value)
+            gns3_set_single_packet_filter(server, port, project_id, link_id, filter_type, filter_value)
         for index, client in enumerate(client_nodes):
             server_ip = f"172.16.1{client_count:02}.51"
             client_command_1 = f'nohup sh -c "while true; do rand=\$(shuf -i 5-20 -n 1)m; echo \$rand; iperf3 -c {server_ip} -p 520{index + 1} -u -b \$rand -t 30; done" > /dev/null 2>&1 &'
             client_node_id, client_console, client_aux = gns3_query_find_node_by_name(nodes, client)
-            change_node_state(server, port, project_id, client_node_id, 'on')
+            gns3_change_node_state(server, port, project_id, client_node_id, 'on')
             if index == len(client_nodes) - 1:
-                run_telnet_command(server, port, project_id, client_node_id, client_console, state, client_command_2)
+                gns3_run_telnet_command(server, port, project_id, client_node_id, client_console, state, client_command_2)
             else:
-                run_telnet_command(server, port, project_id, client_node_id, client_console, state, client_command_1)
+                gns3_run_telnet_command(server, port, project_id, client_node_id, client_console, state, client_command_1)
         return {'message': 'Scenario started successfully.'}, 200
     else:
         for site in matching_nodes:
@@ -130,9 +126,9 @@ def use_case_3(server, port, project_id, state):
             remote_node_id_1, remote_node_console_1, remote_node_aux_1 = gns3_query_find_node_by_name(nodes, remote_node_name_1)
             links = gns3_query_get_links(server, port, project_id, router_node_id)
             link_id = gns3_query_get_node_links(nodes, links, server, port, project_id, router_node_id, remote_node_id_1, '1/0')
-            remove_single_packet_filter(server, port, project_id, link_id)
+            gns3_remove_single_packet_filter(server, port, project_id, link_id)
             print(f"Use Case 2 Removed from Site {site}")
         for index, client in enumerate(client_nodes):
             client_node_id, client_node_console, client_node_aux = gns3_query_find_node_by_name(nodes, client)
-            change_node_state(server, port, project_id, client_node_id, 'off')
+            gns3_change_node_state(server, port, project_id, client_node_id, 'off')
         return {'message': 'Scenario started successfully.'}, 200

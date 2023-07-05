@@ -4,6 +4,9 @@ import os
 import logging.handlers
 import sqlite3
 import re
+import telnetlib
+import socket
+import time
 
 from modules.gns3.gns3_variables import *
 from modules.gns3.gns3_query import *
@@ -27,7 +30,6 @@ def make_request(method, url, data=None):
         return response.json()
     else:
         return {}
-
 
 def log_and_update_db(server_name=None, project_name=None, deployment_type=None, deployment_status=None, deployment_step=None, log_message=None):
     # Log the message using logging.info
@@ -53,14 +55,12 @@ def util_extract_csr(response):
     else:
         raise Exception(f"Failed to extract CSR. Response: {json_data}")
 
-
 def util_print_response(response_data):
     if response_data.content:
         json_data = response_data.json()
         logging.info(json.dumps(json_data, indent=4))
     else:
         logging.info("Response content is empty.")
-
 
 def util_get_file_size(file_path):
     size = os.path.getsize(file_path)
@@ -71,16 +71,13 @@ def util_get_file_size(file_path):
         i += 1
     return f"{size:.2f} {size_name[i]}"
 
-
 def util_resume_time(delay_time):
     resume_time = (datetime.datetime.now() + datetime.timedelta(minutes=delay_time)).strftime("%H:%M:%S")
     return resume_time
 
-
 def util_current_time():
     current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     return current_time
-
 # endregion
 
 # region Functions: GNS3 API Functions
@@ -632,5 +629,36 @@ def gns3_change_node_state(server, port, project_id, node_id, state):
         print(f"Error changing node state to {state}:", response.text)
         return False
     return True
+
+def is_node_responsive(host, port):
+    try:
+        tn = telnetlib.Telnet()
+        tn.open(host, port, timeout=2)
+        tn.write(b'\x03')
+        time.sleep(1)  # Add a delay before reading the response
+        if tn.sock_avail():
+            response = tn.read_until(b"\n", timeout=2)
+            #tn.close()
+            if response == b'':
+                raise socket.timeout("Timeout waiting for response")
+            return True
+        else:
+            raise socket.timeout("No response received")
+    except (socket.timeout, socket.error) as e:
+        #print(f"Error connecting to node: {e}")
+        return False
+
+def gns3_run_telnet_command(server, port, project_id, node_id, console, state, command=None):
+    if not is_node_responsive(server, console):
+        gns3_restart_node(server, port, project_id, node_id)
+    tn = telnetlib.Telnet(server, console, timeout=1)
+    if state == "on":
+        tn.write(command.encode('utf-8') + b'\n')
+        output = tn.read_until(b'\n', timeout=2).decode('utf-8').strip()
+    elif state == "off":
+        tn.write(b'\x03')
+        output = tn.read_until(b'\n', timeout=2).decode('utf-8').strip()
+    else:
+        print("Invalid state value")
+        return None
 # endregion
- # J~t}l\oWhK~hLDR

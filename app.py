@@ -6,7 +6,6 @@ from werkzeug.utils import secure_filename
 
 from modules.deployment.arista_evpn_deploy import *
 from modules.deployment.viptela_appneta_deployment import *
-from modules.gns3.gns3_actions_old import *
 from modules.use_case.use_cases import *
 from modules.deployment.versa_appneta_deployment import *
 
@@ -652,14 +651,6 @@ def reset_tables():
     c.execute('DELETE FROM uc_scenario_status')
     conn.commit()
     conn.close()
-    return jsonify({'success': True})
-
-@app.route('/api/reset-lab-clients', methods=['POST'])
-def reset_lab_clients():
-    server_ip = request.json['server_ip']
-    server_port = request.json['server_port']
-    project_id = request.json['project_id']
-    reset_lab_client_states(server_ip, server_port, project_id)
     return jsonify({'success': True})
 
 @app.errorhandler(404)
