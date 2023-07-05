@@ -2,8 +2,6 @@ import logging
 logging.basicConfig(filename='app.log', level=logging.DEBUG,
                         format='%(asctime)s %(levelname)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
-from modules.gns3.gns3_actions import gns3_check_for_image
-
 processes = {}
 
 db_path = 'gns3.db'
