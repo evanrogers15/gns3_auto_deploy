@@ -57,7 +57,17 @@ def viptela_appneta_deploy():
 
     if appn_url:
         deploy_appneta = 'y'
-        required_qemu_images.add("pathview-amd64-14.0.0.54253.qcow2")
+        appn_mp_image_name = gns3_check_for_image(server_ip, server_port, 'qemu', 'pathview')
+        appneta_mp_template_name = appn_mp_image_name.rstrip(".qcow2")
+        required_qemu_images.add(appn_mp_image_name)
+        appneta_mp_template_data = {
+            "compute_id": "local", "cpus": 2, "port_name_format": "eth{0}", "adapters": 3,
+            "adapter_type": "virtio-net-pci", "hda_disk_interface": "virtio",
+            "qemu_path": "/usr/bin/qemu-system-x86_64", "mac_address": "52:54:00:E0:00:00",
+            "custom_adapters": [{"adapter_number": 1, "mac_address": "52:54:00:E1:00:00"},
+                                {"adapter_number": 2, "mac_address": "52:54:00:E2:00:00"}],
+            "hda_disk_image": appn_mp_image_name, "name": appneta_mp_template_name, "ram": 4096, "template_type": "qemu"
+        }
     else:
         deploy_appneta = 'n'
         

@@ -2,6 +2,8 @@ import logging
 logging.basicConfig(filename='app.log', level=logging.DEBUG,
                         format='%(asctime)s %(levelname)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
+from modules.gns3.gns3_actions import gns3_check_for_image
+
 processes = {}
 
 db_path = 'gns3.db'
@@ -22,8 +24,8 @@ versa_old_password = "versa123"
 versa_analytics_username = "admin"
 versa_flexvnf_username = "admin"
 
-appneta_pathview_qcow2_name_old = 'pathview-amd64-13.12.6.53966.qcow2'
-appneta_pathview_qcow2_name = 'pathview-amd64-14.0.0.54253.qcow2'
+#appneta_pathview_qcow2_name_old = 'pathview-amd64-13.12.6.53966.qcow2'
+#appneta_pathview_qcow2_name = 'pathview-amd64-14.0.0.54253.qcow2'
 
 mgmt_switchport_count = 45
 mgmt_main_switchport_count = 30
@@ -92,11 +94,11 @@ viptela_c8000v_template_data = {"compute_id": "local", "cpus": 1, "adapters": 6,
                                "hda_disk_interface": "virtio", "options": "-cpu host -smp 2,maxcpus=2"}
 # endregion
 # region Misc Template Data
-appneta_mp_template_data = {"compute_id": "local", "cpus": 2, "port_name_format": "eth{0}", "adapters": 3,
-                            "adapter_type": "virtio-net-pci","hda_disk_interface": "virtio", "qemu_path": "/usr/bin/qemu-system-x86_64",
-                            "mac_address": "52:54:00:E0:00:00", "custom_adapters": [{"adapter_number": 1, "mac_address": "52:54:00:E1:00:00"}, {"adapter_number": 2, "mac_address": "52:54:00:E2:00:00"}],
-                            "hda_disk_image": appneta_pathview_qcow2_name, "name": appneta_mp_template_name,
-                            "ram": 4096, "template_type": "qemu"}
+# appneta_mp_template_data = {"compute_id": "local", "cpus": 2, "port_name_format": "eth{0}", "adapters": 3,
+#                          "adapter_type": "virtio-net-pci","hda_disk_interface": "virtio", "qemu_path": "/usr/bin/qemu-system-x86_64",
+#                            "mac_address": "52:54:00:E0:00:00", "custom_adapters": [{"adapter_number": 1, "mac_address": "52:54:00:E1:00:00"}, {"adapter_number": 2, "mac_address": "52:54:00:E2:00:00"}],
+#                            "hda_disk_image": appneta_pathview_qcow2_name, "name": appneta_mp_template_name,
+#                            "ram": 4096, "template_type": "qemu"}
 openvswitch_template_data = {"compute_id": "local", "adapters": 16, "category": "switch",
                              "image": "gns3/ovs-snmp:latest", "name": "Open vSwitch",
                              "symbol": ":/symbols/classic/multilayer_switch.svg", "template_type": "docker",

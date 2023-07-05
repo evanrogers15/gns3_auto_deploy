@@ -46,10 +46,19 @@ def use_case_1(server, port, project_id, state):
         return {'message': 'Scenario started successfully.'}, 200
 
 def use_case_2(server, port, project_id, state):
-    matching_nodes = gns3_query_find_nodes_by_field(server, port, project_id, 'name', 'name', 'vEdge')
     client_nodes = gns3_query_find_nodes_by_field(server, port, project_id, 'name', 'name', 'Client')
+    site_001_matching_nodes = gns3_query_find_nodes_by_field(server, port, project_id, 'name', 'name', '001')
+    for node_name in site_001_matching_nodes:
+        if 'vEdge' in node_name:
+            matching_nodes = gns3_query_find_nodes_by_field(server, port, project_id, 'name', 'name', 'vEdge')
+            break
+        elif 'FlexVNF' in node_name:
+            matching_nodes = gns3_query_find_nodes_by_field(server, port, project_id, 'name', 'name', 'FlexVNF')
+            break
+    else:
+        logging.info("No site routers found..")
     client_count = len(client_nodes)
-    client_command_2 = f'python3 /home/scripts/iperf3_server.py {client_count}'
+    client_command_2 = f'nohup python3 /home/scripts/iperf3_server.py {client_count} | tail -n 60 > output.log 2>&1 &'
     nodes = gns3_query_get_nodes(server, port, project_id)
     if state == 'on':
         for site in matching_nodes:
@@ -63,11 +72,11 @@ def use_case_2(server, port, project_id, state):
             link_id = gns3_query_get_node_links(nodes, links, server, port, project_id, router_node_id, remote_node_id_1, '1/0')
             set_single_packet_filter(server, port, project_id, link_id, filter_type, filter_value)
         for index, client in enumerate(client_nodes):
-            server_ip = f"172.16.1{client_count:02}.51"
+            server_ip = f"172.16.102.51"
             client_command_1 = f'nohup sh -c "while true; do rand=\$(shuf -i 5-20 -n 1)m; echo \$rand; iperf3 -c {server_ip} -p 520{index + 1} -u -b \$rand -t 30; done" > /dev/null 2>&1 &'
             client_node_id, client_console, client_aux = gns3_query_find_node_by_name(nodes, client)
             change_node_state(server, port, project_id, client_node_id, 'on')
-            if index == len(client_nodes) - 1:
+            if index == 1:
                 run_telnet_command(server, port, project_id, client_node_id, client_console, state, client_command_2)
             else:
                 run_telnet_command(server, port, project_id, client_node_id, client_console, state, client_command_1)

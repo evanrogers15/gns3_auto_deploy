@@ -3,6 +3,7 @@ import urllib3
 import os
 import logging.handlers
 import sqlite3
+import re
 
 from modules.gns3.gns3_variables import *
 from modules.gns3.gns3_query import *
@@ -79,7 +80,6 @@ def util_resume_time(delay_time):
 def util_current_time():
     current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     return current_time
-
 
 # endregion
 
@@ -290,6 +290,30 @@ def gns3_upload_image(gns3_server_data, image_type, filename):
             else:
                 log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f'Failed to write file to the server. Status code: {response.status_code}')
 
+def gns3_check_for_image(server_ip, server_port, version, image):
+    url = f"http://{server_ip}:{server_port}/v2/computes/local/{version}/images"
+    try:
+        response = requests.get(url)
+        data = response.json()
+
+        # Filter filenames containing "pathview"
+        image_names = [item['filename'] for item in data if image in item['filename']]
+
+        # Extract version numbers using regular expressions
+        version_numbers = [re.findall(r'\d+\.\d+\.\d+(?:\.\d+)?', filename) for filename in image_names]
+
+        # Sort filenames based on the highest version number
+        sorted_files = sorted(zip(image_names, version_numbers), key=lambda x: tuple(map(str, x[1])), reverse=True)
+
+        # Return the filename with the highest version number
+        if sorted_files:
+            return sorted_files[0][0]
+        else:
+            return None
+
+    except requests.exceptions.RequestException as e:
+        print("Error:", e)
+        return None
 
 def gns3_update_nodes(gns3_server_data, project_id, node_id, request_data):
     for server_record in gns3_server_data:
