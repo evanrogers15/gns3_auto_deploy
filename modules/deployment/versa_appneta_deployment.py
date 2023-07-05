@@ -122,7 +122,14 @@ def versa_appneta_deploy():
     gns3_actions_upload_images(gns3_server_data)
     for image in required_qemu_images:
         gns3_check_for_image(server_ip, server_port, 'qemu', image)
-    gns3_actions_versa_remove_templates(gns3_server_data)
+    gns3_delete_template(gns3_server_data, versa_director_template_name)
+    gns3_delete_template(gns3_server_data, versa_analytics_template_name)
+    gns3_delete_template(gns3_server_data, versa_flexvnf_template_name)
+    gns3_delete_template(gns3_server_data, open_vswitch_isp_template_name)
+    gns3_delete_template(gns3_server_data, network_test_tool_template_name)
+    gns3_delete_template(gns3_server_data, appneta_mp_template_name)
+    gns3_delete_template(gns3_server_data, mgmt_hub_template_name)
+    gns3_delete_template(gns3_server_data, mgmt_main_hub_template_name)
     gns3_set_project(gns3_server_data, new_project_id)
     # endregion
     # region Create GNS3 Templates

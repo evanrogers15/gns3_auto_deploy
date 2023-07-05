@@ -402,51 +402,6 @@ def gns3_actions_upload_images(gns3_server_data):
             image_type = os.path.basename(root)
             gns3_upload_image(gns3_server_data, image_type, file_name)
 
-
-def gns3_actions_remove_templates(gns3_server_data):
-    for server_record in gns3_server_data:
-        server_ip, server_port, server_name, project_name, deployment_type, deployment_status, deployment_step, vedge_count = server_record['GNS3 Server'], server_record[
-            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step'], server_record['Site Count']
-        gns3_delete_template(gns3_server_data, vmanage_template_name)
-        gns3_delete_template(gns3_server_data, vbond_template_name)
-        gns3_delete_template(gns3_server_data, vsmart_template_name)
-        gns3_delete_template(gns3_server_data, vedge_template_name)
-        gns3_delete_template(gns3_server_data, network_test_tool_template_name)
-        gns3_delete_template(gns3_server_data, open_vswitch_cloud_template_name)
-        gns3_delete_template(gns3_server_data, open_vswitch_isp_template_name)
-        gns3_delete_template(gns3_server_data, mgmt_hub_template_name)
-        gns3_delete_template(gns3_server_data, mgmt_main_hub_template_name)
-        gns3_delete_template(gns3_server_data, appneta_mp_template_name)
-        delete_more_than_1_var = 0
-        if delete_more_than_1_var == 1:
-            while True:
-                template_id = gns3_query_get_template_id(server_ip, server_port, arista_ceos_template_name)
-                if not template_id:
-                    break
-                gns3_delete_template(gns3_server_data, arista_ceos_template_name)
-
-def gns3_actions_versa_remove_templates(gns3_server_data):
-    for server_record in gns3_server_data:
-        server_ip, server_port, server_name, project_name, deployment_type, deployment_status, deployment_step, vedge_count = server_record['GNS3 Server'], server_record[
-            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step'], server_record['Site Count']
-        gns3_delete_template(gns3_server_data, versa_director_template_name)
-        gns3_delete_template(gns3_server_data, versa_analytics_template_name)
-        gns3_delete_template(gns3_server_data, versa_flexvnf_template_name)
-        gns3_delete_template(gns3_server_data, open_vswitch_isp_template_name)
-        gns3_delete_template(gns3_server_data, network_test_tool_template_name)
-        gns3_delete_template(gns3_server_data, open_vswitch_cloud_template_name)
-        gns3_delete_template(gns3_server_data, mgmt_hub_template_name)
-        gns3_delete_template(gns3_server_data, mgmt_main_hub_template_name)
-        gns3_delete_template(gns3_server_data, arista_ceos_template_name)
-        gns3_delete_template(gns3_server_data, appneta_mp_template_name)
-        delete_more_than_1_var = 1
-        if delete_more_than_1_var == 1:
-            while True:
-                template_id = gns3_query_get_template_id(server_ip, server_port, appneta_mp_template_name)
-                if not template_id:
-                    break
-                gns3_delete_template(gns3_server_data, appneta_mp_template_name)
-
 # endregion
 
 # region Previous API

@@ -54,7 +54,7 @@ fortinet_fortigate_template_name = 'Fortigate 7.0.5'
 versa_director_template_name = 'Versa Director 21.2.3'
 versa_analytics_template_name = 'Versa Analytics 21.2.3'
 versa_flexvnf_template_name = 'Versa FlexVNF 21.2.3'
-appneta_mp_template_name = "Appneta-vk35"
+
 # region Viptela Template Data
 viptela_vmanage_template_data = {"compute_id": "local", "cpus": 16, "adapters": 6,
                                  "symbol": ":/symbols/affinity/circle/blue/server_cluster.svg",
