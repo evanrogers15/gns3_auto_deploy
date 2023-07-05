@@ -215,8 +215,16 @@
       <ul>
         <li>OpenVPN Deployed on GNS3 Server or external routing setup to send traffic to your desired management subnet to the GNS3 server</li>
         <li>Discover management network specified during deployment setup</li>
-        <li>Versa Director IP: This will be the .2 IP address of your selected management subnet (Example: 172.16.2.2)</li>
-        <li>Versa Director Credentials: admin / versa123</li>
+        <li>Versa Director</li>
+        <li style="padding-left: 20px;">Credentials: Administrator / versa123</li>
+        <li style="padding-left: 20px;">IP Address: .2 of Management Subnet (172.16.2.2)</li>
+        <li style="padding-left: 20px;">Port: 9182</li>
+        <li style="padding-left: 20px;">Protocol: https</li>
+        <li>Versa Analytics</li>
+        <li style="padding-left: 20px;">Credentials: Administrator / versa123</li>
+        <li style="padding-left: 20px;">IP Address: .6 of Management Subnet (172.16.2.6)</li>
+         <li style="padding-left: 20px;">Port: 8443</li>
+        <li style="padding-left: 20px;">Protocol: https</li>
         <li>SNMP v2 Community: public</li>
     </ul>
 
@@ -225,6 +233,7 @@
     <div class="instructions-container">
     <h3>Instructions:</h3>
       <ul>
+        <li>Note: Versa will operate on a trial license and will only run 14 days if license is not applied.</li>
         <li>Drag and drop the required GNS3 images if they aren't already on the server</li>
         <li>Set GNS3 server IP address, if Deployment container is running on the GNS3 host select Local</li>
         <li>Set different project name if desired</li>

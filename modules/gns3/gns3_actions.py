@@ -133,17 +133,6 @@ def gns3_create_cloud_node(gns3_server_data, project_id, node_data):
         node_id = node_response["node_id"]
         return node_id
 
-def gns3_create_template_old(gns3_server_data, template_data):
-    for server_record in gns3_server_data:
-        server_ip, server_port, server_name, project_name, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
-            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
-        node_url = f"http://{server_ip}:{server_port}/v2/templates"
-        node_response = make_request("POST", node_url, data=template_data)
-        template_id = node_response["template_id"]
-        template_name = node_response["name"]
-        log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Created template {template_name}")
-        return template_id
-
 def gns3_create_template(gns3_server_data, template_data):
     for server_record in gns3_server_data:
         server_ip = server_record['GNS3 Server']
@@ -164,7 +153,7 @@ def gns3_create_template(gns3_server_data, template_data):
             return template_id
         else:
             error_message = f"Failed to create template on {server_name} - {project_name}. Error: {node_response.get('error', 'Unknown error')}"
-            log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, error_message)
+            log_and_update_db(server_name, project_name, deployment_type, 'Failed', deployment_step, error_message)
             raise Exception(error_message)
 
 def gns3_connect_nodes(gns3_server_data, project_id, node_a, adapter_a, port_a, node_b, adapter_b, port_b):
