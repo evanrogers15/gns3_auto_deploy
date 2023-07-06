@@ -9,7 +9,6 @@ from modules.deployment.viptela_appneta_deployment import *
 from modules.use_case.use_cases import *
 from modules.deployment.versa_appneta_deployment import *
 
-
 app = Flask(__name__)
 
 running_thread = None

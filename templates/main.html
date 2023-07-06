@@ -80,27 +80,29 @@
         </code>
         <br>
         <li>Create System Files:</li>
-        <code>tee /lib/systemd/system/tap1.service << EOF
-        [Unit]
-        Description=TAP Interfaces
-        After=network.target
-        [Service]
-        Type=oneshot
-        User=root
-        ExecStart=/bin/sh /usr/bin/tap1.sh
-        [Install]
-        WantedBy=multi-user.target
-        EOF</code>
-        <br><br>
-        <code>tee /usr/bin/tap1.sh << EOF
-        #!/bin/bash
-        if [ ! -d "/sys/class/net/tap1" ];
-        then
-        /usr/bin/tunctl -t tap1
-        /sbin/ifconfig tap1 172.16.2.1 netmask 255.255.255.0 up
-        fi
-        EOF</code>
-        <br><br>
+        <pre><code>
+tee /lib/systemd/system/tap1.service &lt;&lt; EOF
+    [Unit]
+    Description=TAP Interfaces
+    After=network.target
+    [Service]
+    Type=oneshot
+    User=root
+    ExecStart=/bin/sh /usr/bin/tap1.sh
+    [Install]
+    WantedBy=multi-user.target
+EOF
+</code></pre>
+<pre><code>
+tee /usr/bin/tap1.sh &lt;&lt; EOF
+#!/bin/bash
+if [ ! -d "/sys/class/net/tap1" ];
+then
+/usr/bin/tunctl -t tap1
+/sbin/ifconfig tap1 172.16.2.1 netmask 255.255.255.0 up
+fi
+EOF
+</code></pre>
         <li>Mark tap interface file as executable:</li>
         <code>chmod +x /usr/bin/tap1.sh</code>
         <br><br>
@@ -131,35 +133,36 @@
         <code>sudo apt-get install -y haproxy</code>
         <br><br>
         <li>Overwrite the configuration file:</li>
-        <code>tee /etc/haproxy/haproxy.cfg << EOF
-        global
-            log /dev/log local0
-            log /dev/log local1 notice
-            chroot /var/lib/haproxy
-            stats socket /var/run/api.sock user haproxy group haproxy mode 660 level admin expose-fd listeners
-            stats timeout 30s
-            user haproxy
-            group haproxy
-            daemon
-        defaults
-            log global
-            mode http
-            option httplog
-            option dontlognull
-            timeout connect 5000
-            timeout client 50000
-            timeout server 50000
-        frontend https-in
-            bind *:443
-            option tcplog
-            mode tcp
-            default_backend servers
-        backend servers
-            mode tcp
-            balance roundrobin
-            server server1 172.16.2.2:443
-        EOF</code>
-        <br><br>
+        <pre><code>
+tee /etc/haproxy/haproxy.cfg &lt;&lt; EOF
+    global
+        log /dev/log local0
+        log /dev/log local1 notice
+        chroot /var/lib/haproxy
+        stats socket /var/run/api.sock user haproxy group haproxy mode 660 level admin expose-fd listeners
+        stats timeout 30s
+        user haproxy
+        group haproxy
+        daemon
+    defaults
+        log global
+        mode http
+        option httplog
+        option dontlognull
+        timeout connect 5000
+        timeout client 50000
+        timeout server 50000
+    frontend https-in
+        bind *:443
+        option tcplog
+        mode tcp
+        default_backend servers
+    backend servers
+        mode tcp
+        balance roundrobin
+        server server1 172.16.2.2:443
+EOF
+            </code></pre>
         <li>Enable HAProxy to run at boot and restart service to pick up new configuration:</li>
         <code>sudo systemctl restart haproxy && sudo systemctl enable haproxy</code>
         <br><br>
