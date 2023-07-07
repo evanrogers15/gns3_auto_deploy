@@ -525,7 +525,7 @@ def versa_appneta_deploy():
                 tn.write(b"exit\n")
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed Versa Controller Device Setup")
     # endregion
-    # region Viptela Director Setup Part 2
+    # region Versa Director Setup Part 2
     deployment_step = 'Director Setup Part 2'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting Director setup part 2")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
@@ -599,7 +599,7 @@ def versa_appneta_deploy():
     time.sleep(5)
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, "Completed vManage Device Setup Part 2")
     # endregion
-    # region Viptela FlexVNF Device Setup
+    # region Versa FlexVNF Device Setup
     deployment_step = 'FlexVNF Device Onboarding'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting FlexVNF Device Onbaording for {site_count} FlexVNFs")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
