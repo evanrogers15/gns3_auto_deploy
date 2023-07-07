@@ -191,6 +191,7 @@
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
 </head>
 <body>
+<button onclick="goToMainPage()">Main Page</button>
   <h1>Viptela & AppNeta SDWAN GNS3 Lab Auto Deployment</h1>
   <div class="wrapper">
     <div class="prerequisites-container">
@@ -338,6 +339,10 @@
   </div>
 
   <script>
+        function goToMainPage() {
+          window.location.href = "/";
+        }
+
         document.getElementById("server_ip").addEventListener("change", function() {
             var selectedValue = this.value;
 
