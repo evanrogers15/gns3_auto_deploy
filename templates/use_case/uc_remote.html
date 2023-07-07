@@ -59,6 +59,7 @@
   </style>
 </head>
 <body>
+<button onclick="goToMainPage()">Main Page</button>
   <h1>GNS3 Use Case Control Panel</h1>
   <h3>Select GNS3 Server</h3>
   <form>
@@ -117,6 +118,9 @@
   </table>
 
   <script>
+  function goToMainPage() {
+          window.location.href = "/";
+        }
     function saveConfig(data) {
       console.log(JSON.stringify(data));
       return fetch(`/api/uc_config`, {
