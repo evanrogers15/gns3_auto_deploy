@@ -698,6 +698,7 @@ def viptela_8000v_appneta_deploy():
                     tn.read_until(b"Confirm password:")
                     tn.write(viptela_password.encode("ascii") + b"\n")
                     tn.read_until(b"Router#")
+                    tn.write(b"config-transaction\r")
                     with open(file_name, 'r') as f:
                         lines = f.readlines()
                         log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Sending configuration commands to {node_name[0]}")

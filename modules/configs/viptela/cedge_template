@@ -1,4 +1,3 @@
-config-transaction
 system
  system-ip             {system_ip}
  gps-location latitude {latitude}
