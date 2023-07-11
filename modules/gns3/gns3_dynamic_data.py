@@ -81,7 +81,7 @@ def generate_interfaces_file(version, interface_data_2, interface_data_3, filena
         f.write('\tup echo nameserver 192.168.122.1 > /etc/resolv.conf\n\n')
         f.write('auto eth1\n')
         f.write('iface eth1 inet static\n')
-        if version == "vedge":
+        if version == "vedge" or version == "cedge":
             f.write(f'\taddress {mgmt_component_1_gateway_ip}\n')
             f.write(f'\tnetmask 255.255.255.252\n')
             f.write('auto eth2\n')
