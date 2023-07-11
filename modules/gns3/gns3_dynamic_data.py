@@ -1,7 +1,7 @@
 import ipaddress
 import os
 import logging.handlers
-from modules.gns3.gns3_variables import city_data, oa_city_data, versa_city_data
+from modules.gns3.gns3_variables import city_data, cedge_city_data, versa_city_data
 
 # region Generic
 def generate_temp_hub_data(num_ports, template_name):
@@ -133,7 +133,6 @@ def generate_mgmt_switch_deploy_data(num_nodes):
 
 
     return deploy_data
-
 # endregion
 # region Viptela Specific
 def generate_vedge_objects(vedge_count, mgmt_base_subnet):
@@ -450,7 +449,46 @@ def generate_vedge_deploy_data(vedge_count):
                 "x": drawing_x, "y": drawing_y, "z": 0}
     return deploy_data, client_deploy_data, site_drawing_deploy_data
 
-def oa_generate_vedge_deploy_data(vedge_count):
+def generate_cedge_objects(edge_count, mgmt_base_subnet):
+    subnet_mask = 24
+    k = 101
+    networks = []
+    for i in range(1, edge_count + 1):
+        base_subnet = f'172.16.{k}.0/24'
+        network = ipaddress.IPv4Network(base_subnet)
+        subnets_64 = list(network.subnets(new_prefix=subnet_mask))
+        for subnet in subnets_64:
+            if subnet.prefixlen == subnet_mask:
+                router_address = str(subnet.network_address + 1)
+                vedge_address = str(subnet.network_address + 2)
+                lan_dhcp_exclude_start = str(subnet.network_address + 1)
+                lan_dhcp_exclude_end = str(subnet.network_address + 50)
+                subnet_address_full = str(subnet.netmask)  # Full subnet mask
+                subnet_address_var = str(subnet.network_address) + '/' + str(subnet_mask)
+                dhcp_exclude_var = str(subnet.network_address + 1) + '-' + str(subnet.network_address + 50)
+                client_1_address_var = str(subnet.network_address + 51)
+                network_dict = {
+                    'lan_subnet_mask': subnet_address_full,
+                    'lan_subnet_network': subnet.network_address,
+                    'lan_subnet_address': subnet_address_var,
+                    'lan_gateway_address': router_address,
+                    'lan_dhcp_pool': f'{router_address}/24',
+                    'lan_dhcp_exclude_start': lan_dhcp_exclude_start,
+                    'lan_dhcp_exclude_end': lan_dhcp_exclude_end,
+                    'lan_dhcp_exclude': dhcp_exclude_var,
+                    'client_1_address': client_1_address_var,
+                    'cedge': f'cEdge_{i:003}',
+                    'system_ip': f'{mgmt_base_subnet}.{i + 100}',
+                    'mgmt_address': f'{mgmt_base_subnet}.{i + 100}',
+                    'mgmt_gateway': f'{mgmt_base_subnet}.1',
+                    'site_id': k,
+                    'org_name': 'sdwan-lab'
+                }
+            networks.append(network_dict)
+            k += 1
+    return networks
+
+def generate_cedge_deploy_data(edge_count):
     deploy_data = {}
     client_deploy_data = {}
     site_drawing_deploy_data = {}
@@ -471,13 +509,13 @@ def oa_generate_vedge_deploy_data(vedge_count):
     drawing_y = 0
     drawing_x_modifier = 200
 
-    if vedge_count <= 10:
+    if edge_count <= 10:
         row_count = 4
         y = -107
         y_s = -107
-        for i in range(1, vedge_count + 1):
-            temp_name = f"vEdge_{i:03}"
-            name = f"vEdge_{i:03}_{oa_city_data[temp_name]['city']}"
+        for i in range(1, edge_count + 1):
+            temp_name = f"cEdge_{i:03}"
+            name = f"cEdge_{i:03}_{cedge_city_data[temp_name]['city']}"
             client_name = f"Site_{i:03}_Client"
             if i == 1:
                 x = x_o
@@ -528,19 +566,19 @@ def oa_generate_vedge_deploy_data(vedge_count):
                     client_y = y + client_y_modifier
                     drawing_x = x - 55
                     drawing_y = y - 55
-            deploy_data[f"vedge_{i:03}_deploy_data"] = {"x": x, "y": y, "name": name}
+            deploy_data[f"cedge_{i:03}_deploy_data"] = {"x": x, "y": y, "name": name}
             client_deploy_data[f"network_test_client_{i:03}_deploy_data"] = {"x": client_x, "y": client_y,
                                                                              "name": client_name}
             site_drawing_deploy_data[f"site_drawing_{i:03}_deploy_data"] = {
                 "svg": "<svg height=\"267\" width=\"169\"><rect fill=\"#aaffff\" fill-opacity=\"1.0\" height=\"267\" stroke=\"#000000\" stroke-width=\"2\" width=\"169\" /></svg>",
                 "x": drawing_x, "y": drawing_y, "z": 0}
-    elif vedge_count <= 20:
+    elif edge_count <= 25:
         row_count = 10
         y = -107
         y_s = -107
-        for i in range(1, vedge_count + 1):
-            temp_name = f"vEdge_{i:03}"
-            name = f"vEdge_{i:03}_{oa_city_data[temp_name]['city']}"
+        for i in range(1, edge_count + 1):
+            temp_name = f"cEdge_{i:03}"
+            name = f"cEdge_{i:03}_{cedge_city_data[temp_name]['city']}"
             client_name = f"Site_{i:03}_Client"
             if i == 1:
                 x = x_o
@@ -592,16 +630,80 @@ def oa_generate_vedge_deploy_data(vedge_count):
                     client_y = y + client_y_modifier
                     drawing_x = x - 55
                     drawing_y = y - 55
-            deploy_data[f"vedge_{i:03}_deploy_data"] = {"x": x, "y": y, "name": name}
+            deploy_data[f"cedge_{i:03}_deploy_data"] = {"x": x, "y": y, "name": name}
+            client_deploy_data[f"network_test_client_{i:03}_deploy_data"] = {"x": client_x, "y": client_y,
+                                                                             "name": client_name}
+            site_drawing_deploy_data[f"site_drawing_{i:03}_deploy_data"] = {
+                "svg": "<svg height=\"267\" width=\"169\"><rect fill=\"#aaffff\" fill-opacity=\"1.0\" height=\"267\" stroke=\"#000000\" stroke-width=\"2\" width=\"169\" /></svg>",
+                "x": drawing_x, "y": drawing_y, "z": 0}
+    elif edge_count <= 50:
+        row_count = 10
+        #y = -107
+        #y_s = -107
+        for i in range(1, edge_count + 1):
+            temp_name = f"cEdge_{i:03}"
+            name = f"cEdge_{i:03}_{cedge_city_data[temp_name]['city']}"
+            client_name = f"Site_{i:03}_Client"
+            if i == 1:
+                x = x_o
+                client_x = x
+                client_y = y + client_y_modifier
+                drawing_x = x - 55
+                drawing_y = y - 55
+            elif i == 2:
+                x = x_e
+                client_x = x
+                client_y = y + client_y_modifier
+                drawing_x = x - 55
+                drawing_y = y - 55
+            elif i <= row_count:
+                if i % 2 == 0:
+                    x = x_e + 200 * e
+                    e += 1
+                    client_x = x
+                    client_y = y + client_y_modifier
+                    drawing_x = x - 55
+                    drawing_y = y - 55
+                else:
+                    x = x_o + -200 * (o)
+                    o += 1
+                    client_x = x
+                    client_y = y + client_y_modifier
+                    drawing_x = x - 55
+                    drawing_y = y - 55
+            else:
+                if (i - 1) % row_count == 0:
+                    e = 1
+                    o = 1
+                    y_modifier += 1
+                    x_o = -557
+                    x_e = 267
+                if i % 2 == 0:
+                    x = x_e + 200 * (e - 1)
+                    e += 1
+                    y = y_s + 300 * y_modifier
+                    client_x = x
+                    client_y = y + client_y_modifier
+                    drawing_x = x - 55
+                    drawing_y = y - 55
+                else:
+                    x = x_o - 200 * (o - 1)
+                    y = y_s + 300 * y_modifier
+                    o += 1
+                    client_x = x
+                    client_y = y + client_y_modifier
+                    drawing_x = x - 55
+                    drawing_y = y - 55
+            deploy_data[f"cedge_{i:03}_deploy_data"] = {"x": x, "y": y, "name": name}
             client_deploy_data[f"network_test_client_{i:03}_deploy_data"] = {"x": client_x, "y": client_y,
                                                                              "name": client_name}
             site_drawing_deploy_data[f"site_drawing_{i:03}_deploy_data"] = {
                 "svg": "<svg height=\"267\" width=\"169\"><rect fill=\"#aaffff\" fill-opacity=\"1.0\" height=\"267\" stroke=\"#000000\" stroke-width=\"2\" width=\"169\" /></svg>",
                 "x": drawing_x, "y": drawing_y, "z": 0}
     else:
-        for i in range(1, vedge_count + 1):
-            temp_name = f"vEdge_{i:03}"
-            name = f"vEdge_{i:03}_{oa_city_data[temp_name]['city']}"
+        for i in range(1, edge_count + 1):
+            temp_name = f"cEdge_{i:03}"
+            name = f"cEdge_{i:03}_{cedge_city_data[temp_name]['city']}"
             client_name = f"Site_{i:03}_Client"
             if i == 1:
                 x = x_o
@@ -656,7 +758,7 @@ def oa_generate_vedge_deploy_data(vedge_count):
                     client_y = y + client_y_modifier
                     drawing_x = x - 55
                     drawing_y = y - 55
-            deploy_data[f"vedge_{i:03}_deploy_data"] = {"x": x, "y": y, "name": name}
+            deploy_data[f"cedge_{i:03}_deploy_data"] = {"x": x, "y": y, "name": name}
             client_deploy_data[f"network_test_client_{i:03}_deploy_data"] = {"x": client_x, "y": client_y,
                                                                              "name": client_name}
             site_drawing_deploy_data[f"site_drawing_{i:03}_deploy_data"] = {

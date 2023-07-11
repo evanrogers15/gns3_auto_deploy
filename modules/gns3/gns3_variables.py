@@ -41,7 +41,7 @@ vmanage_template_name = 'vManage'
 vbond_template_name = 'vBond'
 vsmart_template_name = 'vSmart'
 vedge_template_name = 'vEdge'
-c8000v_template_name = 'c8000v'
+cedge_template_name = 'c8000v'
 open_vswitch_cloud_template_name = 'Open_vSwitch_Cloud'
 open_vswitch_isp_template_name = 'Open_vSwitch_ISP'
 network_test_tool_template_name = 'Network_Test_Tool'
@@ -81,11 +81,11 @@ viptela_vedge_template_data = {"compute_id": "local", "cpus": 1, "adapters": 6,
                                "hda_disk_image": "viptela-edge-20.10.1-genericx86-64.qcow2",
                                "name": vedge_template_name, "ram": 2048, "template_type": "qemu",
                                "hda_disk_interface": "virtio", "options": "-cpu host -smp 2,maxcpus=2"}
-viptela_c8000v_template_data = {"compute_id": "local", "cpus": 1, "adapters": 6,
+viptela_cedge_template_data = {"compute_id": "local", "cpus": 1, "adapters": 6,
                                "symbol": ":/symbols/affinity/square/blue/communications.svg",
                                "adapter_type": "vmxnet3", "qemu_path": "/usr/bin/qemu-system-x86_64",
                                "hda_disk_image": "c8000v-universalk9_8G_serial.17.09.01a.qcow2",
-                               "name": c8000v_template_name, "ram": 2048, "template_type": "qemu",
+                               "name": cedge_template_name, "ram": 2048, "template_type": "qemu",
                                "hda_disk_interface": "virtio", "options": "-cpu host -smp 2,maxcpus=2"}
 
 openvswitch_template_data = {"compute_id": "local", "adapters": 16, "category": "switch",
@@ -252,18 +252,17 @@ arista_drawing_deploy_data = {
 
 deploy_data_z = {"z": -1}
 
-
-oa_city_data = {
-"vEdge_001": {"city": "NewYork", "latitude": 40.712776, "longitude": -74.005974},
-"vEdge_002": {"city": "Cairns", "latitude": -16.920334, "longitude": 145.770889},
-"vEdge_003": {"city": "London", "latitude": 51.507351, "longitude": -0.127758},
-"vEdge_004": {"city": "Stockholm", "latitude": 59.329323, "longitude": 18.068581},
-"vEdge_005": {"city": "Pune", "latitude": 18.520430, "longitude": 73.856743},
-"vEdge_006": {"city": "Hamburg", "latitude": 53.551086, "longitude": 9.993682},
-"vEdge_007": {"city": "RiodeJaneiro", "latitude": -22.9068, "longitude": -43.1729},
-"vEdge_008": {"city": "Rome", "latitude": 41.902782, "longitude": 12.496366},
-"vEdge_009": {"city": "Copenhagen", "latitude": 55.676097, "longitude": 12.568337},
-"vEdge_010": {"city": "SaoPaulo", "latitude": -23.5505, "longitude": -46.6333},
+cedge_city_data = {
+    "cEdge_001": {"city": "NewYork", "latitude": 40.712776, "longitude": -74.005974},
+    "cEdge_002": {"city": "Cairns", "latitude": -16.920334, "longitude": 145.770889},
+    "cEdge_003": {"city": "London", "latitude": 51.507351, "longitude": -0.127758},
+    "cEdge_004": {"city": "Stockholm", "latitude": 59.329323, "longitude": 18.068581},
+    "cEdge_005": {"city": "Pune", "latitude": 18.520430, "longitude": 73.856743},
+    "cEdge_006": {"city": "Hamburg", "latitude": 53.551086, "longitude": 9.993682},
+    "cEdge_007": {"city": "RiodeJaneiro", "latitude": -22.9068, "longitude": -43.1729},
+    "cEdge_008": {"city": "Rome", "latitude": 41.902782, "longitude": 12.496366},
+    "cEdge_009": {"city": "Copenhagen", "latitude": 55.676097, "longitude": 12.568337},
+    "cEdge_010": {"city": "SaoPaulo", "latitude": -23.5505, "longitude": -46.6333},
 }
 
 versa_city_data_old = {

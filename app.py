@@ -6,6 +6,7 @@ from werkzeug.utils import secure_filename
 
 from modules.deployment.arista_evpn_deploy import *
 from modules.deployment.viptela_appneta_deployment import *
+from modules.deployment.viptela_8000v_appneta_deployment import *
 from modules.use_case.use_cases import *
 from modules.deployment.versa_appneta_deployment import *
 
@@ -190,7 +191,7 @@ def viptela_appneta_deploy_full():
         return make_response(jsonify({'message': 'Deployment is already in progress'}), 400)
 
     # Start a new thread for deployment
-    running_thread = threading.Thread(target=viptela_appneta_deploy, args=())
+    running_thread = threading.Thread(target=viptela_8000v_appneta_deploy, args=())
     running_thread.start()
 
     return jsonify({'success': True})
