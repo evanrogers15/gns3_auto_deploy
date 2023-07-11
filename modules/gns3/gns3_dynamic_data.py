@@ -32,7 +32,7 @@ def generate_edge_network_objects(version, base_subnet, subnet_mask, site_index=
             subnet_address = str(
                 ipaddress.IPv4Interface(str(subnet.network_address) + '/' + str(subnet_mask)).netmask)
             subnet_address_long = str(edge_device_address) + '/' + str(subnet_mask)
-            if version == 'vedge' or version == 'cedge':
+            if version == 'vedge':
                 network_dict = {
                     'subnet': str(subnet.network_address),
                     'subnet_mask': str(subnet.prefixlen),
@@ -41,6 +41,16 @@ def generate_edge_network_objects(version, base_subnet, subnet_mask, site_index=
                     'vedge_address': subnet_address_long,
                     'isp_switch_address': edge_device_address,
                     'vedge': f'vEdge_{site_index:003}'
+                }
+            elif version == 'cedge':
+                network_dict = {
+                    'subnet': str(subnet.network_address),
+                    'subnet_mask': str(subnet.prefixlen),
+                    'subnet_address': subnet_address,
+                    'router_address': router_address,
+                    'cedge_address': subnet_address_long,
+                    'isp_switch_address': edge_device_address,
+                    'cedge': f'cEdge_{site_index:003}'
                 }
             networks.append(network_dict)
             site_index += 1
