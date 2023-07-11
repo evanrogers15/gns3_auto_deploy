@@ -664,6 +664,7 @@ def viptela_8000v_appneta_deploy():
                         tn.write(b"\r\n")
                         output = tn.read_until(b"Would you like to enter the initial configuration dialog? [yes/no]:", timeout=5).decode('ascii')
                         if '[yes/no]' in output:
+                            tn.write(b"no\r")
                             break
                         tn.close()
                         log_and_update_db(server_name, project_name, deployment_type, deployment_status,

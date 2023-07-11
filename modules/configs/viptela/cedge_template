@@ -20,7 +20,7 @@ system
  vbond {vbond_address} port 12346
 !
 hostname {hostname}
-username admin privilege 15 secret 9 $9$3V6L3V6L2VUI2k$ysPnXOdg8RLj9KgMdmfHdSHkdaMmiHzGaUpcqH6pfTo
+username admin privilege 15 password 0 PW4netops
 vrf definition 1
  rd 1:1
  address-family ipv4
@@ -143,7 +143,7 @@ aaa authentication login default local
 aaa authorization exec default local
 aaa server radius dynamic-author
 !
-snmp-server community 6 gMJDRVbKZFafU^S]NhJ]_BeWCdfFHM view all ro
+snmp-server community 0 public view all ro
 snmp-server enable traps
 snmp-server ifindex persist
 snmp-server trap timeout 30
