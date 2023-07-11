@@ -649,7 +649,7 @@ def viptela_8000v_appneta_deploy():
                             vpn_0_ge0_1_ip_address = dictionary_1['cedge_address']
                             vpn_0_ge0_1_ip_address = vpn_0_ge0_1_ip_address.split("/")[0]
                             vpn_0_ge0_1_ip_gateway = dictionary_1['router_address']
-                    cedge_hostname = f"{temp_node_name}_{city_data[temp_node_name]['city']}"
+                    cedge_hostname = f"{temp_node_name}_{cedge_city_data[temp_node_name]['city']}"
                     lan_dhcp_dns_server = '8.8.8.8'
                     if i == 3:
                         client_1_mac_address = "52:54:00:E0:00:00"
@@ -702,14 +702,13 @@ def viptela_8000v_appneta_deploy():
                         log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Sending configuration commands to {node_name[0]}")
                         for line in lines:
                             formatted_line = line.format(
-                                cedge_hostname=cedge_hostname,
-                                latitude=city_data[temp_node_name]['latitude'],
-                                longitude=city_data[temp_node_name]['longitude'],
+                                hostname=cedge_hostname,
+                                latitude=cedge_city_data[temp_node_name]['latitude'],
+                                longitude=cedge_city_data[temp_node_name]['longitude'],
                                 system_ip=system_ip,
                                 site_id=site_id,
                                 org_name=org_name,
                                 vbond_address=vbond_vpn_0_ip,
-                                dhcp_pool=lan_subnet_address,
                                 lan_dhcp_exclude_start=lan_dhcp_exclude_start,
                                 lan_dhcp_exclude_end=lan_dhcp_exclude_end,
                                 lan_dhcp_default_router=lan_gateway_address,
