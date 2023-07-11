@@ -81,7 +81,7 @@ viptela_vedge_template_data = {"compute_id": "local", "cpus": 1, "adapters": 6,
                                "hda_disk_image": "viptela-edge-20.10.1-genericx86-64.qcow2",
                                "name": vedge_template_name, "ram": 2048, "template_type": "qemu",
                                "hda_disk_interface": "virtio", "options": "-cpu host -smp 2,maxcpus=2"}
-viptela_cedge_template_data = {"compute_id": "local", "cpus": 1, "adapters": 6,
+viptela_cedge_template_data = {"compute_id": "local", "cpus": 2, "adapters": 6,
                                "symbol": ":/symbols/affinity/square/blue/communications.svg",
                                "adapter_type": "vmxnet3", "qemu_path": "/usr/bin/qemu-system-x86_64",
                                "hda_disk_image": "c8000v-universalk9_8G_serial.17.09.01a.qcow2",
