@@ -706,13 +706,12 @@ def viptela_8000v_appneta_deploy():
                     while True:
                         tn = telnetlib.Telnet(server_ip, console_port)
                         tn.write(b"\r\n")
-                        output = tn.read_until(b"Username", timeout=3).decode('ascii')
-                        if 'Router>' in output:
-                            tn.write(b"exit\r")
                         tn.write(b"\r\n")
-                        output = tn.read_until(b"Username", timeout=3).decode('ascii')
-                        if 'Username' in output:
+                        output = tn.read_until(b"Username:", timeout=3).decode('ascii')
+                        if 'Username:' in output:
                             break
+                        elif 'Router>' in output:
+                            tn.write(b"exit\r")
                         tn.close()
                         log_and_update_db(server_name, project_name, deployment_type, deployment_status,
                                           deployment_step,
