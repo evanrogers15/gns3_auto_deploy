@@ -712,7 +712,6 @@ def viptela_8000v_appneta_deploy():
                     while True:
                         tn = telnetlib.Telnet(server_ip, console_port)
                         tn.write(b"\r\n")
-                        tn.write(b"\r\n")
                         output = tn.read_until(b"Username:", timeout=3).decode('ascii')
                         log_and_update_db(server_name, project_name, deployment_type, 'test', deployment_step,
                                           f"{temp_node_name} third loop output {output}")
@@ -720,6 +719,9 @@ def viptela_8000v_appneta_deploy():
                             break
                         elif 'Router>' in output:
                             tn.write(b"exit\r")
+                            log_and_update_db(server_name, project_name, deployment_type, 'test', deployment_step,
+                                              f"{temp_node_name} typed exit")
+                            break
                         tn.close()
                         log_and_update_db(server_name, project_name, deployment_type, deployment_status,
                                           deployment_step,
@@ -909,14 +911,14 @@ def viptela_8000v_appneta_deploy():
                 for cedge_node in cedge_nodes:
                     cedge_id, cedge_console, cedge_aux = cedge_node
                     node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id', 'name', cedge_id)
-                    cmd_scp_root_cert = f"request execute vpn 512 scp /home/admin/SDWAN.pem admin@{mgmt_subnet_ip}.{ve}:bootflash/SDWAN.pem"
+                    cmd_scp_root_cert = f"request execute vpn 512 scp /home/admin/SDWAN.pem admin@{mgmt_subnet_ip}.{ve}:/SDWAN.pem"
                     cmd_cedge_root_cert_install = "request platform software sdwan root-cert-chain install bootflash:SDWAN.pem"
                     cmd_cedge_csr_create = "request platform software sdwan csr upload bootflash:/vdevice.csr"
                     cmd_scp_cedge_csr = f"request execute vpn 512 scp admin@{mgmt_subnet_ip}.{ve}:/vdevice.csr /home/admin/vdevice.csr"
                     cmd_vmanage_sign_csr = "openssl x509 -req -in vdevice.csr -CA SDWAN.pem -CAkey SDWAN.key -CAcreateserial -out vdevice.crt -days 2000 -sha256"
                     cmd_scp_cedge_crt = f"request execute vpn 512 scp /home/admin/vdevice.crt admin@{mgmt_subnet_ip}.{ve}:/vdevice.crt"
                     cmd_cedge_install_crt = "request platform software sdwan certificate install bootflash:/vdevice.crt"
-                    cmd_cedge_show_crt_serial = "sho sdwan certificate serial"
+                    cmd_cedge_show_crt_serial = "show sdwan certificate serial"
 
                     cmd_ssh_to_edge = f"request execute vpn 512 ssh admin@{mgmt_subnet_ip}.{ve}"
                     cmd_ssh_to_vbond = f"request execute vpn 512 ssh admin@{vbond_mgmt_ip}"
