@@ -42,7 +42,7 @@ vrf definition Mgmt-intf
   exit-address-family
  !
 !
-ip dhcp excluded-address vrf 1 {lan_dhcp_exclude_start} {lan_dhcp_exclude_stop}
+ip dhcp excluded-address vrf 1 {lan_dhcp_exclude_start} {lan_dhcp_exclude_end}
 ip dhcp pool vrf-1-GigabitEthernet4
  vrf 1
  lease 1 0 0
