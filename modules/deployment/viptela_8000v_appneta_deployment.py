@@ -716,11 +716,24 @@ def viptela_8000v_appneta_deploy():
                         log_and_update_db(server_name, project_name, deployment_type, 'test', deployment_step,
                                           f"{temp_node_name} third loop output {output}")
                         if 'Username:' in output:
+                            # tn.read_until(b"Username:")
+                            tn.write(b"admin\r")
+                            tn.read_until(b"Password:")
+                            tn.write(b"admin\r")
+                            tn.read_until(b"Enter new password:")
+                            tn.write(viptela_password.encode("ascii") + b"\n")
+                            tn.read_until(b"Confirm password:")
+                            tn.write(viptela_password.encode("ascii") + b"\n")
+                            log_and_update_db(server_name, project_name, deployment_type, 'test', deployment_step,
+                                              f"{temp_node_name} username in output, set password")
                             break
                         elif 'Router>' in output:
                             tn.write(b"exit\r")
                             log_and_update_db(server_name, project_name, deployment_type, 'test', deployment_step,
                                               f"{temp_node_name} typed exit")
+                        elif 'Router#' in output:
+                            log_and_update_db(server_name, project_name, deployment_type, 'test', deployment_step,
+                                              f"{temp_node_name} Router# in output")
                             break
                         tn.close()
                         log_and_update_db(server_name, project_name, deployment_type, deployment_status,
@@ -728,14 +741,7 @@ def viptela_8000v_appneta_deploy():
                                           f"{temp_node_name} not available yet, trying again in 30 seconds")
                         time.sleep(30)
                     tn.write(b"\r\n")
-                    tn.read_until(b"Username:")
-                    tn.write(b"admin\r")
-                    tn.read_until(b"Password:")
-                    tn.write(b"admin\r")
-                    tn.read_until(b"Enter new password:")
-                    tn.write(viptela_password.encode("ascii") + b"\n")
-                    tn.read_until(b"Confirm password:")
-                    tn.write(viptela_password.encode("ascii") + b"\n")
+                    tn.read_until(b"All daemons up")
                     tn.write(b"\r\n")
                     tn.read_until(b"Router#")
                     tn.write(b"config-transaction\r")
@@ -982,6 +988,9 @@ def viptela_8000v_appneta_deploy():
                     tn.read_until(b":")
                     tn.write(b'sdwan-lab\n')
                     tn.read_until(b'#')
+                    # Drop back to the vManage
+                    tn.write(b'exit\r\n')
+                    tn.read_until(b'vManage#')
                     # SCP the cEdge.csr to the vManage
                     tn.write(cmd_scp_cedge_csr.encode('ascii') + b"\n")
                     test_o = tn.read_until(b"?", timeout=2).decode('ascii')
@@ -992,9 +1001,6 @@ def viptela_8000v_appneta_deploy():
                     tn.read_until(b"Password:")
                     tn.write(viptela_password.encode("ascii") + b"\n")
                     tn.read_until(b'#')
-                    # Drop back to the vManage
-                    tn.write(b'exit\r\n')
-                    tn.read_until(b'vManage#')
                     tn.write(b'vshell\r\n')
                     tn.read_until(b'$')
                     tn.write(cmd_vmanage_sign_csr.encode('ascii') + b"\n")
