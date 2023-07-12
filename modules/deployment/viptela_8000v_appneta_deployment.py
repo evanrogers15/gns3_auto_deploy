@@ -1039,7 +1039,7 @@ def viptela_8000v_appneta_deploy():
                         time.sleep(10)
                     tn.write(b'exit\r\n')
                     tn.read_until(b'#')
-                    cedge_install_command = f"request cedge add chassis-num {chassis_number} serial-num {serial_number}"
+                    cedge_install_command = f"request vedge add chassis-num {chassis_number} serial-num {serial_number}"
                     tn.write(cmd_ssh_to_vbond.encode('ascii') + b"\n")
                     tn.read_until(b"Password:")
                     tn.write(viptela_password.encode("ascii") + b"\n")
