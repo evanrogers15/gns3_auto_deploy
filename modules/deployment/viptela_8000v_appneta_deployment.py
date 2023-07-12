@@ -740,11 +740,16 @@ def viptela_8000v_appneta_deploy():
                                           deployment_step,
                                           f"{temp_node_name} not available yet, trying again in 30 seconds")
                         time.sleep(30)
+                    while True:
+                        tn.write(b"\r\n")
+                        tn.write(b"config-transaction\r")
+                        output = tn.read_until(b"Router#", timeout=3).decode('ascii')
+                        if 'Router(config)#' in output:
+                            break
+                        log_and_update_db(server_name, project_name, deployment_type, 'test', deployment_step,
+                                          f"{temp_node_name} config-transaction has not taken yet..")
+                        time.sleep(10)
                     tn.write(b"\r\n")
-                    tn.read_until(b"All daemons up")
-                    tn.write(b"\r\n")
-                    tn.read_until(b"Router#")
-                    tn.write(b"config-transaction\r")
                     tn.read_until(b"Router(config)#")
                     with open(file_name, 'r') as f:
                         lines = f.readlines()
@@ -859,8 +864,8 @@ def viptela_8000v_appneta_deploy():
                 vmanage_install_cert(vmanage_mgmt_ip, vmanage_headers, vdevice_cert)
                 vmanage_set_device(vmanage_mgmt_ip, vmanage_headers, vsmart_vpn_0_ip, "vsmart")
                 vmanage_set_device(vmanage_mgmt_ip, vmanage_headers, vbond_vpn_0_ip, "vbond")
-                vbond_csr = vmanage_generate_csr(vmanage_mgmt_ip, vmanage_headers, vbond_vpn_0_ip, 'vbond')
                 vsmart_csr = vmanage_generate_csr(vmanage_mgmt_ip, vmanage_headers, vsmart_vpn_0_ip, 'vsmart')
+                vbond_csr = vmanage_generate_csr(vmanage_mgmt_ip, vmanage_headers, vbond_vpn_0_ip, 'vbond')
                 tn.write(b'exit\r\n')
                 tn.read_until(b'#')
                 tn.write(b'vshell\r\n')
