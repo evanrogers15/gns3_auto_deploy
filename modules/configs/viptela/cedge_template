@@ -19,7 +19,6 @@ system
  vbond {vbond_address} port 12346
 !
 hostname {hostname}
-username admin privilege 15 password 0 PW4netops
 vrf definition 1
  rd 1:1
  address-family ipv4
