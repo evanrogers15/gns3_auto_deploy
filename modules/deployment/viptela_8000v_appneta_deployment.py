@@ -677,7 +677,19 @@ def viptela_8000v_appneta_deploy():
                     tn.write(cedge_temp_enable_secret.encode("ascii") + b"\n")
                     tn.read_until(b"Enter your selection [2]:")
                     tn.write(b"0\r")
-                    tn.read_until(b"Press RETURN to get started!")
+                    tn.close()
+                    while True:
+                        tn = telnetlib.Telnet(server_ip, console_port)
+                        tn.write(b"\r\n")
+                        output = tn.read_until(b"Router>", timeout=5).decode('ascii')
+                        if 'Router>' in output:
+                            tn.write(b"enable\r")
+                            break
+                        tn.close()
+                        log_and_update_db(server_name, project_name, deployment_type, deployment_status,
+                                          deployment_step,
+                                          f"{temp_node_name} not available yet, trying again in 30 seconds")
+                        time.sleep(30)
                     tn.write(b"\r\n")
                     tn.read_until(b"Router>")
                     tn.write(b"enable\r")
@@ -687,7 +699,21 @@ def viptela_8000v_appneta_deploy():
                     tn.write(b"\r\n")
                     tn.read_until(b"Do you want to abort? (yes/[no]):")
                     tn.write(b"\r\n")
-                    tn.read_until(b"Press RETURN to get started!")
+                    tn.close()
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                      f"Restarting {temp_node_name} to enable controller mode, resuming in 2 minutes..")
+                    time.sleep(120)
+                    while True:
+                        tn = telnetlib.Telnet(server_ip, console_port)
+                        tn.write(b"\r\n")
+                        output = tn.read_until(b"Username", timeout=5).decode('ascii')
+                        if 'Username' in output:
+                            break
+                        tn.close()
+                        log_and_update_db(server_name, project_name, deployment_type, deployment_status,
+                                          deployment_step,
+                                          f"{temp_node_name} not available yet, trying again in 30 seconds")
+                        time.sleep(30)
                     tn.write(b"\r\n")
                     tn.read_until(b"Username:")
                     tn.write(b"admin\r")
@@ -697,8 +723,10 @@ def viptela_8000v_appneta_deploy():
                     tn.write(viptela_password.encode("ascii") + b"\n")
                     tn.read_until(b"Confirm password:")
                     tn.write(viptela_password.encode("ascii") + b"\n")
+                    tn.write(b"\r\n")
                     tn.read_until(b"Router#")
                     tn.write(b"config-transaction\r")
+                    tn.read_until(b"Router(config)#")
                     with open(file_name, 'r') as f:
                         lines = f.readlines()
                         log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Sending configuration commands to {node_name[0]}")
