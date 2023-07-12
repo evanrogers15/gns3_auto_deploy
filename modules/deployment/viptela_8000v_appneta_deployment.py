@@ -684,6 +684,8 @@ def viptela_8000v_appneta_deploy():
                         output = tn.read_until(b"Router>", timeout=5).decode('ascii')
                         if 'Router>' in output:
                             tn.write(b"enable\r")
+                            tn.read_until(b"Password:")
+                            tn.write(cedge_temp_enable_secret.encode("ascii") + b"\n")
                             break
                         tn.close()
                         log_and_update_db(server_name, project_name, deployment_type, deployment_status,
@@ -691,10 +693,6 @@ def viptela_8000v_appneta_deploy():
                                           f"{temp_node_name} not available yet, trying again in 30 seconds")
                         time.sleep(30)
                     tn.write(b"\r\n")
-                    tn.read_until(b"Router>")
-                    tn.write(b"enable\r")
-                    tn.read_until(b"secret:")
-                    tn.write(cedge_temp_enable_secret.encode("ascii") + b"\n")
                     tn.read_until(b"Router#")
                     tn.write(b"controller-mode enable\r")
                     tn.read_until(b"Continue? [confirm]")
