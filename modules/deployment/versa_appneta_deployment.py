@@ -127,10 +127,11 @@ def versa_appneta_deploy():
     gns3_delete_template(gns3_server_data, versa_flexvnf_template_name)
     gns3_delete_template(gns3_server_data, open_vswitch_isp_template_name)
     gns3_delete_template(gns3_server_data, network_test_tool_template_name)
-    gns3_delete_template(gns3_server_data, appneta_mp_template_name)
     gns3_delete_template(gns3_server_data, mgmt_hub_template_name)
     gns3_delete_template(gns3_server_data, mgmt_main_hub_template_name)
     gns3_set_project(gns3_server_data, new_project_id)
+    if deploy_appneta == 'y':
+        gns3_delete_template(gns3_server_data, appneta_mp_template_name)
     # endregion
     # region Create GNS3 Templates
     deployment_step = 'Creating Templates'
