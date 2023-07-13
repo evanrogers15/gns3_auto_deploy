@@ -1046,7 +1046,7 @@ def generate_flexvnf_objects(vedge_count, mgmt_base_subnet):
                     'client_1_address': client_1_address_var,
                     'flexvnf': f'FlexVNF-{i:003}',
                     'system_ip': f'{mgmt_base_subnet}.{i + 100}',
-                    'mgmt_address': f'{mgmt_base_subnet}.{i + 100}/24',
+                    'mgmt_address': f'{mgmt_base_subnet}.{i + 100}',
                     'mgmt_gateway': f'{mgmt_base_subnet}.1',
                     'site_id': k,
                     'org_name': 'sdwan-lab'

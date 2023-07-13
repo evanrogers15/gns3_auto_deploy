@@ -245,7 +245,7 @@ def versa_appneta_deploy():
         for j in range(first_flexvnf_index, last_flexvnf_index):
             flexvnf_node_id = flexvnf_info[j]['node_id']
             gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_switch_node_id, 0, mgmt_switch_interface,
-                               flexvnf_node_id, 5, 0)
+                               flexvnf_node_id, 0, 0)
             gns3_connect_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, switch_adapter_a, 0, flexvnf_node_id,
                                1, 0)
             gns3_connect_nodes(gns3_server_data, new_project_id, isp_ovs_node_id, switch_adapter_b, 0, flexvnf_node_id,
