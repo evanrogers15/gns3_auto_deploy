@@ -444,7 +444,8 @@ def versa_appneta_deploy():
     for server_ip in server_ips:
         temp_node_name = f'Analytics'
         matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
-        analytics_route_command = f'route add -net 10.10.0.0/16 gw {controller_southbound_ip} dev eth1'
+        analytics_temp_route_command = f'route add -net 10.10.0.0/16 gw {controller_southbound_ip} dev eth1'
+        analytics_persistent_route_command = f"sudo sed -i '/^exit 0/i route add -net 10.10.0.0/16 gw {controller_southbound_ip} dev eth1' /etc/rc.local\n"
         if matching_nodes:
             for matching_node in matching_nodes:
                 node_id, console_port, aux = matching_node
@@ -473,7 +474,10 @@ def versa_appneta_deploy():
                 tn.write(command.encode('utf-8'))
                 tn.read_until(b"[root@versa-analytics: admin]#")
                 tn.write(b"ifdown eth0 && ifup eth0 && ifup eth1\n")
-                tn.write(analytics_route_command.encode('ascii') + b"\n")
+                tn.read_until(b"[root@versa-analytics: admin]#")
+                tn.write(analytics_temp_route_command.encode('ascii') + b"\n")
+                tn.read_until(b"[root@versa-analytics: admin]#")
+                tn.write(analytics_persistent_route_command.encode('ascii') + b"\n")
                 tn.read_until(b"[root@versa-analytics: admin]#")
                 tn.write(b"exit\n")
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed Versa AnalyticsDevice Setup")
