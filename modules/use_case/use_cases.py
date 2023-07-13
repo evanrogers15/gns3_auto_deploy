@@ -6,7 +6,7 @@ def use_case_1(server, port, project_id, state):
     matching_nodes = gns3_query_find_nodes_by_field(server, port, project_id, 'name', 'name', 'Client')
     site_001_matching_nodes = gns3_query_find_nodes_by_field(server, port, project_id, 'name', 'name', '001')
     for node_name in site_001_matching_nodes:
-        if 'vEdge' in node_name or 'FlexVNF' in node_name:
+        if 'Edge' in node_name or 'FlexVNF' in node_name:
             router_node_name = node_name
     else:
         logging.info("No site routers found..")
@@ -46,7 +46,7 @@ def use_case_2(server, port, project_id, state):
     client_nodes = gns3_query_find_nodes_by_field(server, port, project_id, 'name', 'name', 'Client')
     site_001_matching_nodes = gns3_query_find_nodes_by_field(server, port, project_id, 'name', 'name', '001')
     for node_name in site_001_matching_nodes:
-        if 'vEdge' in node_name:
+        if 'Edge' in node_name:
             matching_nodes = gns3_query_find_nodes_by_field(server, port, project_id, 'name', 'name', 'vEdge')
             break
         elif 'FlexVNF' in node_name:
