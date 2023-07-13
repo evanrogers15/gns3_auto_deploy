@@ -595,7 +595,7 @@ def versa_appneta_deploy():
     versa_create_dhcp_profile(director_mgmt_ip)
     versa_deploy_controller(director_mgmt_ip)
     time.sleep(30)
-    versa_create_device_template(director_mgmt_ip, mgmt_subnet_gateway_ip)
+    versa_create_device_template(director_mgmt_ip)
     time.sleep(5)
     versa_deploy_device_template(director_mgmt_ip)
     time.sleep(5)
@@ -648,9 +648,11 @@ def versa_appneta_deploy():
                     longitude = versa_city_data[temp_node_name]['longitude']
                     onboard_command = f"sudo /opt/versa/scripts/staging.py -w 0 -n {device_serial_number} -c {controller_isp_1_ip} -s {vpn_0_ge0_0_ip_address} -g {vpn_0_ge0_0_ip_gateway} -l SDWAN-Branch@Versa-Root.com -r Controller-01-staging@Versa-Root.com"
                     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting FlexVNF Device Onboarding for {node_name[0]} - FlexVNF {i} of {site_count}")
-                    versa_create_site_device_workflow(director_mgmt_ip, vr_1_route_ip, lan_gateway_address, lan_subnet_base, flexvnf_hostname, site_id, device_serial_number, site_country, flexvnf_city, vpn_0_ge0_0_ip_address, vpn_0_ge0_0_ip_gateway, vpn_0_ge0_1_ip_address, vpn_0_ge0_1_ip_gateway, tvi_0_2_ip, tvi_0_3_ip, latitude, longitude, mgmt_address)
+                    versa_create_site_device_workflow(director_mgmt_ip, vr_1_route_ip, lan_gateway_address, lan_subnet_base, flexvnf_hostname, site_id, device_serial_number, site_country, flexvnf_city, vpn_0_ge0_0_ip_address, vpn_0_ge0_0_ip_gateway, vpn_0_ge0_1_ip_address, vpn_0_ge0_1_ip_gateway, tvi_0_2_ip, tvi_0_3_ip, latitude, longitude)
                     time.sleep(10)
                     versa_deploy_device_workflow(director_mgmt_ip, flexvnf_hostname)
+                    time.sleep(10)
+                    versa_config_edge_mgmt_interface(director_mgmt_ip, flexvnf_hostname, mgmt_address, mgmt_subnet_gateway_ip)
                     time.sleep(10)
                     tn = telnetlib.Telnet(server_ip, console_port)
                     tn.write(b"\r\n")

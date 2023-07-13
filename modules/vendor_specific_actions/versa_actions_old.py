@@ -119,7 +119,7 @@ def versa_deploy_controller(director_ip):
     except requests.exceptions.RequestException as e:
         logging.info(f"Versa Director API Call Failed: {str(e)}")
 
-def versa_create_device_template(director_ip):
+def versa_create_device_template(director_ip, mgmt_subnet_gateway):
     url = f"https://{director_ip}:9182/vnms/sdwan/workflow/templates/template"
     headers = {
         "Content-Type": "application/json"
@@ -130,6 +130,7 @@ def versa_create_device_template(director_ip):
         "versanms.sdwan-template-workflow": {
             "analyticsCluster": "Analytics", "bandwidth": "100", "licensePeriod": "1", "controllers": ["Controller-01"],
             "deviceFirmfactor": 6, "deviceType": "full-mesh", "diaConfig": {"loadBalance": False}, "isStaging": False,
+            "SNMPServers": [{"networkName": "MGMT", "server": mgmt_subnet_gateway}],
             "lanInterfaces": [{
                                 "interfaceName": "vni-0/2", "unitInfo": [{
                                     "vlanId": "0",
@@ -142,8 +143,20 @@ def versa_create_device_template(director_ip):
                                     "dhcpv4Profile": "DHCP",
                                     "dhcpV4Relay": False,
                                     "dhcpV4RelayAddress": ""
-                                    }]},
-            ],
+                                    }]}, {
+                                "interfaceName": "vni-0/4", "unitInfo": [{
+                                    "vlanId": "0",
+                                    "subOrganization": "Versa-Root",
+                                    "vrfName": "Versa-Root-LAN-VR",
+                                    "networkName": "MGMT", "subUnit": "0",
+                                    "ipv4Static": True, "ipv4Dhcp": False,
+                                    "ip6Static": False, "ipv6Dhcp": False,
+                                    "ipv4DhcpServer": False,
+                                    "dhcpv4Profile": "DHCP",
+                                    "dhcpV4Relay": False,
+                                    "dhcpV4RelayAddress": ""
+                }]
+            }],
             "providerOrg": {"name": "Versa-Root", "nextGenFW": False, "statefulFW": False},
             "redundantPair": {"enable": False}, "routingInstances": [], "siteToSiteTunnels": [],
             "solutionTier": "Premier-Elite-SDWAN",
@@ -256,7 +269,7 @@ def versa_deploy_device_workflow(director_ip, site_name):
     except requests.exceptions.RequestException as e:
         logging.info(f"Versa Director API Call Failed: {str(e)}")
 
-def versa_create_site_device_workflow(director_ip, vr_1_route_ip, lan_ip, lan_dhcp_base, site_name, site_id, device_serial_number, device_country, device_city, isp_1_ip, isp_1_gateway, isp_2_ip, isp_2_gateway, tvi_0_2_ip, tvi_0_3_ip, latitude, longitude):
+def versa_create_site_device_workflow(director_ip, vr_1_route_ip, lan_ip, lan_dhcp_base, site_name, site_id, device_serial_number, device_country, device_city, isp_1_ip, isp_1_gateway, isp_2_ip, isp_2_gateway, tvi_0_2_ip, tvi_0_3_ip, latitude, longitude, mgmt_address):
     url = f"https://{director_ip}:9182/vnms/sdwan/workflow/devices/device"
     headers = {
         "Content-Type": "application/json"
@@ -264,6 +277,7 @@ def versa_create_site_device_workflow(director_ip, vr_1_route_ip, lan_ip, lan_dh
     auth = ("Administrator", "versa123")
     lan_dhcp_start = lan_dhcp_base + ".51"
     lan_dhcp_end = lan_dhcp_base + ".100"
+    mgmt_snmp_target_source = mgmt_address.rstrip("/24")
     data = {
         "versanms.sdwan-device-workflow": {
             "deviceName": site_name, "siteId": site_id, "orgName": "Versa-Root", "serialNumber": device_serial_number,
@@ -307,6 +321,12 @@ def versa_create_site_device_workflow(director_ip, vr_1_route_ip, lan_ip, lan_dh
                             }, {
                               "name": "{$v_ISP-1-Transport-VR_IPv4__vrHopAddress}", "value": isp_1_gateway,
                               "isAutogeneratable": False
+                            }, {
+                                "name": "{$v_MGMT_IPv4__staticaddress}",
+                                "value": mgmt_address, "isAutogeneratable": False
+                            }, {
+                                "name": "{$v_MGMT__snmpTargetSource}",
+                                "value": mgmt_snmp_target_source, "isAutogeneratable": False
                             }, {
                                 "name": "{$v_Versa-Root_LAN-POOL-LAN_Pool_Range_Begin_IP__apRangeBegin}",
                                 "value": lan_dhcp_start,
@@ -405,22 +425,5 @@ def versa_create_site_device_workflow(director_ip, vr_1_route_ip, lan_ip, lan_dh
         return response
     except requests.exceptions.RequestException as e:
         logging.info(f"Versa Director API Call Failed: {str(e)}")
-
-def versa_config_edge_mgmt_interface(director_ip, site_name, management_ip, management_gateway):
-    url = f"https://{director_ip}:9182/versa/ncs-services/api/config/devices/device/{site_name}/config/interfaces"
-    headers = {
-        "Content-Type": "application/json"
-    }
-    auth = ("Administrator", "versa123")
-
-    data = {"management":{"name":"eth-0/0","enabled":True,"unit":[{"name":"0","family":{"inet":{"address":[{"name":management_ip,"prefix-length":"24","gateway":management_gateway}]}},"enabled":True}]}}
-    try:
-        response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
-        response.raise_for_status()
-        logging.info(f"Deploy - Configured Management interface for site {site_name} on Director {director_ip}")
-        return response
-    except requests.exceptions.RequestException as e:
-        logging.info(f"Versa Director API Call Failed: {str(e)}")
-
 
 # endregion
