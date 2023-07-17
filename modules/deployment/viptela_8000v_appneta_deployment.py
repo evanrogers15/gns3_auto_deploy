@@ -1,13 +1,12 @@
 import telnetlib
 import time
 import re
-from datetime import datetime
 
 from modules.vendor_specific_actions.viptela_actions import *
 from modules.gns3.gns3_dynamic_data import *
 from modules.gns3.gns3_query import *
 from modules.vendor_specific_actions.appneta_actions import *
-
+from datetime import datetime
 def viptela_8000v_appneta_deploy():
     # region Variables
     vmanage_headers = {}
