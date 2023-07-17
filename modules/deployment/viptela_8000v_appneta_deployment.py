@@ -692,8 +692,8 @@ def viptela_8000v_appneta_deploy():
                                           f"{temp_node_name} second loop output {output}")
                         if 'Router>' in output:
                             tn.write(b"enable\r")
-                            tn.read_until(b"Password:")
-                            tn.write(cedge_temp_enable_secret.encode("ascii") + b"\n")
+                            tn.read_until(b"Router#")
+                            # tn.write(cedge_temp_enable_secret.encode("ascii") + b"\n")
                             break
                         tn.close()
                         log_and_update_db(server_name, project_name, deployment_type, deployment_status,

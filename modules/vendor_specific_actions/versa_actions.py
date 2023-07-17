@@ -334,7 +334,7 @@ def versa_create_site_device_workflow(director_ip, vr_1_route_ip, lan_ip, lan_dh
                                                 "variable": "{$v_Chassis_Id__sitesChassisId}", "group": "SDWAN",
                                                 "overlay": False, "type": "STRING"
                                             }, {
-                                                "variable": "{$v_SNMP_TARGET_SOURCE__snmpTargetSource}", "group": "SNMP", "overlay": false,
+                                                "variable": "{$v_SNMP_TARGET_SOURCE__snmpTargetSource}", "group": "SNMP", "overlay": False,
                                                 "type": "IPV4"
                                             }, {
                                                 "variable": "{$v_eth-0-0_0-OOBM-VR-IPv4__vrHopAddress}", "group": "Virtual Routers",
