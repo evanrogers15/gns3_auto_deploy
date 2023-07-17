@@ -745,7 +745,7 @@ def viptela_8000v_appneta_deploy():
                     while True:
                         tn.write(b"\r\n")
                         tn.write(b"config-transaction\r")
-                        output = tn.read_until(b"Router#", timeout=3).decode('ascii')
+                        output = tn.read_until(b"Router#", timeout=5).decode('ascii')
                         if 'Router(config)#' in output:
                             break
                         log_and_update_db(server_name, project_name, deployment_type, 'test', deployment_step,
