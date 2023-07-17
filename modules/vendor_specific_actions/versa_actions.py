@@ -5,9 +5,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 auth = ("Administrator", "versa123")
 
-headers = {
-        "Content-Type": "application/json"
-    }
+headers = {"Content-Type": "application/json"}
 
 # region Functions: Versa API
 def versa_configure_analytics_cluster(director_ip, analytics_ip, analytics_southbound_ip):
@@ -164,32 +162,28 @@ def versa_create_device_template(director_ip):
     except requests.exceptions.RequestException as e:
         logging.info(f"Versa Director API Call Failed: {str(e)}")
         
-def versa_update_device_template_snmp(director_ip):
+def versa_update_device_template_snmp(director_ip, snmp_trap_dst):
     url = f"https://{director_ip}:9182/api/config/devices/template/Edge-Template/config/snmp/target-source"
     data = {"target-source": "{$v_SNMP_TARGET_SOURCE__snmpTargetSource}"}
+    try:
+        response = requests.put(url, headers=headers, auth=auth, json=data, verify=False)
+        response.raise_for_status()
+        logging.info(f"Deploy - Updated Site Device Template on Director {director_ip}")
+    except requests.exceptions.RequestException as e:
+        logging.info(f"Versa Director API Call Failed: {str(e)}")
+    url = f"https://{director_ip}:9182/api/config/devices/template/Edge-Template/config/snmp"
+
+    data = {"target":{"name":"snmp_trap_destination","ip":snmp_trap_dst,"udp-port":"162","v2c":{"sec-name":"public"},"tag":["std_v2_trap"]}}
     try:
         response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
         response.raise_for_status()
         logging.info(f"Deploy - Updated Site Device Template on Director {director_ip}")
-        return response
     except requests.exceptions.RequestException as e:
         logging.info(f"Versa Director API Call Failed: {str(e)}")
 
 def versa_update_device_template_oobm_interface(director_ip):
     url = f"https://{director_ip}:9182/api/config/devices/template/Edge-Template/config/interfaces"
-    data = {
-        "management": {
-            "name": "eth-0/0", "enabled": True, "unit": [{
-                                                             "name": "0", "family": {
-                    "inet": {
-                        "address": [{
-                                        "name": "{$v_eth-0-0_Unit_0_StaticAddress_IPV4_Mask-0__staticaddress}",
-                                        "prefix-length": "24", "gateway": "{$v_eth-0-0_0-OOBM-VR-IPv4__vrHopAddress}"
-                                    }]
-                    }
-                }, "enabled": True
-                                                         }]
-        }
+    data = {"management": {"name": "eth-0/0", "enabled": True, "unit": [{"name": "0", "family": {"inet": {"address": [{"name": "{$v_eth-0-0_Unit_0_StaticAddress_IPV4_Mask-0__staticaddress}", "prefix-length": "24", "gateway": "{$v_eth-0-0_0-OOBM-VR-IPv4__vrHopAddress}"}]}}, "enabled": True}]}
     }
     try:
         response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)

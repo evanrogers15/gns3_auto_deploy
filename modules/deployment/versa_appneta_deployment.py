@@ -91,6 +91,8 @@ def versa_appneta_deploy():
     controller_isp_2_ip_gateway = controller_isp_subnet + ".5"
     controller_isp_2_ip = controller_isp_subnet + ".6"
 
+    snmp_trap_dst = "10.8.0.1"
+
     gns3_server_data = [{"GNS3 Server": server_ip, "Server Name": server_name, "Server Port": server_port,
                          "Project Name": project_name, "Project ID": new_project_id, "Tap Name": tap_name,
                          "Site Count": site_count, "Deployment Type": deployment_type,
@@ -105,7 +107,7 @@ def versa_appneta_deploy():
             "svg": "<svg width=\"471\" height=\"50\"><text font-family=\"Arial\" font-size=\"36.0\" fill=\"#000000\" fill-opacity=\"1.0\">Versa SDWAN Environment</text></svg>",
             "x": -1172, "y": -591, "z": 2
         }, "drawing_04": {
-            "svg": f"<svg width=\"318\" height=\"50\"><text font-family=\"Arial\" font-size=\"18.0\" fill=\"#000000\" fill-opacity=\"1.0\">Management IP Range: {mgmt_subnet_ip}.0/24\nVersa Director MGMT IP: {director_mgmt_ip}\nDeployed On: {current_date}</text></svg>",
+            "svg": f"<svg width=\"318\" height=\"50\"><text font-family=\"Arial\" font-size=\"18.0\" fill=\"#000000\" fill-opacity=\"1.0\">Management IP Range: {mgmt_subnet_ip}.0/24\nVersa Director MGMT IP: {director_mgmt_ip}\nCreated On: {current_date}</text></svg>",
             "x": -1165, "y": -541, "z": 2
         },
     }
@@ -601,11 +603,11 @@ def versa_appneta_deploy():
     time.sleep(30)
     versa_create_device_template(director_mgmt_ip)
     time.sleep(5)
-    versa_update_device_template_snmp(director_mgmt_ip)
+    versa_deploy_device_template(director_mgmt_ip)
+    time.sleep(5)
+    versa_update_device_template_snmp(director_mgmt_ip, snmp_trap_dst)
     time.sleep(5)
     versa_update_device_template_oobm_interface(director_mgmt_ip)
-    time.sleep(5)
-    versa_deploy_device_template(director_mgmt_ip)
     time.sleep(5)
     versa_create_device_group(director_mgmt_ip)
     time.sleep(5)
