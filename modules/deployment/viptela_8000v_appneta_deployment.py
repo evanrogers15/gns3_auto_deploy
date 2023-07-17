@@ -1,6 +1,7 @@
 import telnetlib
 import time
 import re
+from datetime import datetime
 
 from modules.vendor_specific_actions.viptela_actions import *
 from modules.gns3.gns3_dynamic_data import *
@@ -37,6 +38,7 @@ def viptela_8000v_appneta_deploy():
     # endregion
     # region Runtime
     start_time = time.time()
+    current_date = datetime.now().strftime("%m/%d/%Y")
     # region GNS3 Lab Setup
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
@@ -99,7 +101,7 @@ def viptela_8000v_appneta_deploy():
             "svg": "<svg width=\"471\" height=\"50\"><text font-family=\"Arial\" font-size=\"36.0\" fill=\"#000000\" fill-opacity=\"1.0\">Viptela SDWAN Environment</text></svg>",
             "x": -1172, "y": -591, "z": 2},
         "drawing_04": {
-            "svg": f"<svg width=\"318\" height=\"50\"><text font-family=\"Arial\" font-size=\"18.0\" fill=\"#000000\" fill-opacity=\"1.0\">Management IP Range: {mgmt_subnet_ip}.0/24\nViptela vManage MGMT IP: {vmanage_mgmt_ip}</text></svg>",
+            "svg": f"<svg width=\"318\" height=\"50\"><text font-family=\"Arial\" font-size=\"18.0\" fill=\"#000000\" fill-opacity=\"1.0\">Management IP Range: {mgmt_subnet_ip}.0/24\nViptela vManage MGMT IP: {vmanage_mgmt_ip}\nCreated On: {current_date}</text></svg>",
             "x": -1165, "y": -541, "z": 2},
     }
 

@@ -237,11 +237,12 @@ def versa_deploy_device_workflow(director_ip, site_name):
     except requests.exceptions.RequestException as e:
         logging.info(f"Versa Director API Call Failed: {str(e)}")
 
-def versa_create_site_device_workflow(director_ip, vr_1_route_ip, lan_ip, lan_dhcp_base, site_name, site_id, device_serial_number, device_country, device_city, isp_1_ip, isp_1_gateway, isp_2_ip, isp_2_gateway, tvi_0_2_ip, tvi_0_3_ip, latitude, longitude, mgmt_gateway, mgmt_address):
+def versa_create_site_device_workflow(director_ip, vr_1_route_ip, lan_ip, lan_dhcp_base, site_name, site_id, device_serial_number, device_country, device_city, isp_1_ip, isp_1_gateway, isp_2_ip, isp_2_gateway, tvi_0_2_ip, tvi_0_3_ip, latitude, longitude, mgmt_gateway, mgmt_address_temp):
     url = f"https://{director_ip}:9182/vnms/sdwan/workflow/devices/device"
     lan_dhcp_start = lan_dhcp_base + ".51"
     lan_dhcp_end = lan_dhcp_base + ".100"
-    snmp_address = f"{mgmt_address}/24"
+    mgmt_address = f"{mgmt_address_temp}/24"
+    snmp_address = mgmt_address_temp
     data = {
         "versanms.sdwan-device-workflow": {
             "deviceName": site_name, "siteId": site_id, "orgName": "Versa-Root", "serialNumber": device_serial_number,
@@ -325,8 +326,19 @@ def versa_create_site_device_workflow(director_ip, vr_1_route_ip, lan_ip, lan_dh
                                                 "overlay": False, "type": "INTEGER",
                                                 "range": {"start": 100, "end": 16383}
                                             }, {
+                                                "variable": "{$v_eth-0-0_Unit_0_StaticAddress_IPV4_Mask-0__staticaddress}",
+                                                "group": "Interfaces",
+                                                "overlay": False,
+                                                "type": "IPV4_IPV6_MASK"
+                                            }, {
                                                 "variable": "{$v_Chassis_Id__sitesChassisId}", "group": "SDWAN",
                                                 "overlay": False, "type": "STRING"
+                                            }, {
+                                                "variable": "{$v_SNMP_TARGET_SOURCE__snmpTargetSource}", "group": "SNMP", "overlay": false,
+                                                "type": "IPV4"
+                                            }, {
+                                                "variable": "{$v_eth-0-0_0-OOBM-VR-IPv4__vrHopAddress}", "group": "Virtual Routers",
+                                                "overlay": False, "type": "IPV4_IPV6"
                                             }, {
                                                 "variable": "{$v_Versa-Root-Control-VR_1_Local_address__vrRouterAddress}",
                                                 "group": "Virtual Routers", "overlay": True, "type": "IPV4"
