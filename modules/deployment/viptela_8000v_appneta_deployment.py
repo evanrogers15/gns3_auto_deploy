@@ -686,14 +686,19 @@ def viptela_8000v_appneta_deploy():
                     while True:
                         tn = telnetlib.Telnet(server_ip, console_port)
                         tn.write(b"\r\n")
-                        output = tn.read_until(b"Router>", timeout=5).decode('ascii')
+                        output = tn.read_until(b"Router>", timeout=2).decode('ascii')
                         log_and_update_db(server_name, project_name, deployment_type, 'test', deployment_step,
                                           f"{temp_node_name} second loop output {output}")
                         if 'Router>' in output:
                             tn.write(b"enable\r")
-                            tn.read_until(b"Router#")
-                            # tn.write(cedge_temp_enable_secret.encode("ascii") + b"\n")
-                            break
+                            output = tn.read_until(b"Router#", timeout=2).decode('ascii')
+                            if 'Router#' in output:
+                                break
+                            elif 'Password:' in output:
+                                tn.write(cedge_temp_enable_secret.encode("ascii") + b"\n")
+                                output = tn.read_until(b"Router#", timeout=2).decode('ascii')
+                                if 'Router#' in output:
+                                    break
                         tn.close()
                         log_and_update_db(server_name, project_name, deployment_type, deployment_status,
                                           deployment_step,
@@ -713,11 +718,10 @@ def viptela_8000v_appneta_deploy():
                     while True:
                         tn = telnetlib.Telnet(server_ip, console_port)
                         tn.write(b"\r\n")
-                        output = tn.read_until(b"Username:", timeout=3).decode('ascii')
+                        output = tn.read_until(b"Username:", timeout=2).decode('ascii')
                         log_and_update_db(server_name, project_name, deployment_type, 'test', deployment_step,
                                           f"{temp_node_name} third loop output {output}")
                         if 'Username:' in output:
-                            # tn.read_until(b"Username:")
                             tn.write(b"admin\r")
                             tn.read_until(b"Password:")
                             tn.write(b"admin\r")
@@ -743,10 +747,10 @@ def viptela_8000v_appneta_deploy():
                         time.sleep(30)
                     while True:
                         tn.write(b"\r\n")
-                        tn.write(b"config-transaction\r")
-                        output = tn.read_until(b"Router#", timeout=5).decode('ascii')
+                        output = tn.read_until(b"Router#", timeout=2).decode('ascii')
                         if 'Router(config)#' in output:
                             break
+                        tn.write(b"config-transaction\r")
                         log_and_update_db(server_name, project_name, deployment_type, 'test', deployment_step,
                                           f"{temp_node_name} config-transaction has not taken yet..")
                         time.sleep(10)
