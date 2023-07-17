@@ -2,14 +2,16 @@ import logging.handlers
 from modules.gns3.gns3_actions import *
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+auth = ("Administrator", "versa123")
+
+headers = {
+        "Content-Type": "application/json"
+    }
+
 # region Functions: Versa API
 def versa_configure_analytics_cluster(director_ip, analytics_ip, analytics_southbound_ip):
     url = f"https://{director_ip}:9182/api/config/nms/provider"
-    headers = {
-        "Content-Type": "application/json"
-    }
-    auth = ("Administrator", "versa123")
-
     data = {
         "analytics-cluster": {
             "name": "Analytics",
@@ -37,11 +39,6 @@ def versa_configure_analytics_cluster(director_ip, analytics_ip, analytics_south
 
 def versa_create_provider_org(director_ip):
     url = f"https://{director_ip}:9182/nextgen/organization"
-    headers = {
-        "Content-Type": "application/json"
-    }
-    auth = ("Administrator", "versa123")
-
     data = {"name": "Versa-Root","uuid": "310f513a-01aa-4e91-9a53-4dae9b324839","subscriptionPlan": "Default-All-Services-Plan","id": 1,"authType": "psk","cpeDeploymentType": "SDWAN","vrfsGroups": [ { "id": 1, "vrfId": 1, "name": "Versa-Root-LAN-VR", "description": "", "enable_vpn": True }],"analyticsClusters": [ "Analytics"],"sharedControlPlane": False,"dynamicTenantConfig": { "inactivityInterval": 48},"blockInterRegionRouting": False}
     try:
         response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
@@ -53,11 +50,6 @@ def versa_create_provider_org(director_ip):
 
 def versa_create_overlay_prefix(director_ip):
     url = f"https://{director_ip}:9182/vnms/ipam/overlay/prefixes"
-    headers = {
-        "Content-Type": "application/json"
-    }
-    auth = ("Administrator", "versa123")
-
     data = {"prefix":"10.10.0.0/16","status":{"value":1,"label":"Active"}, "is_pool":True}
     try:
         response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
@@ -69,11 +61,6 @@ def versa_create_overlay_prefix(director_ip):
 
 def versa_create_overlay_route(director_ip, controller_southbound_ip):
     url = f"https://{director_ip}:9182/api/config/nms/routing-options/static"
-    headers = {
-        "Content-Type": "application/json"
-    }
-    auth = ("Administrator", "versa123")
-
     data = {"route":{"description":"Overlay-Route","destination-prefix":"10.10.0.0/16","next-hop-address":controller_southbound_ip,"outgoing-interface":"eth1"}}
     try:
         response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
@@ -85,11 +72,6 @@ def versa_create_overlay_route(director_ip, controller_southbound_ip):
     
 def versa_create_controller_workflow(director_ip, controller_ip, controller_southbound_ip, isp_1_gateway, isp_1_ip, isp_2_gateway, isp_2_ip):
     url = f"https://{director_ip}:9182/vnms/sdwan/workflow/controllers/controller"
-    headers = {
-        "Content-Type": "application/json"
-    }
-    auth = ("Administrator", "versa123")
-
     controller_southbound_ip = f'{controller_southbound_ip}/24'
     isp_1_ip = f'{isp_1_ip}/30'
     isp_2_ip = f'{isp_2_ip}/30'
@@ -105,11 +87,6 @@ def versa_create_controller_workflow(director_ip, controller_ip, controller_sout
         
 def versa_deploy_controller(director_ip):
     url = f"https://{director_ip}:9182/vnms/sdwan/workflow/controllers/controller/deploy/Controller-01"
-    headers = {
-        "Content-Type": "application/json"
-    }
-    auth = ("Administrator", "versa123")
-
     data = {}
     try:
         response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
@@ -121,11 +98,6 @@ def versa_deploy_controller(director_ip):
 
 def versa_create_device_template(director_ip):
     url = f"https://{director_ip}:9182/vnms/sdwan/workflow/templates/template"
-    headers = {
-        "Content-Type": "application/json"
-    }
-    auth = ("Administrator", "versa123")
-
     data = {
         "versanms.sdwan-template-workflow": {
             "analyticsCluster": "Analytics", "bandwidth": "100", "licensePeriod": "1", "controllers": ["Controller-01"],
@@ -148,7 +120,7 @@ def versa_create_device_template(director_ip):
             "redundantPair": {"enable": False}, "routingInstances": [], "siteToSiteTunnels": [],
             "solutionTier": "Premier-Elite-SDWAN",
             "snmp": {
-                "snmpV1": False, "snmpV2": True, "snmpV3": False, "community": "public"
+                "snmpV1": False, "snmpV2": True, "snmpV3": False, "community": "public", "target-source": "{$v_SNMP_TARGET_SOURCE__snmpTargetSource}"
             },
             "splitTunnels": [{"vrfName": "Versa-Root-LAN-VR", "wanNetworkName": "ISP-1", "dia": True, "gateway": False},
                              {
@@ -192,13 +164,43 @@ def versa_create_device_template(director_ip):
     except requests.exceptions.RequestException as e:
         logging.info(f"Versa Director API Call Failed: {str(e)}")
         
+def versa_update_device_template_snmp(director_ip):
+    url = f"https://{director_ip}:9182/api/config/devices/template/Edge-Template/config/snmp/target-source"
+    data = {"target-source": "{$v_SNMP_TARGET_SOURCE__snmpTargetSource}"}
+    try:
+        response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
+        response.raise_for_status()
+        logging.info(f"Deploy - Updated Site Device Template on Director {director_ip}")
+        return response
+    except requests.exceptions.RequestException as e:
+        logging.info(f"Versa Director API Call Failed: {str(e)}")
+
+def versa_update_device_template_oobm_interface(director_ip):
+    url = f"https://{director_ip}:9182/api/config/devices/template/Edge-Template/config/interfaces"
+    data = {
+        "management": {
+            "name": "eth-0/0", "enabled": True, "unit": [{
+                                                             "name": "0", "family": {
+                    "inet": {
+                        "address": [{
+                                        "name": "{$v_eth-0-0_Unit_0_StaticAddress_IPV4_Mask-0__staticaddress}",
+                                        "prefix-length": "24", "gateway": "{$v_eth-0-0_0-OOBM-VR-IPv4__vrHopAddress}"
+                                    }]
+                    }
+                }, "enabled": True
+                                                         }]
+        }
+    }
+    try:
+        response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
+        response.raise_for_status()
+        logging.info(f"Deploy - Updated Site Device Template on Director {director_ip}")
+        return response
+    except requests.exceptions.RequestException as e:
+        logging.info(f"Versa Director API Call Failed: {str(e)}")
+
 def versa_deploy_device_template(director_ip):
     url = f"https://{director_ip}:9182/vnms/sdwan/workflow/templates/template/deploy/Edge-Template?verifyDiff=True"
-    headers = {
-        "Content-Type": "application/json"
-    }
-    auth = ("Administrator", "versa123")
-
     data = {}
     try:
         response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
@@ -210,11 +212,6 @@ def versa_deploy_device_template(director_ip):
 
 def versa_create_device_group(director_ip):
     url = f"https://{director_ip}:9182/nextgen/deviceGroup"
-    headers = {
-        "Content-Type": "application/json"
-    }
-    auth = ("Administrator", "versa123")
-
     data = {"device-group":{"name":"Sites","dg:organization":"Versa-Root","dg:enable-2factor-auth":False,"dg:ca-config-on-branch-notification":False,"dg:enable-staging-url":False,"template-association":[{"organization":"Versa-Root","category":"DataStore","name":"Versa-Root-DataStore"},{"organization":"Versa-Root","category":"Main","name":"Edge-Template"}],"dg:poststaging-template":"Edge-Template"}}
     try:
         response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
@@ -226,11 +223,6 @@ def versa_create_device_group(director_ip):
 
 def versa_create_dhcp_profile(director_ip):
     url = f"https://{director_ip}:9182/api/config/devices/template/Versa-Root-DataStore/config/orgs/org-services/Versa-Root/dhcp/dhcp4-options-profiles"
-    headers = {
-        "Content-Type": "application/json"
-    }
-    auth = ("Administrator", "versa123")
-
     data = {"dhcp4-options-profile":{"name":"DHCP","domain-name":"demo.local","dns-server":["8.8.8.8"]}}
     try:
         response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
@@ -242,11 +234,6 @@ def versa_create_dhcp_profile(director_ip):
 
 def versa_deploy_device_workflow(director_ip, site_name):
     url = f"https://{director_ip}:9182/vnms/sdwan/workflow/devices/device/deploy/{site_name}"
-    headers = {
-        "Content-Type": "application/json"
-    }
-    auth = ("Administrator", "versa123")
-
     data = {}
     try:
         response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
@@ -256,14 +243,11 @@ def versa_deploy_device_workflow(director_ip, site_name):
     except requests.exceptions.RequestException as e:
         logging.info(f"Versa Director API Call Failed: {str(e)}")
 
-def versa_create_site_device_workflow(director_ip, vr_1_route_ip, lan_ip, lan_dhcp_base, site_name, site_id, device_serial_number, device_country, device_city, isp_1_ip, isp_1_gateway, isp_2_ip, isp_2_gateway, tvi_0_2_ip, tvi_0_3_ip, latitude, longitude):
+def versa_create_site_device_workflow(director_ip, vr_1_route_ip, lan_ip, lan_dhcp_base, site_name, site_id, device_serial_number, device_country, device_city, isp_1_ip, isp_1_gateway, isp_2_ip, isp_2_gateway, tvi_0_2_ip, tvi_0_3_ip, latitude, longitude, mgmt_gateway, mgmt_address):
     url = f"https://{director_ip}:9182/vnms/sdwan/workflow/devices/device"
-    headers = {
-        "Content-Type": "application/json"
-    }
-    auth = ("Administrator", "versa123")
     lan_dhcp_start = lan_dhcp_base + ".51"
     lan_dhcp_end = lan_dhcp_base + ".100"
+    snmp_address = f"{mgmt_address}/24"
     data = {
         "versanms.sdwan-device-workflow": {
             "deviceName": site_name, "siteId": site_id, "orgName": "Versa-Root", "serialNumber": device_serial_number,
@@ -286,6 +270,16 @@ def versa_create_site_device_workflow(director_ip, vr_1_route_ip, lan_ip, lan_dh
                             }, {
                               "name": "{$v_LAN_IPv4__staticaddress}", "value": lan_ip,
                               "isAutogeneratable": False
+                            }, {
+                              "name": "{$v_eth-0-0_Unit_0_StaticAddress_IPV4_Mask-0__staticaddress}",
+                              "value": mgmt_address, "isAutogeneratable": False
+                            }, {
+                                "name": "{$v_eth-0-0_0-OOBM-VR-IPv4__vrHopAddress}",
+                                "value": mgmt_gateway,
+                                "isAutogeneratable": False
+                            }, {
+                              "name": "{$v_SNMP_TARGET_SOURCE__snmpTargetSource}",
+                              "value": snmp_address, "isAutogeneratable": False
                             }, {
                               "name": "{$v_Versa-Root_Site_Name__sitesSiteName}", "value": site_name,
                               "isAutogeneratable": True
@@ -407,12 +401,7 @@ def versa_create_site_device_workflow(director_ip, vr_1_route_ip, lan_ip, lan_dh
         logging.info(f"Versa Director API Call Failed: {str(e)}")
 
 def versa_config_edge_mgmt_interface(director_ip, site_name, management_ip, management_gateway):
-    url = f"https://{director_ip}:9182/versa/ncs-services/api/config/devices/device/{site_name}/config/interfaces"
-    headers = {
-        "Content-Type": "application/json"
-    }
-    auth = ("Administrator", "versa123")
-
+    url = f"https://{director_ip}:9182/api/config/devices/device/{site_name}/config/interfaces"
     data = {"management":{"name":"eth-0/0","enabled":True,"unit":[{"name":"0","family":{"inet":{"address":[{"name":management_ip,"prefix-length":"24","gateway":management_gateway}]}},"enabled":True}]}}
     try:
         response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
@@ -421,6 +410,5 @@ def versa_config_edge_mgmt_interface(director_ip, site_name, management_ip, mana
         return response
     except requests.exceptions.RequestException as e:
         logging.info(f"Versa Director API Call Failed: {str(e)}")
-
 
 # endregion
