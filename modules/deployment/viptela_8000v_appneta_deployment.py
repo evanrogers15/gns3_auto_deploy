@@ -531,6 +531,83 @@ def viptela_8000v_appneta_deploy():
                 tn.read_until(b"exit")
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vBond Device Setup")
     # endregion
+    # region Viptela cEdge Device Setup Part 1
+    deployment_step = 'cEdge Device Setup Part 1'
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Starting cEdge Device Setup Part 1 for {site_count} cEdges")
+    server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
+    abs_path = os.path.abspath(__file__)
+    configs_path = os.path.join(os.path.dirname(abs_path), '../configs/viptela')
+    file_name = os.path.join(configs_path, 'cedge_template')
+    cedge_lan_objects = generate_cedge_objects(site_count, f'{mgmt_subnet_ip}')
+    isp_index = 0
+    cedge_temp_enable_secret = "PW4netops!"
+    for server_ip in server_ips:
+        for i in range(1, site_count + 1):
+            temp_node_name = f'cEdge_{i:003}'
+            matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
+            if matching_nodes:
+                for matching_node in matching_nodes:
+                    node_id, console_port, aux = matching_node
+                    node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id',
+                                                               'name', node_id)
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                      f"Starting cEdge Device Setup Part 1 for {node_name[0]} - cEdge {i} of {site_count}")
+                    while True:
+                        tn = telnetlib.Telnet(server_ip, console_port)
+                        tn.write(b"\r\n")
+                        output = tn.read_until(b"Would you like to enter the initial configuration dialog? [yes/no]:",
+                                               timeout=5).decode('ascii')
+                        if '[yes/no]' in output:
+                            tn.write(b"no\r")
+                            break
+                        tn.close()
+                        log_and_update_db(server_name, project_name, deployment_type, deployment_status,
+                                          deployment_step,
+                                          f"{temp_node_name} not available yet, trying again in 30 seconds")
+                        time.sleep(30)
+                    tn.write(b"\r\n")
+                    tn.read_until(b"Enter enable secret:")
+                    tn.write(cedge_temp_enable_secret.encode("ascii") + b"\n")
+                    tn.read_until(b"Confirm enable secret:")
+                    tn.write(cedge_temp_enable_secret.encode("ascii") + b"\n")
+                    tn.read_until(b"Enter your selection [2]:")
+                    tn.write(b"0\r")
+                    tn.close()
+                    time.sleep(10)
+                    while True:
+                        tn = telnetlib.Telnet(server_ip, console_port)
+                        tn.write(b"\r\n")
+                        tn.write(b"\r\n")
+                        output = tn.read_until(b"Router>", timeout=2).decode('ascii')
+                        if 'Router>' in output:
+                            tn.write(b"enable\r")
+                            nested_output = tn.read_until(b"Router#", timeout=2).decode('ascii')
+                            if 'Router#' in nested_output:
+                                break
+                            elif 'Password:' in nested_output:
+                                tn.write(cedge_temp_enable_secret.encode("ascii") + b"\n")
+                                nested_output_1 = tn.read_until(b"Router#", timeout=2).decode('ascii')
+                                if 'Router#' in nested_output_1:
+                                    break
+                        tn.close()
+                        log_and_update_db(server_name, project_name, deployment_type, deployment_status,
+                                          deployment_step,
+                                          f"{temp_node_name} not available yet, trying again in 30 seconds")
+                        time.sleep(30)
+                    tn.write(b"\r\n")
+                    tn.read_until(b"Router#")
+                    tn.write(b"controller-mode enable\r")
+                    tn.read_until(b"Continue? [confirm]")
+                    tn.write(b"\r\n")
+                    tn.read_until(b"Do you want to abort? (yes/[no]):")
+                    tn.write(b"\r\n")
+                    tn.close()
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                      f"Restarting {temp_node_name} to enable controller mode")
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Completed cEdge Device Setup Part 1 for {site_count} cEdge devices")
+    # endregion
     # region Viptela vManage Setup Part 2
     deployment_step = 'vManage Setup Part 2'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting vManage setup part 2")
@@ -613,9 +690,10 @@ def viptela_8000v_appneta_deploy():
                 tn.close()
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, "Completed vManage Device Setup Part 2")
     # endregion
-    # region Viptela cEdge Device Setup Part 1
-    deployment_step = 'cEdge Device Setup Part 1'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting cEdge Device Setup Part 1 for {site_count} cEdges")
+    # region Viptela cEdge Device Setup Part 2
+    deployment_step = 'cEdge Device Setup Part 2'
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Starting cEdge Device Setup Part 2 for {site_count} cEdges")
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     abs_path = os.path.abspath(__file__)
     configs_path = os.path.join(os.path.dirname(abs_path), '../configs/viptela')
@@ -630,59 +708,107 @@ def viptela_8000v_appneta_deploy():
             if matching_nodes:
                 for matching_node in matching_nodes:
                     node_id, console_port, aux = matching_node
-                    node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id', 'name', node_id)
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting cEdge Device Setup Part 1 for {node_name[0]} - cEdge {i} of {site_count}")
+                    node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id',
+                                                               'name', node_id)
+                    for cedge_lan_object in cedge_lan_objects:
+                        if cedge_lan_object['cedge'] == temp_node_name:
+                            lan_subnet_mask = cedge_lan_object['lan_subnet_mask']
+                            lan_subnet_network = cedge_lan_object['lan_subnet_network']
+                            lan_dhcp_pool = cedge_lan_object['lan_dhcp_pool']
+                            lan_subnet_address = cedge_lan_object['lan_subnet_address']
+                            lan_dhcp_exclude_start = cedge_lan_object['lan_dhcp_exclude_start']
+                            lan_dhcp_exclude_end = cedge_lan_object['lan_dhcp_exclude_end']
+                            lan_dhcp_exclude = cedge_lan_object['lan_dhcp_exclude']
+                            lan_gateway_address = cedge_lan_object['lan_gateway_address']
+                            client_1_address = cedge_lan_object['client_1_address']
+                            mgmt_address = cedge_lan_object['mgmt_address']
+                            mgmt_gateway = cedge_lan_object['mgmt_gateway']
+                            system_ip = cedge_lan_object['system_ip']
+                            site_id = cedge_lan_object['site_id']
+                    for dictionary_0 in isp_1_overall[isp_index]:
+                        if dictionary_0['cedge'] == temp_node_name:
+                            vpn_0_ge0_0_ip_address = dictionary_0['cedge_address']
+                            vpn_0_ge0_0_ip_address = vpn_0_ge0_0_ip_address.split("/")[0]
+                            vpn_0_ge0_0_ip_gateway = dictionary_0['router_address']
+                    for dictionary_1 in isp_2_overall[isp_index]:
+                        if dictionary_1['cedge'] == temp_node_name:
+                            vpn_0_ge0_1_ip_address = dictionary_1['cedge_address']
+                            vpn_0_ge0_1_ip_address = vpn_0_ge0_1_ip_address.split("/")[0]
+                            vpn_0_ge0_1_ip_gateway = dictionary_1['router_address']
+                    cedge_hostname = f"{temp_node_name}_{local_city_data[temp_node_name]['city']}"
+                    lan_dhcp_dns_server = '8.8.8.8'
+                    if i == 3:
+                        client_1_mac_address = "52:54:00:E0:00:00"
+                    elif i == 4:
+                        client_1_mac_address = "52:54:00:E0:00:00"
+                    else:
+                        client_1_mac_address = "4C:D7:17:00:00:00"
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                      f"Starting cEdge Device Setup Part 2 for {node_name[0]} - cEdge {i} of {site_count}")
                     while True:
                         tn = telnetlib.Telnet(server_ip, console_port)
-                        tn.write(b"\r\n")
-                        output = tn.read_until(b"Would you like to enter the initial configuration dialog? [yes/no]:", timeout=5).decode('ascii')
-                        if '[yes/no]' in output:
-                            tn.write(b"no\r")
-                            break
-                        tn.close()
-                        log_and_update_db(server_name, project_name, deployment_type, deployment_status,
-                                          deployment_step, f"{temp_node_name} not available yet, trying again in 30 seconds")
-                        time.sleep(30)
-                    tn.write(b"\r\n")
-                    tn.read_until(b"Enter enable secret:")
-                    tn.write(cedge_temp_enable_secret.encode("ascii") + b"\n")
-                    tn.read_until(b"Confirm enable secret:")
-                    tn.write(cedge_temp_enable_secret.encode("ascii") + b"\n")
-                    tn.read_until(b"Enter your selection [2]:")
-                    tn.write(b"0\r")
-                    tn.close()
-                    time.sleep(10)
-                    while True:
-                        tn = telnetlib.Telnet(server_ip, console_port)
-                        tn.write(b"\r\n")
                         tn.write(b"\r\n")
                         output = tn.read_until(b"Router>", timeout=2).decode('ascii')
                         if 'Router>' in output:
-                            tn.write(b"enable\r")
-                            nested_output = tn.read_until(b"Router#", timeout=2).decode('ascii')
-                            if 'Router#' in nested_output:
-                                break
-                            elif 'Password:' in nested_output:
-                                tn.write(cedge_temp_enable_secret.encode("ascii") + b"\n")
-                                nested_output_1 = tn.read_until(b"Router#", timeout=2).decode('ascii')
-                                if 'Router#' in nested_output_1:
-                                    break
+                            tn.write(b"exit\r")
+                            break
+                        elif 'Username:' in output:
+                            break
                         tn.close()
                         log_and_update_db(server_name, project_name, deployment_type, deployment_status,
                                           deployment_step,
                                           f"{temp_node_name} not available yet, trying again in 30 seconds")
                         time.sleep(30)
                     tn.write(b"\r\n")
+                    tn.read_until(b"Username:")
+                    tn.write(b"admin\r")
+                    tn.read_until(b"Password:")
+                    tn.write(b"admin\r")
+                    tn.read_until(b"Enter new password:")
+                    tn.write(viptela_password.encode("ascii") + b"\n")
+                    tn.read_until(b"Confirm password:")
+                    tn.write(viptela_password.encode("ascii") + b"\n")
                     tn.read_until(b"Router#")
-                    tn.write(b"controller-mode enable\r")
-                    tn.read_until(b"Continue? [confirm]")
+                    tn.write(b"config-transaction\r")
+                    time.sleep(5)
                     tn.write(b"\r\n")
-                    tn.read_until(b"Do you want to abort? (yes/[no]):")
-                    tn.write(b"\r\n")
+                    tn.read_until(b"Router(config)#")
+                    with open(file_name, 'r') as f:
+                        lines = f.readlines()
+                        log_and_update_db(server_name, project_name, deployment_type, deployment_status,
+                                          deployment_step, f"Sending configuration commands to {node_name[0]}")
+                        for line in lines:
+                            formatted_line = line.format(hostname=cedge_hostname,
+                                                         latitude=local_city_data[temp_node_name]['latitude'],
+                                                         longitude=local_city_data[temp_node_name]['longitude'],
+                                                         system_ip=system_ip, site_id=site_id, org_name=org_name,
+                                                         vbond_address=vbond_vpn_0_ip,
+                                                         lan_dhcp_exclude_start=lan_dhcp_exclude_start,
+                                                         lan_dhcp_exclude_end=lan_dhcp_exclude_end,
+                                                         lan_dhcp_default_router=lan_gateway_address,
+                                                         lan_dhcp_dns_server=lan_dhcp_dns_server,
+                                                         lan_dhcp_network_address=lan_subnet_network,
+                                                         lan_dhcp_network_subnet_address=lan_subnet_mask,
+                                                         vpn_0_gi_2_ip_address=vpn_0_ge0_0_ip_address,
+                                                         vpn_0_gi_2_ip_gateway=vpn_0_ge0_0_ip_gateway,
+                                                         vpn_0_gi_3_ip_address=vpn_0_ge0_1_ip_address,
+                                                         vpn_0_gi_3_ip_gateway=vpn_0_ge0_1_ip_gateway,
+                                                         vpn_1_gi_4_ip_address=lan_gateway_address,
+                                                         vpn_512_gi_1_ip_address=mgmt_address,
+                                                         vpn_512_gi_1_ip_gateway=mgmt_gateway)
+                            tn.write(formatted_line.encode('ascii') + b"\n")
+                            tn.read_until(b"#")
+                    tn.write(b"commit\r")
+                    tn.read_until(b"Commit complete.").decode('ascii')
+                    tn.write(b"exit\r")
+                    tn.read_until(b"exit")
                     tn.close()
                     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
-                                      f"Restarting {temp_node_name} to enable controller mode")
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed cEdge Device Setup Part 1 for {site_count} cEdge devices")
+                                      f"Completed cEdge Device Setup Part 2 for {temp_node_name}, Remaining - {site_count - i}")
+                    if i % 44 == 0 and i != 0:
+                        isp_index += 1
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                      f"Completed cEdge Device Setup Part 2 for {site_count} cEdge devices")
     # endregion
     # region Viptela vManage API Setup
     deployment_step = ' vManage API Setup'
@@ -696,6 +822,7 @@ def viptela_8000v_appneta_deploy():
         except:
             log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f'vManage API is yet not available, checking again in 1 minute at {util_resume_time(1)}')
             time.sleep(60)
+    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"vManage is now available, starting API Tasks..")
     vmanage_headers = vmanage_create_auth(vmanage_mgmt_ip)
     server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
     for server_ip in server_ips:
@@ -799,126 +926,6 @@ def viptela_8000v_appneta_deploy():
                 tn.read_until(b'#')
                 tn.close()
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Completed vManage API Setup")
-    # endregion
-    # region Viptela cEdge Device Setup Part 2
-    deployment_step = 'cEdge Device Setup'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
-                      f"Starting cEdge Device Setup for {site_count} cEdges")
-    server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
-    abs_path = os.path.abspath(__file__)
-    configs_path = os.path.join(os.path.dirname(abs_path), '../configs/viptela')
-    file_name = os.path.join(configs_path, 'cedge_template')
-    cedge_lan_objects = generate_cedge_objects(site_count, f'{mgmt_subnet_ip}')
-    isp_index = 0
-    cedge_temp_enable_secret = "PW4netops!"
-    for server_ip in server_ips:
-        for i in range(1, site_count + 1):
-            temp_node_name = f'cEdge_{i:003}'
-            matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, temp_node_name)
-            if matching_nodes:
-                for matching_node in matching_nodes:
-                    node_id, console_port, aux = matching_node
-                    node_name = gns3_query_find_nodes_by_field(server_ip, server_port, new_project_id, 'node_id',
-                                                               'name', node_id)
-                    for cedge_lan_object in cedge_lan_objects:
-                        if cedge_lan_object['cedge'] == temp_node_name:
-                            lan_subnet_mask = cedge_lan_object['lan_subnet_mask']
-                            lan_subnet_network = cedge_lan_object['lan_subnet_network']
-                            lan_dhcp_pool = cedge_lan_object['lan_dhcp_pool']
-                            lan_subnet_address = cedge_lan_object['lan_subnet_address']
-                            lan_dhcp_exclude_start = cedge_lan_object['lan_dhcp_exclude_start']
-                            lan_dhcp_exclude_end = cedge_lan_object['lan_dhcp_exclude_end']
-                            lan_dhcp_exclude = cedge_lan_object['lan_dhcp_exclude']
-                            lan_gateway_address = cedge_lan_object['lan_gateway_address']
-                            client_1_address = cedge_lan_object['client_1_address']
-                            mgmt_address = cedge_lan_object['mgmt_address']
-                            mgmt_gateway = cedge_lan_object['mgmt_gateway']
-                            system_ip = cedge_lan_object['system_ip']
-                            site_id = cedge_lan_object['site_id']
-                    for dictionary_0 in isp_1_overall[isp_index]:
-                        if dictionary_0['cedge'] == temp_node_name:
-                            vpn_0_ge0_0_ip_address = dictionary_0['cedge_address']
-                            vpn_0_ge0_0_ip_address = vpn_0_ge0_0_ip_address.split("/")[0]
-                            vpn_0_ge0_0_ip_gateway = dictionary_0['router_address']
-                    for dictionary_1 in isp_2_overall[isp_index]:
-                        if dictionary_1['cedge'] == temp_node_name:
-                            vpn_0_ge0_1_ip_address = dictionary_1['cedge_address']
-                            vpn_0_ge0_1_ip_address = vpn_0_ge0_1_ip_address.split("/")[0]
-                            vpn_0_ge0_1_ip_gateway = dictionary_1['router_address']
-                    cedge_hostname = f"{temp_node_name}_{local_city_data[temp_node_name]['city']}"
-                    lan_dhcp_dns_server = '8.8.8.8'
-                    if i == 3:
-                        client_1_mac_address = "52:54:00:E0:00:00"
-                    elif i == 4:
-                        client_1_mac_address = "52:54:00:E0:00:00"
-                    else:
-                        client_1_mac_address = "4C:D7:17:00:00:00"
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
-                                      f"Starting cEdge Device Setup for {node_name[0]} - cEdge {i} of {site_count}")
-                    while True:
-                        tn = telnetlib.Telnet(server_ip, console_port)
-                        tn.write(b"\r\n")
-                        output = tn.read_until(b"Router>", timeout=2).decode('ascii')
-                        if 'Router>' in output:
-                            tn.write(b"exit\r")
-                            break
-                        elif 'Username:' in output:
-                            break
-                        tn.close()
-                        log_and_update_db(server_name, project_name, deployment_type, deployment_status,
-                                          deployment_step,
-                                          f"{temp_node_name} not available yet, trying again in 30 seconds")
-                        time.sleep(30)
-                    tn.write(b"\r\n")
-                    tn.read_until(b"Username:")
-                    tn.write(b"admin\r")
-                    tn.read_until(b"Password:")
-                    tn.write(b"admin\r")
-                    tn.read_until(b"Enter new password:")
-                    tn.write(viptela_password.encode("ascii") + b"\n")
-                    tn.read_until(b"Confirm password:")
-                    tn.write(viptela_password.encode("ascii") + b"\n")
-                    tn.read_until(b"Router#")
-                    tn.write(b"config-transaction\r")
-                    time.sleep(5)
-                    tn.write(b"\r\n")
-                    tn.read_until(b"Router(config)#")
-                    with open(file_name, 'r') as f:
-                        lines = f.readlines()
-                        log_and_update_db(server_name, project_name, deployment_type, deployment_status,
-                                          deployment_step, f"Sending configuration commands to {node_name[0]}")
-                        for line in lines:
-                            formatted_line = line.format(hostname=cedge_hostname,
-                                                         latitude=local_city_data[temp_node_name]['latitude'],
-                                                         longitude=local_city_data[temp_node_name]['longitude'],
-                                                         system_ip=system_ip, site_id=site_id, org_name=org_name,
-                                                         vbond_address=vbond_vpn_0_ip,
-                                                         lan_dhcp_exclude_start=lan_dhcp_exclude_start,
-                                                         lan_dhcp_exclude_end=lan_dhcp_exclude_end,
-                                                         lan_dhcp_default_router=lan_gateway_address,
-                                                         lan_dhcp_dns_server=lan_dhcp_dns_server,
-                                                         lan_dhcp_network_address=lan_subnet_network,
-                                                         lan_dhcp_network_subnet_address=lan_subnet_mask,
-                                                         vpn_0_gi_2_ip_address=vpn_0_ge0_0_ip_address,
-                                                         vpn_0_gi_2_ip_gateway=vpn_0_ge0_0_ip_gateway,
-                                                         vpn_0_gi_3_ip_address=vpn_0_ge0_1_ip_address,
-                                                         vpn_0_gi_3_ip_gateway=vpn_0_ge0_1_ip_gateway,
-                                                         vpn_1_gi_4_ip_address=lan_gateway_address,
-                                                         vpn_512_gi_1_ip_address=mgmt_address,
-                                                         vpn_512_gi_1_ip_gateway=mgmt_gateway)
-                            tn.write(formatted_line.encode('ascii') + b"\n")
-                            tn.read_until(b"#")
-                    tn.write(b"commit\r")
-                    tn.read_until(b"Commit complete.").decode('ascii')
-                    tn.write(b"exit\r")
-                    tn.read_until(b"exit")
-                    tn.close()
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
-                                      f"Completed cEdge Device Setup for {temp_node_name}, Remaining - {site_count - i}")
-                    if i % 44 == 0 and i != 0:
-                        isp_index += 1
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
-                      f"Completed cEdge Device Setup for {site_count} cEdge devices")
     # endregion
     # region Viptela cEdge Final Setup
     deployment_step = 'cEdge Final Setup'
