@@ -33,6 +33,12 @@ def versa_appneta_deploy():
     cloud_node_deploy_data = {"x": 25, "y": -554, "name": "MGMT-Cloud-TAP", "node_type": "cloud",
                               "compute_id": "local", "symbol": ":/symbols/cloud.svg"}
     required_qemu_images = {"versa-director-c19c43c-21.2.3.qcow2", "versa-analytics-67ff6c7-21.2.3.qcow2", "versa-flexvnf-67ff6c7-21.2.3.qcow2"}
+
+    local_city_data = {}
+    for key, value in template_city_data.items():
+        new_key = key.replace("replace", "FlexVNF")
+        local_city_data[new_key] = value
+    
     # endregion
     # region Runtime
     start_time = time.time()
@@ -155,7 +161,7 @@ def versa_appneta_deploy():
     hub_template_id = gns3_create_template(gns3_server_data, temp_hub_data)
     # endregion
     #  region Setup Dynamic Networking
-    flexvnf_deploy_data, client_deploy_data, site_drawing_deploy_data = versa_generate_flexvnf_deploy_data(site_count)
+    flexvnf_deploy_data, client_deploy_data, site_drawing_deploy_data = versa_generate_flexvnf_deploy_data(site_count, local_city_data)
     mgmt_switch_deploy_data = generate_mgmt_switch_deploy_data(mgmt_switch_count)
     # endregion
     # region Deploy GNS3 Nodes
@@ -311,7 +317,7 @@ def versa_appneta_deploy():
     client_filename = 'client_interfaces'
     client_node_file_path = 'etc/network/interfaces'
     generate_client_interfaces_file(client_filename)
-    flexvnf_deploy_data, client_deploy_data, site_drawing_deploy_data = versa_generate_flexvnf_deploy_data(site_count)
+    flexvnf_deploy_data, client_deploy_data, site_drawing_deploy_data = versa_generate_flexvnf_deploy_data(site_count, local_city_data)
     v = 1
     flexvnf_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "FlexVNF")
     if flexvnf_nodes:
@@ -648,14 +654,14 @@ def versa_appneta_deploy():
                         if dictionary_1['flexvnf'] == temp_node_name:
                             vpn_0_ge0_1_ip_address = dictionary_1['flexvnf_address']
                             vpn_0_ge0_1_ip_gateway = dictionary_1['router_address']
-                    flexvnf_hostname = f"{temp_node_name}-{versa_city_data[temp_node_name]['city']}"
-                    flexvnf_city = versa_city_data[temp_node_name]['city']
-                    site_country = versa_city_data[temp_node_name]['country']
+                    flexvnf_hostname = f"{temp_node_name}-{local_city_data[temp_node_name]['city']}"
+                    flexvnf_city = local_city_data[temp_node_name]['city']
+                    site_country = local_city_data[temp_node_name]['country']
                     vr_1_route_ip = f'10.10.0.{flexvnf_vr_index}'
                     tvi_0_2_ip = f'10.10.0.{flexvnf_vr_index + 1}/32'
                     tvi_0_3_ip = f'10.10.0.{flexvnf_vr_index}/32'
-                    latitude = versa_city_data[temp_node_name]['latitude']
-                    longitude = versa_city_data[temp_node_name]['longitude']
+                    latitude = local_city_data[temp_node_name]['latitude']
+                    longitude = local_city_data[temp_node_name]['longitude']
                     onboard_command = f"sudo /opt/versa/scripts/staging.py -w 0 -n {device_serial_number} -c {controller_isp_1_ip} -s {vpn_0_ge0_0_ip_address} -g {vpn_0_ge0_0_ip_gateway} -l SDWAN-Branch@Versa-Root.com -r Controller-01-staging@Versa-Root.com"
                     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting FlexVNF Device Onboarding for {node_name[0]} - FlexVNF {i} of {site_count}")
                     versa_create_site_device_workflow(director_mgmt_ip, vr_1_route_ip, lan_gateway_address, lan_subnet_base, flexvnf_hostname, site_id, device_serial_number, site_country, flexvnf_city, vpn_0_ge0_0_ip_address, vpn_0_ge0_0_ip_gateway, vpn_0_ge0_1_ip_address, vpn_0_ge0_1_ip_gateway, tvi_0_2_ip, tvi_0_3_ip, latitude, longitude, mgmt_gateway, mgmt_address)

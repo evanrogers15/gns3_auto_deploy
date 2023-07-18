@@ -34,6 +34,12 @@ def viptela_8000v_appneta_deploy():
                               "compute_id": "local", "symbol": ":/symbols/cloud.svg"}
     required_qemu_images = {"viptela-vmanage-li-20.10.1-genericx86-64.qcow2", "empty30G.qcow2", "viptela-smart-li-20.10.1-genericx86-64.qcow2", "c8000v-universalk9_8G_serial.17.09.01a.qcow2"}
     deploy_appneta = 'n'
+
+    local_city_data = {}
+    for key, value in template_city_data.items():
+        new_key = key.replace("replace", "cEdge")
+        local_city_data[new_key] = value
+
     # endregion
     # region Runtime
     start_time = time.time()
@@ -149,7 +155,7 @@ def viptela_8000v_appneta_deploy():
     hub_template_id = gns3_create_template(gns3_server_data, temp_hub_data)
     # endregion
     #  region Setup Dynamic Networking
-    cedge_deploy_data, client_deploy_data, site_drawing_deploy_data = generate_cedge_deploy_data(site_count)
+    cedge_deploy_data, client_deploy_data, site_drawing_deploy_data = generate_cedge_deploy_data(site_count, local_city_data)
     mgmt_switch_deploy_data = generate_mgmt_switch_deploy_data(mgmt_switch_count)
     # endregion
     # region Deploy GNS3 Nodes
@@ -311,7 +317,7 @@ def viptela_8000v_appneta_deploy():
     client_filename = 'client_interfaces'
     client_node_file_path = 'etc/network/interfaces'
     generate_client_interfaces_file(client_filename)
-    cedge_deploy_data, client_deploy_data, site_drawing_deploy_data = generate_cedge_deploy_data(site_count)
+    cedge_deploy_data, client_deploy_data, site_drawing_deploy_data = generate_cedge_deploy_data(site_count, local_city_data)
     v = 1
     cedge_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "cEdge")
     if cedge_nodes:
@@ -650,7 +656,7 @@ def viptela_8000v_appneta_deploy():
                             vpn_0_ge0_1_ip_address = dictionary_1['cedge_address']
                             vpn_0_ge0_1_ip_address = vpn_0_ge0_1_ip_address.split("/")[0]
                             vpn_0_ge0_1_ip_gateway = dictionary_1['router_address']
-                    cedge_hostname = f"{temp_node_name}_{cedge_city_data[temp_node_name]['city']}"
+                    cedge_hostname = f"{temp_node_name}_{local_city_data[temp_node_name]['city']}"
                     lan_dhcp_dns_server = '8.8.8.8'
                     if i == 3:
                         client_1_mac_address = "52:54:00:E0:00:00"
@@ -716,32 +722,25 @@ def viptela_8000v_appneta_deploy():
                         output = tn.read_until(b"Router>", timeout=2).decode('ascii')
                         if 'Router>' in output:
                             tn.write(b"exit\r")
-                        elif 'Username:' in output:
-                            tn.write(b"\r\n")
-                            tn.read_until(b"Username:")
-                            tn.write(b"admin\r")
-                            tn.read_until(b"Password:")
-                            tn.write(b"admin\r")
-                            tn.read_until(b"Enter new password:")
-                            tn.write(viptela_password.encode("ascii") + b"\n")
-                            tn.read_until(b"Confirm password:")
-                            tn.write(viptela_password.encode("ascii") + b"\n")
                             break
-                        elif 'Router#' in output:
+                        elif 'Username:' in output:
                             break
                         tn.close()
                         log_and_update_db(server_name, project_name, deployment_type, deployment_status,
                                           deployment_step,
                                           f"{temp_node_name} not available yet, trying again in 30 seconds")
                         time.sleep(30)
-                    while True:
-                        tn.write(b"\r\n")
-                        output = tn.read_until(b"Router#", timeout=2).decode('ascii')
-                        if 'Router(config)#' in output:
-                            break
-                        tn.write(b"config-transaction\r")
-                        time.sleep(10)
                     tn.write(b"\r\n")
+                    tn.read_until(b"Username:")
+                    tn.write(b"admin\r")
+                    tn.read_until(b"Password:")
+                    tn.write(b"admin\r")
+                    tn.read_until(b"Enter new password:")
+                    tn.write(viptela_password.encode("ascii") + b"\n")
+                    tn.read_until(b"Confirm password:")
+                    tn.write(viptela_password.encode("ascii") + b"\n")
+                    tn.read_until(b"Router#")
+                    tn.write(b"config-transaction\r")
                     tn.read_until(b"Router(config)#")
                     with open(file_name, 'r') as f:
                         lines = f.readlines()
@@ -749,8 +748,8 @@ def viptela_8000v_appneta_deploy():
                         for line in lines:
                             formatted_line = line.format(
                                 hostname=cedge_hostname,
-                                latitude=cedge_city_data[temp_node_name]['latitude'],
-                                longitude=cedge_city_data[temp_node_name]['longitude'],
+                                latitude=local_city_data[temp_node_name]['latitude'],
+                                longitude=local_city_data[temp_node_name]['longitude'],
                                 system_ip=system_ip,
                                 site_id=site_id,
                                 org_name=org_name,

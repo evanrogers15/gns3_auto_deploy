@@ -1,7 +1,7 @@
 import ipaddress
 import os
 import logging.handlers
-# from modules.gns3.gns3_variables import city_data, cedge_city_data, city_data
+from modules.gns3.gns3_variables import city_data, cedge_city_data, versa_city_data
 
 # region Generic
 def generate_temp_hub_data(num_ports, template_name):
@@ -180,7 +180,7 @@ def generate_vedge_objects(vedge_count, mgmt_base_subnet):
     # logging.info(networks)
     return networks
 
-def generate_vedge_deploy_data(vedge_count, city_data):
+def generate_vedge_deploy_data(vedge_count):
     deploy_data = {}
     client_deploy_data = {}
     site_drawing_deploy_data = {}
@@ -498,7 +498,7 @@ def generate_cedge_objects(edge_count, mgmt_base_subnet):
             k += 1
     return networks
 
-def generate_cedge_deploy_data(edge_count, city_data):
+def generate_cedge_deploy_data(edge_count):
     deploy_data = {}
     client_deploy_data = {}
     site_drawing_deploy_data = {}
@@ -525,7 +525,7 @@ def generate_cedge_deploy_data(edge_count, city_data):
         y_s = -107
         for i in range(1, edge_count + 1):
             temp_name = f"cEdge_{i:03}"
-            name = f"cEdge_{i:03}_{city_data[temp_name]['city']}"
+            name = f"cEdge_{i:03}_{cedge_city_data[temp_name]['city']}"
             client_name = f"Site_{i:03}_Client"
             if i == 1:
                 x = x_o
@@ -588,7 +588,7 @@ def generate_cedge_deploy_data(edge_count, city_data):
         y_s = -107
         for i in range(1, edge_count + 1):
             temp_name = f"cEdge_{i:03}"
-            name = f"cEdge_{i:03}_{city_data[temp_name]['city']}"
+            name = f"cEdge_{i:03}_{cedge_city_data[temp_name]['city']}"
             client_name = f"Site_{i:03}_Client"
             if i == 1:
                 x = x_o
@@ -652,7 +652,7 @@ def generate_cedge_deploy_data(edge_count, city_data):
         #y_s = -107
         for i in range(1, edge_count + 1):
             temp_name = f"cEdge_{i:03}"
-            name = f"cEdge_{i:03}_{city_data[temp_name]['city']}"
+            name = f"cEdge_{i:03}_{cedge_city_data[temp_name]['city']}"
             client_name = f"Site_{i:03}_Client"
             if i == 1:
                 x = x_o
@@ -713,7 +713,7 @@ def generate_cedge_deploy_data(edge_count, city_data):
     else:
         for i in range(1, edge_count + 1):
             temp_name = f"cEdge_{i:03}"
-            name = f"cEdge_{i:03}_{city_data[temp_name]['city']}"
+            name = f"cEdge_{i:03}_{cedge_city_data[temp_name]['city']}"
             client_name = f"Site_{i:03}_Client"
             if i == 1:
                 x = x_o
@@ -805,7 +805,7 @@ def generate_versa_network_objects(base_subnet, subnet_mask, site_index=1):
             switch_limit += 1
     return networks
 
-def versa_generate_flexvnf_deploy_data(flexvnf_count, city_data):
+def versa_generate_flexvnf_deploy_data(flexvnf_count):
     deploy_data = {}
     client_deploy_data = {}
     site_drawing_deploy_data = {}
@@ -832,7 +832,7 @@ def versa_generate_flexvnf_deploy_data(flexvnf_count, city_data):
         y_s = -107
         for i in range(1, flexvnf_count + 1):
             temp_name = f"FlexVNF-{i:03}"
-            name = f"FlexVNF-{i:03}-{city_data[temp_name]['city']}"
+            name = f"FlexVNF-{i:03}-{versa_city_data[temp_name]['city']}"
             client_name = f"Site_{i:03}_Client"
             if i == 1:
                 x = x_o
@@ -895,7 +895,7 @@ def versa_generate_flexvnf_deploy_data(flexvnf_count, city_data):
         y_s = -107
         for i in range(1, flexvnf_count + 1):
             temp_name = f"FlexVNF-{i:03}"
-            name = f"FlexVNF-{i:03}-{city_data[temp_name]['city']}"
+            name = f"FlexVNF-{i:03}-{versa_city_data[temp_name]['city']}"
             client_name = f"Site_{i:03}_Client"
             if i == 1:
                 x = x_o
@@ -956,7 +956,7 @@ def versa_generate_flexvnf_deploy_data(flexvnf_count, city_data):
     else:
         for i in range(1, flexvnf_count + 1):
             temp_name = f"FlexVNF-{i:03}"
-            name = f"FlexVNF-{i:03}-{city_data[temp_name]['city']}"
+            name = f"FlexVNF-{i:03}-{versa_city_data[temp_name]['city']}"
             client_name = f"Site_{i:03}_Client"
             if i == 1:
                 x = x_o

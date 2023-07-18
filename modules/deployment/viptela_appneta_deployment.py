@@ -34,6 +34,11 @@ def viptela_appneta_deploy():
                               "compute_id": "local", "symbol": ":/symbols/cloud.svg"}
     required_qemu_images = {"viptela-vmanage-li-20.10.1-genericx86-64.qcow2", "empty30G.qcow2", "viptela-smart-li-20.10.1-genericx86-64.qcow2", "viptela-edge-20.10.1-genericx86-64.qcow2"}
     deploy_appneta = 'n'
+
+    local_city_data = {}
+    for key, value in template_city_data.items():
+        new_key = key.replace("replace", "vEdge")
+        local_city_data[new_key] = value
     # endregion
     # region Runtime
     start_time = time.time()
@@ -147,7 +152,7 @@ def viptela_appneta_deploy():
     hub_template_id = gns3_create_template(gns3_server_data, temp_hub_data)
     # endregion
     #  region Setup Dynamic Networking
-    vedge_deploy_data, client_deploy_data, site_drawing_deploy_data = generate_vedge_deploy_data(site_count)
+    vedge_deploy_data, client_deploy_data, site_drawing_deploy_data = generate_vedge_deploy_data(site_count, local_city_data)
     mgmt_switch_deploy_data = generate_mgmt_switch_deploy_data(mgmt_switch_count)
     # endregion
     # region Deploy GNS3 Nodes
@@ -309,7 +314,7 @@ def viptela_appneta_deploy():
     client_filename = 'client_interfaces'
     client_node_file_path = 'etc/network/interfaces'
     generate_client_interfaces_file(client_filename)
-    vedge_deploy_data, client_deploy_data, site_drawing_deploy_data = generate_vedge_deploy_data(site_count)
+    vedge_deploy_data, client_deploy_data, site_drawing_deploy_data = generate_vedge_deploy_data(site_count, local_city_data)
     v = 1
     vedge_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "vEdge")
     if vedge_nodes:
@@ -641,7 +646,7 @@ def viptela_appneta_deploy():
                         if dictionary_1['vedge'] == temp_node_name:
                             vpn_0_ge0_1_ip_address = dictionary_1['vedge_address']
                             vpn_0_ge0_1_ip_gateway = dictionary_1['router_address']
-                    vedge_hostname = f"{temp_node_name}_{city_data[temp_node_name]['city']}"
+                    vedge_hostname = f"{temp_node_name}_{local_city_data[temp_node_name]['city']}"
                     if i == 3:
                         client_1_mac_address = "52:54:00:E0:00:00"
                     elif i == 4:
@@ -683,8 +688,8 @@ def viptela_appneta_deploy():
                         for line in lines:
                             formatted_line = line.format(
                                 vedge_hostname=vedge_hostname,
-                                latitude=city_data[temp_node_name]['latitude'],
-                                longitude=city_data[temp_node_name]['longitude'],
+                                latitude=local_city_data[temp_node_name]['latitude'],
+                                longitude=local_city_data[temp_node_name]['longitude'],
                                 system_ip=system_ip,
                                 site_id=site_id,
                                 org_name=org_name,
