@@ -678,19 +678,21 @@ def viptela_8000v_appneta_deploy():
                     tn.read_until(b"Enter your selection [2]:")
                     tn.write(b"0\r")
                     tn.close()
+                    time.sleep(10)
                     while True:
                         tn = telnetlib.Telnet(server_ip, console_port)
+                        tn.write(b"\r\n")
                         tn.write(b"\r\n")
                         output = tn.read_until(b"Router>", timeout=2).decode('ascii')
                         if 'Router>' in output:
                             tn.write(b"enable\r")
-                            output = tn.read_until(b"Router#", timeout=2).decode('ascii')
-                            if 'Router#' in output:
+                            nested_output = tn.read_until(b"Router#", timeout=2).decode('ascii')
+                            if 'Router#' in nested_output:
                                 break
-                            elif 'Password:' in output:
+                            elif 'Password:' in nested_output:
                                 tn.write(cedge_temp_enable_secret.encode("ascii") + b"\n")
-                                output = tn.read_until(b"Router#", timeout=2).decode('ascii')
-                                if 'Router#' in output:
+                                nested_output_1 = tn.read_until(b"Router#", timeout=2).decode('ascii')
+                                if 'Router#' in nested_output_1:
                                     break
                         tn.close()
                         log_and_update_db(server_name, project_name, deployment_type, deployment_status,
@@ -713,6 +715,8 @@ def viptela_8000v_appneta_deploy():
                         tn.write(b"\r\n")
                         output = tn.read_until(b"Username:", timeout=2).decode('ascii')
                         if 'Username:' in output:
+                            tn.write(b"\r\n")
+                            tn.read_until(b"Username:")
                             tn.write(b"admin\r")
                             tn.read_until(b"Password:")
                             tn.write(b"admin\r")
