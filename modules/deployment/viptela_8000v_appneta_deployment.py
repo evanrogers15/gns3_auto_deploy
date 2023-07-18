@@ -558,13 +558,13 @@ def viptela_8000v_appneta_deploy():
                         tn.write(b"\r\n")
                         output = tn.read_until(b"Would you like to enter the initial configuration dialog? [yes/no]:",
                                                timeout=2).decode('ascii')
-                        if 'yes' in output:
+                        if 'Would you like to enter the initial configuration dialog? [yes/no]:' in output:
                             tn.write(b"no\r")
                             break
                         tn.close()
                         log_and_update_db(server_name, project_name, deployment_type, deployment_status,
                                           deployment_step,
-                                          f"{temp_node_name} not available yet, trying again in 30 seconds")
+                                          f"{temp_node_name} not available yet for initial configuration, trying again in 30 seconds")
                         time.sleep(30)
                     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Exiting initial configuration dialog on {temp_node_name}..")
                     tn.write(b"\r\n")
@@ -594,7 +594,7 @@ def viptela_8000v_appneta_deploy():
                         tn.close()
                         log_and_update_db(server_name, project_name, deployment_type, deployment_status,
                                           deployment_step,
-                                          f"{temp_node_name} not available yet, trying again in 30 seconds")
+                                          f"{temp_node_name} not available yet to enable controller mode, trying again in 30 seconds")
                         time.sleep(30)
                     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
                                       f"Enabling controller mode on {temp_node_name}..")
