@@ -769,10 +769,12 @@ def viptela_8000v_appneta_deploy():
                     tn.read_until(b"Confirm password:")
                     tn.write(viptela_password.encode("ascii") + b"\n")
                     tn.read_until(b"Router#")
-                    tn.write(b"config-transaction\r")
-                    time.sleep(5)
-                    tn.write(b"\r\n")
-                    tn.read_until(b"Router(config)#")
+                    while True:
+                        tn.write(b"config-transaction\r")
+                        output = tn.read_until(b"Router(config)#", timeout=5).decode('ascii')
+                        if 'Router(config)#' in output:
+                            break
+                        time.sleep(5)
                     with open(file_name, 'r') as f:
                         lines = f.readlines()
                         log_and_update_db(server_name, project_name, deployment_type, deployment_status,
