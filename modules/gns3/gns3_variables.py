@@ -263,6 +263,16 @@ cedge_city_data = {
     "cEdge_008": {"city": "Rome", "latitude": 41.902782, "longitude": 12.496366},
     "cEdge_009": {"city": "Copenhagen", "latitude": 55.676097, "longitude": 12.568337},
     "cEdge_010": {"city": "SaoPaulo", "latitude": -23.5505, "longitude": -46.6333},
+    "vEdge_011": {"city": "Paris", "latitude": 48.856613, "longitude": 2.352222},
+    "cEdge_012": {"city": "London", "latitude": 51.507351, "longitude": -0.127758},
+    "cEdge_013": {"city": "Barcelona", "latitude": 41.385064, "longitude": 2.173404},
+    "cEdge_014": {"city": "Rome", "latitude": 41.902782, "longitude": 12.496366},
+    "cEdge_015": {"city": "Berlin", "latitude": 52.520008, "longitude": 13.404954},
+    "cEdge_016": {"city": "Vienna", "latitude": 48.208176, "longitude": 16.373819},
+    "cEdge_017": {"city": "Amsterdam", "latitude": 52.370216, "longitude": 4.895168},
+    "cEdge_018": {"city": "Munich", "latitude": 48.135125, "longitude": 11.581981},
+    "cEdge_019": {"city": "Madrid", "latitude": 40.416775, "longitude": -3.703790},
+    "cEdge_020": {"city": "Zurich", "latitude": 47.376887, "longitude": 8.541694},
 }
 
 versa_city_data_old = {
