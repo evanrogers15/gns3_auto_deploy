@@ -557,8 +557,8 @@ def viptela_8000v_appneta_deploy():
                         tn = telnetlib.Telnet(server_ip, console_port)
                         tn.write(b"\r\n")
                         output = tn.read_until(b"Would you like to enter the initial configuration dialog? [yes/no]:",
-                                               timeout=5).decode('ascii')
-                        if '[yes/no]' in output:
+                                               timeout=2).decode('ascii')
+                        if 'yes' in output:
                             tn.write(b"no\r")
                             break
                         tn.close()
@@ -566,6 +566,7 @@ def viptela_8000v_appneta_deploy():
                                           deployment_step,
                                           f"{temp_node_name} not available yet, trying again in 30 seconds")
                         time.sleep(30)
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Exiting initial configuration dialog on {temp_node_name}..")
                     tn.write(b"\r\n")
                     tn.read_until(b"Enter enable secret:")
                     tn.write(cedge_temp_enable_secret.encode("ascii") + b"\n")
@@ -595,6 +596,8 @@ def viptela_8000v_appneta_deploy():
                                           deployment_step,
                                           f"{temp_node_name} not available yet, trying again in 30 seconds")
                         time.sleep(30)
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                      f"Enabling controller mode on {temp_node_name}..")
                     tn.write(b"\r\n")
                     tn.read_until(b"Router#")
                     tn.write(b"controller-mode enable\r")
@@ -759,6 +762,8 @@ def viptela_8000v_appneta_deploy():
                                           deployment_step,
                                           f"{temp_node_name} not available yet, trying again in 30 seconds")
                         time.sleep(30)
+                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
+                                      f"Logging into console for {temp_node_name}..")
                     tn.write(b"\r\n")
                     tn.read_until(b"Username:")
                     tn.write(b"admin\r")
