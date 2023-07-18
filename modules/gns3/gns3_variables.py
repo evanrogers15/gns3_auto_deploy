@@ -263,7 +263,7 @@ cedge_city_data = {
     "cEdge_008": {"city": "Rome", "latitude": 41.902782, "longitude": 12.496366},
     "cEdge_009": {"city": "Copenhagen", "latitude": 55.676097, "longitude": 12.568337},
     "cEdge_010": {"city": "SaoPaulo", "latitude": -23.5505, "longitude": -46.6333},
-    "vEdge_011": {"city": "Paris", "latitude": 48.856613, "longitude": 2.352222},
+    "cEdge_011": {"city": "Paris", "latitude": 48.856613, "longitude": 2.352222},
     "cEdge_012": {"city": "London", "latitude": 51.507351, "longitude": -0.127758},
     "cEdge_013": {"city": "Barcelona", "latitude": 41.385064, "longitude": 2.173404},
     "cEdge_014": {"city": "Rome", "latitude": 41.902782, "longitude": 12.496366},
