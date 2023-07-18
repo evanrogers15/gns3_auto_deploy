@@ -713,8 +713,10 @@ def viptela_8000v_appneta_deploy():
                     while True:
                         tn = telnetlib.Telnet(server_ip, console_port)
                         tn.write(b"\r\n")
-                        output = tn.read_until(b"Username:", timeout=2).decode('ascii')
-                        if 'Username:' in output:
+                        output = tn.read_until(b"Router>", timeout=2).decode('ascii')
+                        if 'Router>' in output:
+                            tn.write(b"exit\r")
+                        elif 'Username:' in output:
                             tn.write(b"\r\n")
                             tn.read_until(b"Username:")
                             tn.write(b"admin\r")
@@ -725,8 +727,6 @@ def viptela_8000v_appneta_deploy():
                             tn.read_until(b"Confirm password:")
                             tn.write(viptela_password.encode("ascii") + b"\n")
                             break
-                        elif 'Router>' in output:
-                            tn.write(b"exit\r")
                         elif 'Router#' in output:
                             break
                         tn.close()
@@ -928,9 +928,6 @@ def viptela_8000v_appneta_deploy():
 
                     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting cEdge Certificate Setup for {node_name[0]} - cEdge {v} of {site_count}")
                     while True:
-                        log_and_update_db(server_name, project_name, deployment_type, 'test',
-                                          deployment_step,
-                                          f"{temp_node_name} first loop")
                         tn = telnetlib.Telnet(server_ip, console_port)
                         tn.write(b"\r\n")
                         output = tn.read_until(b"login:", timeout=2).decode('ascii')
@@ -962,7 +959,7 @@ def viptela_8000v_appneta_deploy():
                     # SCP SDWAN.pem to cEdge
                     tn.read_until(b'#')
                     tn.write(cmd_scp_root_cert.encode('ascii') + b"\n")
-                    test_o = tn.read_until(b"?", timeout=2).decode('ascii')
+                    test_o = tn.read_until(b"?").decode('ascii')
                     if "fingerprint" in test_o:
                         tn.write(b'yes\r\n')
                     else:
