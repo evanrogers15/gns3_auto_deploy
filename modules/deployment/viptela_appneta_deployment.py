@@ -37,7 +37,7 @@ def viptela_appneta_deploy():
 
     local_city_data = {}
     for key, value in template_city_data.items():
-        new_key = key.replace("replace", "vEdge")
+        new_key = key.replace("replace-", "vEdge_")
         local_city_data[new_key] = value
     # endregion
     # region Runtime
