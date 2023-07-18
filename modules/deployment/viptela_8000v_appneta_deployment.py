@@ -659,15 +659,10 @@ def viptela_8000v_appneta_deploy():
                     else:
                         client_1_mac_address = "4C:D7:17:00:00:00"
                     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting cEdge Device Setup for {node_name[0]} - cEdge {i} of {site_count}")
-
                     while True:
-                        log_and_update_db(server_name, project_name, deployment_type, 'test', deployment_step,
-                                          f"{temp_node_name} first loop")
                         tn = telnetlib.Telnet(server_ip, console_port)
                         tn.write(b"\r\n")
                         output = tn.read_until(b"Would you like to enter the initial configuration dialog? [yes/no]:", timeout=5).decode('ascii')
-                        log_and_update_db(server_name, project_name, deployment_type, 'test', deployment_step,
-                                          f"{temp_node_name} first loop output {output}")
                         if '[yes/no]' in output:
                             tn.write(b"no\r")
                             break
@@ -687,8 +682,6 @@ def viptela_8000v_appneta_deploy():
                         tn = telnetlib.Telnet(server_ip, console_port)
                         tn.write(b"\r\n")
                         output = tn.read_until(b"Router>", timeout=2).decode('ascii')
-                        log_and_update_db(server_name, project_name, deployment_type, 'test', deployment_step,
-                                          f"{temp_node_name} second loop output {output}")
                         if 'Router>' in output:
                             tn.write(b"enable\r")
                             output = tn.read_until(b"Router#", timeout=2).decode('ascii')
@@ -719,8 +712,6 @@ def viptela_8000v_appneta_deploy():
                         tn = telnetlib.Telnet(server_ip, console_port)
                         tn.write(b"\r\n")
                         output = tn.read_until(b"Username:", timeout=2).decode('ascii')
-                        log_and_update_db(server_name, project_name, deployment_type, 'test', deployment_step,
-                                          f"{temp_node_name} third loop output {output}")
                         if 'Username:' in output:
                             tn.write(b"admin\r")
                             tn.read_until(b"Password:")
@@ -729,16 +720,10 @@ def viptela_8000v_appneta_deploy():
                             tn.write(viptela_password.encode("ascii") + b"\n")
                             tn.read_until(b"Confirm password:")
                             tn.write(viptela_password.encode("ascii") + b"\n")
-                            log_and_update_db(server_name, project_name, deployment_type, 'test', deployment_step,
-                                              f"{temp_node_name} username in output, set password")
                             break
                         elif 'Router>' in output:
                             tn.write(b"exit\r")
-                            log_and_update_db(server_name, project_name, deployment_type, 'test', deployment_step,
-                                              f"{temp_node_name} typed exit")
                         elif 'Router#' in output:
-                            log_and_update_db(server_name, project_name, deployment_type, 'test', deployment_step,
-                                              f"{temp_node_name} Router# in output")
                             break
                         tn.close()
                         log_and_update_db(server_name, project_name, deployment_type, deployment_status,
@@ -751,8 +736,6 @@ def viptela_8000v_appneta_deploy():
                         if 'Router(config)#' in output:
                             break
                         tn.write(b"config-transaction\r")
-                        log_and_update_db(server_name, project_name, deployment_type, 'test', deployment_step,
-                                          f"{temp_node_name} config-transaction has not taken yet..")
                         time.sleep(10)
                     tn.write(b"\r\n")
                     tn.read_until(b"Router(config)#")
@@ -947,8 +930,6 @@ def viptela_8000v_appneta_deploy():
                         tn = telnetlib.Telnet(server_ip, console_port)
                         tn.write(b"\r\n")
                         output = tn.read_until(b"login:", timeout=2).decode('ascii')
-                        log_and_update_db(server_name, project_name, deployment_type, 'test', deployment_step,
-                                          f"{temp_node_name} first loop output {output}")
                         if '#' in output:
                             tn.write(b"\r\n")
                             tn.read_until(b"#")
@@ -1036,8 +1017,6 @@ def viptela_8000v_appneta_deploy():
                         serial_regex = r"serial number: ([A-F0-9]+)"
                         chassis_number = re.search(chassis_regex, cert_output).group(1)
                         serial_number = re.search(serial_regex, cert_output).group(1)
-                        log_and_update_db(server_name, project_name, deployment_type, 'test', deployment_step,
-                                          f"{temp_node_name} second loop chassis {chassis_number}, serial {serial_number}")
                         if chassis_number and serial_number:
                             break
                         log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"{node_name[0]} tried to install certificate too quickly, trying again in 10 seconds ")
