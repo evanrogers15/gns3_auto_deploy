@@ -25,7 +25,7 @@ def arista_deploy_render():
 
 @app.route('/deployment/versa-appneta')
 def versa_appneta_deploy_render():
-    return render_template('deployment/create_versa_vedge_appneta_sdwan.html')
+    return render_template('deployment/create_versa_appneta_sdwan.html')
 
 @app.route('/deploymemt/viptela-vedge-appneta')
 def viptela_vedge_appneta_deploy_render():
