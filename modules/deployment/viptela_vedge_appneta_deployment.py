@@ -7,7 +7,7 @@ from modules.gns3.gns3_dynamic_data import *
 from modules.gns3.gns3_query import *
 from modules.vendor_specific_actions.appneta_actions import *
 
-def viptela_appneta_deploy():
+def viptela_vedge_appneta_deploy():
     # region Variables
     vmanage_headers = {}
     lan_subnet_address = ''

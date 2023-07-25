@@ -5,8 +5,8 @@ import threading
 from werkzeug.utils import secure_filename
 
 from modules.deployment.arista_evpn_deploy import *
-from modules.deployment.viptela_appneta_deployment import *
-from modules.deployment.viptela_8000v_appneta_deployment import *
+from modules.deployment.viptela_vedge_appneta_deployment import *
+from modules.deployment.viptela_cedge_appneta_deployment import *
 from modules.use_case.use_cases import *
 from modules.deployment.versa_appneta_deployment import *
 
@@ -25,11 +25,15 @@ def arista_deploy_render():
 
 @app.route('/deployment/versa-appneta')
 def versa_appneta_deploy_render():
-    return render_template('deployment/create_versa_appneta_sdwan.html')
+    return render_template('deployment/create_versa_vedge_appneta_sdwan.html')
 
-@app.route('/deploymemt/viptela-appneta')
-def viptela_appneta_deploy_render():
-    return render_template('deployment/create_viptela_appneta_sdwan.html')
+@app.route('/deploymemt/viptela-vedge-appneta')
+def viptela_vedge_appneta_deploy_render():
+    return render_template('deployment/create_viptela_vedge_appneta_sdwan.html')
+
+@app.route('/deploymemt/viptela-cedge-appneta')
+def viptela_cedge_appneta_deploy_render():
+    return render_template('deployment/create_viptela_cedge_appneta_sdwan.html')
 
 @app.route('/uc-local')
 def use_case_local():
@@ -183,15 +187,28 @@ def get_project_list():
     return jsonify({'projects': project_data})
 # endregion
 # region Deployment
-@app.route('/api/tasks/start_viptela_appneta_deploy', methods=['PUT'])
-def viptela_appneta_deploy_full():
+@app.route('/api/tasks/start_viptela_vedge_appneta_deploy', methods=['PUT'])
+def viptela_vedge_appneta_deploy_full():
     global running_thread
     # Check if a thread is already running
     if running_thread is not None and running_thread.is_alive():
         return make_response(jsonify({'message': 'Deployment is already in progress'}), 400)
 
     # Start a new thread for deployment
-    running_thread = threading.Thread(target=viptela_8000v_appneta_deploy, args=())
+    running_thread = threading.Thread(target=viptela_vedge_appneta_deploy, args=())
+    running_thread.start()
+
+    return jsonify({'success': True})
+
+@app.route('/api/tasks/start_viptela_cedge_appneta_deploy', methods=['PUT'])
+def viptela_cedge_appneta_deploy_full():
+    global running_thread
+    # Check if a thread is already running
+    if running_thread is not None and running_thread.is_alive():
+        return make_response(jsonify({'message': 'Deployment is already in progress'}), 400)
+
+    # Start a new thread for deployment
+    running_thread = threading.Thread(target=viptela_cedge_appneta_deploy, args=())
     running_thread.start()
 
     return jsonify({'success': True})

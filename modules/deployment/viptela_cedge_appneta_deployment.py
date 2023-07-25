@@ -7,7 +7,7 @@ from modules.gns3.gns3_dynamic_data import *
 from modules.gns3.gns3_query import *
 from modules.vendor_specific_actions.appneta_actions import *
 from datetime import datetime
-def viptela_8000v_appneta_deploy():
+def viptela_cedge_appneta_deploy():
     # region Variables
     vmanage_headers = {}
     lan_subnet_address = ''
@@ -32,7 +32,7 @@ def viptela_8000v_appneta_deploy():
     deployment_step = '- Action - '
     cloud_node_deploy_data = {"x": 25, "y": -554, "name": "MGMT-Cloud-TAP", "node_type": "cloud",
                               "compute_id": "local", "symbol": ":/symbols/cloud.svg"}
-    required_qemu_images = {"viptela-vmanage-li-20.10.1-genericx86-64.qcow2", "empty30G.qcow2", "viptela-smart-li-20.10.1-genericx86-64.qcow2", "c8000v-universalk9_8G_serial.17.09.01a.qcow2"}
+    required_qemu_images = {"viptela-vmanage-li-20.10.1-genericx86-64.qcow2", "empty30G.qcow2", "viptela-smart-li-20.10.1-genericx86-64.qcow2", "viptela-edge-20.10.1-genericx86-64.qcow2", "c8000v-universalk9_8G_serial.17.09.01a.qcow2"}
     deploy_appneta = 'n'
 
     local_city_data = {}

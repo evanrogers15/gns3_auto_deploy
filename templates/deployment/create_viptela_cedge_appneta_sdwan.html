@@ -192,7 +192,7 @@
 </head>
 <body>
 <button onclick="goToMainPage()">Main Page</button>
-  <h1>Viptela & AppNeta SDWAN GNS3 Lab Auto Deployment</h1>
+  <h1>Viptela cEdge & AppNeta SDWAN GNS3 Lab Auto Deployment</h1>
   <div class="wrapper">
     <div class="prerequisites-container">
     <h3>Information</h3>
@@ -209,6 +209,7 @@
         <li>viptela-vmanage-li-20.10.1-genericx86-64.qcow2</li>
         <li>viptela-smart-li-20.10.1-genericx86-64.qcow2</li>
         <li>viptela-edge-20.10.1-genericx86-64.qcow2</li>
+        <li>c8000v-universalk9_8G_serial.17.09.01a.qcow2</li>
         <li>If deploying AppNeta Monitoring Points: (Example as version number will change)<br>It can be downloaded by logging into your AppNeta instance and browsing to Monitoring Points, then click Add Monitoring Points, select KVM as the Platform Type, then click Download KVM Base Image</li>
         <li>pathview-amd64-14.0.0.54253.qcow2</li>
         <li>If using GNS3 2.2.40 or newer, the below image is not required</li>
@@ -512,7 +513,7 @@
               if (xhr.status === 200) {
                 // Successful response
                 var putXhr = new XMLHttpRequest();
-                var putUrl = "/api/tasks/start_viptela_appneta_deploy";
+                var putUrl = "/api/tasks/start_viptela_cedge_appneta_deploy";
                 putXhr.open("PUT", putUrl, true);
                 putXhr.setRequestHeader("Content-Type", "application/json");
 
