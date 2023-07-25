@@ -250,6 +250,17 @@ def versa_create_app_steering_template(director_ip):
     except requests.exceptions.RequestException as e:
         logging.info(f"Versa Director API Call Failed: {str(e)}")
 
+def versa_deploy_app_steering_template(director_ip):
+    url = f"https://{director_ip}:9182/nextgen/applicationServiceTemplate/deploy/app-steer"
+    data = {}
+    try:
+        response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
+        response.raise_for_status()
+        logging.info(f"Deploy - Deployed Application Steering Workflow Template on Director {director_ip}")
+        return response
+    except requests.exceptions.RequestException as e:
+        logging.info(f"Versa Director API Call Failed: {str(e)}")
+
 def versa_create_device_group(director_ip):
     url = f"https://{director_ip}:9182/nextgen/deviceGroup"
     data = {"device-group":{"name":"Sites","dg:organization":"Versa-Root","dg:enable-2factor-auth":False,"dg:ca-config-on-branch-notification":False,"dg:enable-staging-url":False,"template-association":[{"organization":"Versa-Root","category":"DataStore","name":"Versa-Root-DataStore"},{"organization":"Versa-Root","category":"Main","name":"Edge-Template"}, {"organization":"Versa-Root","category":"Application Steering","name":"app-steer"}],"dg:poststaging-template":"Edge-Template"}}

@@ -614,6 +614,8 @@ def versa_appneta_deploy():
     time.sleep(5)
     versa_create_app_steering_template(director_mgmt_ip)
     time.sleep(5)
+    versa_deploy_app_steering_template(director_mgmt_ip)
+    time.sleep(5)
     versa_create_device_template(director_mgmt_ip)
     time.sleep(5)
     versa_deploy_device_template(director_mgmt_ip)
