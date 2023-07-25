@@ -259,6 +259,7 @@ def viptela_cedge_appneta_deploy():
                 switch_adapter_a = 5
                 switch_adapter_b = (switchport_count // 2) + 4
                 mgmt_switch_interface = 1
+            time.sleep(.1)
         mgmt_switch_node_index += 1
     # endregion
     # region Create GNS3 Drawings
