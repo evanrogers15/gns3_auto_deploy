@@ -2,7 +2,7 @@ from modules.gns3.gns3_query import *
 from modules.gns3.gns3_actions import *
 import logging.handlers
 
-def use_case_1(server, port, project_id, state):
+def use_case_12(server, port, project_id, state):
     matching_nodes = gns3_query_find_nodes_by_field(server, port, project_id, 'name', 'name', 'Client')
     site_001_matching_nodes = gns3_query_find_nodes_by_field(server, port, project_id, 'name', 'name', '001')
     for node_name in site_001_matching_nodes:
@@ -91,7 +91,7 @@ def use_case_2(server, port, project_id, state):
             client_node_id, client_node_console, client_node_aux = gns3_query_find_node_by_name(nodes, client)
             gns3_change_node_state(server, port, project_id, client_node_id, 'off')
         return {'message': 'Scenario started successfully.'}, 200
-def use_case_3(server, port, project_id, state):
+def use_case_1(server, port, project_id, state):
     matching_nodes = gns3_query_find_nodes_by_field(server, port, project_id, 'name', 'name', 'Client')
     site_001_matching_nodes = gns3_query_find_nodes_by_field(server, port, project_id, 'name', 'name', '001')
     for node_name in site_001_matching_nodes:
