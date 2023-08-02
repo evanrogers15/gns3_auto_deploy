@@ -386,7 +386,7 @@ def versa_create_site_device_workflow(director_ip, vr_1_route_ip, lan_ip, lan_dh
     url = f"https://{director_ip}:9182/vnms/sdwan/workflow/devices/device"
     lan_dhcp_start = lan_dhcp_base + ".51"
     lan_dhcp_end = lan_dhcp_base + ".100"
-    # mgmt_address = f"{mgmt_address_temp}/24"
+    lan_ip_no_mask = lan_ip.split('/')[0]
     # snmp_address = mgmt_address_temp
     data = {
         "versanms.sdwan-device-workflow": {
@@ -422,7 +422,7 @@ def versa_create_site_device_workflow(director_ip, vr_1_route_ip, lan_ip, lan_dh
                               "value": mgmt_address, "isAutogeneratable": False
                             },{
                               "name": "{$v_Versa-Root_Netflow_Source_Address__lefCollectorSourceAddress}",
-                              "value": lan_ip, "isAutogeneratable": False
+                              "value": lan_ip_no_mask, "isAutogeneratable": False
                             }, {
                               "name": "{$v_Versa-Root_Netflow_Destination_Address__lefCollectorDestinationAddress}",
                               "value": "172.16.102.51", "isAutogeneratable": False
