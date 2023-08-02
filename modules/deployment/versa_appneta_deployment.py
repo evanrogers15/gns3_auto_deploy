@@ -326,6 +326,8 @@ def versa_appneta_deploy():
             node_id = flexvnf_node[0]
             mgmt_network_adapter_index = v + 10
             appneta_temp_name = f"Site-{v:03}-AppNeta-vk35-"
+            if v == 2:
+                gns3_connect_nodes(gns3_server_data, new_project_id, mgmt_main_switch_node_id, 0, 10, network_test_node_id, 1, 0)
             if v == 3 and deploy_appneta == 'y':
                 network_test_node_id = gns3_create_node(gns3_server_data, new_project_id, appneta_template_id,
                                                         client_deploy_data[f"network_test_client_{v:03}_deploy_data"])
