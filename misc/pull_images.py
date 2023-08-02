@@ -4,7 +4,7 @@ import sys
 import os
 gns3_server_data = [
  {
-     "GNS3 Server": "10.128.15.234",
+     "GNS3 Server": "35.239.81.75",
      "Server Name": "er-test-01",
      "Server Port": "80",
      "vManage API IP": "172.16.2.2",
@@ -39,15 +39,19 @@ def gns3_get_image(gns3_server_data, image_type, filename):
                 return 201
     return 200
 
-#required_qemu_images = {"viptela-vmanage-li-20.10.1-genericx86-64.qcow2", "empty30G.qcow2", "viptela-smart-li-20.10.1-genericx86-64.qcow2", "viptela-edge-20.10.1-genericx86-64.qcow2",}
-#required_iou_images = {"L3-ADVENTERPRISEK9-M-15.5-2T.bin"}
-
-#required_qemu_images = {"c8000v-universalk9_8G_serial.17.09.01a.qcow2"}
-required_qemu_images = {"versa-director-c19c43c-21.2.3.qcow2", "versa-analytics-67ff6c7-21.2.3.qcow2", "versa-flexvnf-67ff6c7-21.2.3.qcow2", "pathview-amd64-14.0.0.54253.qcow2"}
-
+versa_required_qemu_images = {"versa-director-c19c43c-21.2.3.qcow2", "versa-analytics-67ff6c7-21.2.3.qcow2", "versa-flexvnf-67ff6c7-21.2.3.qcow2"}
+cisco_required_qemu_images = {"viptela-vmanage-li-20.10.1-genericx86-64.qcow2", "viptela-smart-li-20.10.1-genericx86-64.qcow2", "viptela-edge-20.10.1-genericx86-64.qcow2", "c8000v-universalk9_8G_serial.17.09.01a.qcow2"}
+appneta_required_qemu_images = {"pathview-amd64-14.0.0.54253.qcow2"}
 
 #for image in required_iou_images:
 #    gns3_get_image(gns3_server_data, 'iou', image)
 
-for image in required_qemu_images:
+for image in cisco_required_qemu_images:
     gns3_get_image(gns3_server_data, 'qemu', image)
+
+for image in versa_required_qemu_images:
+    gns3_get_image(gns3_server_data, 'qemu', image)
+
+for image in appneta_required_qemu_images:
+    gns3_get_image(gns3_server_data, 'qemu', image)
+

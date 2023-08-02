@@ -217,6 +217,94 @@ def versa_update_device_template_oobm_interface(director_ip):
     except requests.exceptions.RequestException as e:
         logging.info(f"Versa Director API Call Failed: {str(e)}")
 
+def versa_update_device_template_netflow_1(director_ip):
+    # Create Netflow Collector Object
+    url = f"https://{director_ip}:9182/api/config/devices/template/Edge-Template/config/orgs/org-services/Versa-Root/lef/collectors"
+    data = {
+        "collector": {
+            "name": "Netflow", "template": "Default-LEF-Template", "transport": "udp",
+            "destination-address": "{$v_Versa-Root_Netflow_Destination_Address__lefCollectorDestinationAddress}",
+            "destination-port": "9995",
+            "source-address": "{$v_Versa-Root_Netflow_Source_Address__lefCollectorSourceAddress}",
+            "transmit-rate": "10000", "pending-queue-limit": "2048", "template-resend-interval": "60",
+            "routing-instance": "Versa-Root-LAN-VR"
+        }
+    }
+    try:
+        response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
+        response.raise_for_status()
+        logging.info(f"Deploy - Updated Netflow Configuration on Director {director_ip}")
+        return response
+    except requests.exceptions.RequestException as e:
+        logging.info(f"Versa Director API Call Failed: {str(e)}")
+
+def versa_update_device_template_netflow_2(director_ip):
+    # Add Netflow Collector to Collectors group
+    url = f"https://{director_ip}:9182/api/config/devices/template/Edge-Template/config/orgs/org-services/Versa-Root/lef/collector-groups/collector-group/Default-Collector-Group"
+    data = {"collector-group":{"collector-group-name":"Default-Collector-Group","collectors":["LEF-Collector-log_collector1","Netflow"]}}
+    try:
+        response = requests.put(url, headers=headers, auth=auth, json=data, verify=False)
+        response.raise_for_status()
+        logging.info(f"Deploy - Updated Netflow Configuration on Director {director_ip}")
+        return response
+    except requests.exceptions.RequestException as e:
+        logging.info(f"Versa Director API Call Failed: {str(e)}")
+
+def versa_update_device_template_netflow_3(director_ip):
+    # Enable session logging
+    url = f"https://{director_ip}:9182/api/config/devices/template/Edge-Template/config/orgs/org-services/Versa-Root/traffic-monitoring/logging-control/logging-control-profile/Default-Logging-Control"
+    data = {
+        "logging-control-profile": {
+            "name": "Default-Logging-Control", "profile": "Default-Logging-Profile", "options": {
+                "stats": {
+                    "all": [None]
+                }, "sessions": {
+                    "all": "end"
+                }
+            }
+        }
+    }
+    try:
+        response = requests.put(url, headers=headers, auth=auth, json=data, verify=False)
+        response.raise_for_status()
+        logging.info(f"Deploy - Updated Netflow Configuration on Director {director_ip}")
+        return response
+    except requests.exceptions.RequestException as e:
+        logging.info(f"Versa Director API Call Failed: {str(e)}")
+
+def versa_update_device_template_netflow_4(director_ip):
+    # Create traffic monitoring policy for Netflow traffic
+    url = f"https://{director_ip}:9182/api/config/devices/template/Edge-Template/config/orgs/org-services/Versa-Root/traffic-monitoring/policies"
+    data = {"traffic-monitoring-policy-group":{"name":"netflow_policy"}}
+    try:
+        response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
+        response.raise_for_status()
+        logging.info(f"Deploy - Updated Netflow Configuration on Director {director_ip}")
+        return response
+    except requests.exceptions.RequestException as e:
+        logging.info(f"Versa Director API Call Failed: {str(e)}")
+
+def versa_update_device_template_netflow_5(director_ip):
+    # Create traffic monitoring rule for Netflow traffic
+    url = f"https://{director_ip}:9182/api/config/devices/template/Edge-Template/config/orgs/org-services/Versa-Root/traffic-monitoring/policies/traffic-monitoring-policy-group/netflow_policy/rules"
+    data = {
+        "rule": {
+            "name": "netflow_traffic_rule", "rule-disable": "false", "match": {
+                "source": {"zone": {}, "address": {}}, "destination": {"zone": {}, "address": {}}, "application": {}
+            }, "set": {
+                "performance-monitoring": {"tcp-monitoring": "disabled"},
+                "lef": {"options": {"send-netflow-data": "false"}, "event": "end", "profile": "Default-Logging-Profile"}
+            }
+        }
+    }
+    try:
+        response = requests.post(url, headers=headers, auth=auth, json=data, verify=False)
+        response.raise_for_status()
+        logging.info(f"Deploy - Updated Netflow Configuration on Director {director_ip}")
+        return response
+    except requests.exceptions.RequestException as e:
+        logging.info(f"Versa Director API Call Failed: {str(e)}")
+
 def versa_deploy_device_template(director_ip):
     url = f"https://{director_ip}:9182/vnms/sdwan/workflow/templates/template/deploy/Edge-Template?verifyDiff=True"
     data = {}
@@ -332,6 +420,12 @@ def versa_create_site_device_workflow(director_ip, vr_1_route_ip, lan_ip, lan_dh
                             }, {
                               "name": "{$v_SNMP_TARGET_SOURCE__snmpTargetSource}",
                               "value": mgmt_address, "isAutogeneratable": False
+                            },{
+                              "name": "{$v_Versa-Root_Netflow_Source_Address__lefCollectorSourceAddress}",
+                              "value": lan_ip, "isAutogeneratable": False
+                            }, {
+                              "name": "{$v_Versa-Root_Netflow_Destination_Address__lefCollectorDestinationAddress}",
+                              "value": "172.16.102.51", "isAutogeneratable": False
                             }, {
                               "name": "{$v_Versa-Root_Site_Name__sitesSiteName}", "value": site_name,
                               "isAutogeneratable": True
@@ -385,6 +479,15 @@ def versa_create_site_device_workflow(director_ip, vr_1_route_ip, lan_ip, lan_dh
                                             }, {
                                                 "variable": "{$v_Chassis_Id__sitesChassisId}", "group": "SDWAN",
                                                 "overlay": False, "type": "STRING"
+                                            }, {
+                                                "variable": "{$v_Versa-Root_Netflow_Destination_Address__lefCollectorDestinationAddress}",
+                                                "group": "Others",
+                                                "overlay": False
+                                            },{
+                                                "variable": "{$v_Versa-Root_Netflow_Source_Address__lefCollectorSourceAddress}",
+                                                "group": "LEF",
+                                                "overlay": True,
+                                                "type": "IPV4"
                                             }, {
                                                 "variable": "{$v_SNMP_TARGET_SOURCE__snmpTargetSource}", "group": "SNMP", "overlay": False,
                                                 "type": "IPV4"

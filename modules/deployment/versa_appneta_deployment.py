@@ -97,7 +97,7 @@ def versa_appneta_deploy():
     controller_isp_2_ip_gateway = controller_isp_subnet + ".5"
     controller_isp_2_ip = controller_isp_subnet + ".6"
 
-    snmp_trap_dst = "10.8.0.1"
+    snmp_trap_dst = "172.16.102.52"
 
     gns3_server_data = [{"GNS3 Server": server_ip, "Server Name": server_name, "Server Port": server_port,
                          "Project Name": project_name, "Project ID": new_project_id, "Tap Name": tap_name,
@@ -623,6 +623,16 @@ def versa_appneta_deploy():
     versa_update_device_template_snmp(director_mgmt_ip, snmp_trap_dst)
     time.sleep(5)
     versa_update_device_template_oobm_interface(director_mgmt_ip)
+    time.sleep(2)
+    versa_update_device_template_netflow_1(director_mgmt_ip)
+    time.sleep(2)
+    versa_update_device_template_netflow_2(director_mgmt_ip)
+    time.sleep(2)
+    versa_update_device_template_netflow_3(director_mgmt_ip)
+    time.sleep(2)
+    versa_update_device_template_netflow_4(director_mgmt_ip)
+    time.sleep(2)
+    versa_update_device_template_netflow_5(director_mgmt_ip)
     time.sleep(5)
     versa_create_device_group(director_mgmt_ip)
     time.sleep(5)
