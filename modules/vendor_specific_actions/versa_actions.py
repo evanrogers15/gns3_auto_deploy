@@ -160,7 +160,9 @@ def versa_create_device_template(director_ip):
                                                                                                "ip6Static": False,
                                                                                                "ipv6Dhcp": False,
                                                                                                "transportDomains": [
-                                                                                                   "Internet"]
+                                                                                                   "Internet"],
+                                                                                                "bandwidthDownlink": "500000",
+                                                                                                "bandwidthUplink": "500000",
                                                                                            }]
                               }, {
                                   "pppoe": False, "interfaceName": "vni-0/1", "unitInfo": [{
@@ -173,7 +175,9 @@ def versa_create_device_template(director_ip):
                                                                                                "ip6Static": False,
                                                                                                "ipv6Dhcp": False,
                                                                                                "transportDomains": [
-                                                                                                   "Internet"]
+                                                                                                   "Internet"],
+                                                                                                "bandwidthDownlink": "10000",
+                                                                                                "bandwidthUplink": "10000",
                                                                                            }]
                               }], "l2Interfaces": [], "stp": "RSTP"
         }
