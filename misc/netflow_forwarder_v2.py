@@ -2,13 +2,18 @@ from scapy.all import *
 import os
 import subprocess
 import re
+import time
 
 # Define constants
 TARGET_IP = os.getenv("FLOW_TARGET")
 FULL_MANAGEMENT_SUBNET = os.getenv("MANAGEMENT_SUBNET")
 
+# Convert the FULL_MANAGEMENT_SUBNET to a string, if necessary
+FULL_MANAGEMENT_SUBNET = str(FULL_MANAGEMENT_SUBNET)
+
 # Extract the first three octets from the full management subnet IP
 management_subnet_match = re.match(r"(\d+\.\d+\.\d+)\.\d+", FULL_MANAGEMENT_SUBNET)
+print(management_subnet_match)
 if management_subnet_match:
     MANAGEMENT_SUBNET = management_subnet_match.group(1)
 else:
@@ -57,6 +62,8 @@ set_eth1_ip()
 
 # Add a route to the specified FLOW_TARGET
 add_route_to_flow_target()
+
+time.sleep(5)
 
 # Use the custom filter function to capture Netflow-related traffic
 sniff(prn=create_modified_packet, iface="eth0", lfilter=is_netflow_packet)
