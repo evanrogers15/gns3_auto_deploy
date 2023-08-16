@@ -1,0 +1,55 @@
+frr version 8.4_git
+frr defaults traditional
+hostname bgp-router-08
+no ipv6 forwarding
+!
+ip route 0.0.0.0/0 192.168.1.1
+!
+interface eth0
+ ip address 13.0.8.2/30
+ description bgp-router-05
+exit
+!
+interface eth1
+ ip address 13.1.8.2/30
+ description bgp-router-06
+exit
+!
+interface eth2
+ ip address 14.1.10.1/30
+ description bgp-router-10
+exit
+!
+interface eth3
+ ip address 14.1.11.1/30
+ description bgp-router-11
+exit
+!
+router bgp 14008
+ bgp router-id 14.0.0.8
+ neighbor 13.0.8.1 remote-as 13005
+ neighbor 13.0.8.1 timers 2 6
+ neighbor 13.1.8.1 remote-as 13006
+ neighbor 13.1.8.1 timers 2 6
+ neighbor 14.1.10.2 remote-as 15010
+ neighbor 14.1.10.2 timers 2 6
+ neighbor 14.1.11.2 remote-as 15011
+ neighbor 14.1.11.2 timers 2 6
+ !
+ address-family ipv4 unicast
+  redistribute connected
+  neighbor 13.0.8.1 route-map ALLOW_PREFIX in
+  neighbor 13.0.8.1 route-map ALLOW_PREFIX out
+  neighbor 13.1.8.1 route-map ALLOW_PREFIX in
+  neighbor 13.1.8.1 route-map ALLOW_PREFIX out
+  neighbor 14.1.10.2 route-map ALLOW_PREFIX in
+  neighbor 14.1.10.2 route-map ALLOW_PREFIX out
+  neighbor 14.1.11.2 route-map ALLOW_PREFIX in
+  neighbor 14.1.11.2 route-map ALLOW_PREFIX out
+ exit-address-family
+exit
+!
+route-map ALLOW_PREFIX permit 10
+exit
+!
+end

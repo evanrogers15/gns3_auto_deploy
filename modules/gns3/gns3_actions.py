@@ -366,6 +366,15 @@ def gns3_start_all_nodes(gns3_server_data, project_id):
         node_response = make_request("POST", node_url, data=template_data)
         log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Started all nodes in project {project_name}")
 
+def gns3_stop_all_nodes(gns3_server_data, project_id):
+    for server_record in gns3_server_data:
+        server_ip, server_port, server_name, project_name, deployment_type, deployment_status, deployment_step = server_record['GNS3 Server'], server_record[
+            'Server Port'], server_record['Server Name'], server_record['Project Name'], server_record['Deployment Type'], server_record['Deployment Status'], server_record['Deployment Step']
+        template_data = {}
+        log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Stopping all nodes in project {project_name}")
+        node_url = f"http://{server_ip}:{server_port}/v2/projects/{project_id}/nodes/stop"
+        node_response = make_request("POST", node_url, data=template_data)
+        log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Stopping all nodes in project {project_name}")
 
 def gns3_set_project(gns3_server_data, project_id):
     for server_record in gns3_server_data:
