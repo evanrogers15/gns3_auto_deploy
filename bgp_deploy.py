@@ -234,6 +234,7 @@ def bgp_deploy():
             gns3_upload_file_to_node(gns3_server_data, project_id, node_id, "etc/frr/daemons", daemons_file_name)
             gns3_upload_file_to_node(gns3_server_data, project_id, node_id, "etc/frr/frr.conf", temp_file_name)
             gns3_start_node(gns3_server_data, project_id, node_id)
+            print(node_id)
             i += 1
 
 bgp_deploy()
