@@ -36,6 +36,7 @@ router bgp 11001
  !
  address-family ipv4 unicast
   redistribute connected
+  redistribute static
   neighbor 11.0.2.2 route-map ALLOW_PREFIX in
   neighbor 11.0.2.2 route-map ALLOW_PREFIX out
   neighbor 11.0.3.2 route-map ALLOW_PREFIX in
