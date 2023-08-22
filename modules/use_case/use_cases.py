@@ -110,7 +110,7 @@ def use_case_1(server, port, project_id, state):
     client_count = len(matching_nodes)
     if state == 'on':
         for index, client in enumerate(matching_nodes):
-            client_command = f'python3 /home/scripts/iperf3_client_server.py {client_count} &'
+            client_command = f'python3 /home/scripts/traffic/client_traffic_generator.py {client_count} &'
             client_node_id, client_console, client_aux = gns3_query_find_node_by_name(nodes, client)
             gns3_change_node_state(server, port, project_id, client_node_id, 'on')
             gns3_run_telnet_command(server, port, project_id, client_node_id, client_console, state,

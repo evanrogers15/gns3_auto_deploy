@@ -1,0 +1,35 @@
+frr defaults datacenter
+hostname core_bgp_miami
+no ipv6 forwarding
+!
+interface eth0
+ ip address 12.66.48.2/30
+exit
+!
+interface eth1
+ ip address 67.222.240.1/30
+exit
+!
+router bgp 27345
+ bgp router-id 67.222.240.1
+ no bgp log-neighbor-changes
+ no bgp default show-hostname
+ no bgp default show-nexthop-hostname
+ no bgp deterministic-med
+ no bgp network import-check
+ timers bgp 60 180
+ neighbor 12.66.48.1 remote-as 7018
+ neighbor 12.66.48.1 ebgp-multihop 2
+ neighbor 12.66.48.1 timers 2 6
+ neighbor 12.66.48.1 timers connect 120
+ neighbor 67.222.240.2 remote-as 32068
+ neighbor 67.222.240.2 ebgp-multihop 2
+ neighbor 67.222.240.2 timers 2 6
+ neighbor 67.222.240.2 timers connect 120
+ !
+ address-family ipv4 unicast
+   redistribute connected
+ exit-address-family
+exit
+!
+end

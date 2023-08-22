@@ -1,0 +1,35 @@
+frr defaults datacenter
+hostname n-router-03
+no ipv6 forwarding
+!
+interface eth1
+ ip address 166.194.136.14/30
+exit
+!
+interface eth2
+ ip address 199.4.218.1/30
+exit
+!
+router bgp 7091
+ bgp router-id 199.4.218.1
+ no bgp log-neighbor-changes
+ no bgp default show-hostname
+ no bgp default show-nexthop-hostname
+ no bgp deterministic-med
+ no bgp network import-check
+ timers bgp 60 180
+ neighbor 166.194.136.13 remote-as 6380
+ neighbor 166.194.136.13 ebgp-multihop 2
+ neighbor 166.194.136.13 timers 2 6
+ neighbor 166.194.136.13 timers connect 120
+ neighbor 199.4.218.2 remote-as 7021
+ neighbor 199.4.218.2 ebgp-multihop 2
+ neighbor 199.4.218.2 timers 2 6
+ neighbor 199.4.218.2 timers connect 120
+ !
+ address-family ipv4 unicast
+    redistribute connected
+ exit-address-family
+exit
+!
+end
