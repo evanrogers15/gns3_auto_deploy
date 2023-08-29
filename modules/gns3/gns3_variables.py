@@ -250,7 +250,45 @@ arista_drawing_deploy_data = {
         "x": 481, "y": 29, "z": 2},
 }
 
+template_city_data_bgp = {
+    "replace-001": {"city": "NewYorkCity", "country": "US", "latitude": 40.712776, "longitude": -74.005974},
+    "replace-002": {"city": "Detroit", "country": "US", "latitude": 42.331427, "longitude": -83.045754},
+    "replace-003": {"city": "Atlanta", "country": "US", "latitude": 33.749, "longitude": -84.387984},
+    "replace-004": {"city": "Nashville", "country": "US", "latitude": 36.162664, "longitude": -86.781602},
+    "replace-005": {"city": "Houston", "country": "US", "latitude": 29.760427, "longitude": -95.369803},
+    "replace-006": {"city": "Miami", "country": "US", "latitude": 25.76168, "longitude": -80.19179},
+    "replace-007": {"city": "Chicago", "country": "US", "latitude": 41.878114, "longitude": -87.629798},
+    "replace-008": {"city": "Kansas City", "country": "US", "latitude": 39.099727, "longitude": -94.578567},
+    "replace-009": {"city": "Minneapolis", "country": "US", "latitude": 44.977753, "longitude": -93.265011},
+    "replace-010": {"city": "Denver", "country": "US", "latitude": 39.739235, "longitude": -104.99025},
+    "replace-011": {"city": "Billings", "country": "US", "latitude": 45.783286, "longitude": -108.50069},
+    "replace-012": {"city": "Phoenix", "country": "US", "latitude": 33.448376, "longitude": -112.074036},
+    "replace-013": {"city": "SaltLakeCity", "country": "US", "latitude": 40.76078, "longitude": -111.891045},
+    "replace-014": {"city": "SanFrancisco", "country": "US", "latitude": 37.773972, "longitude": -122.431297},
+    "replace-015": {"city": "LosAngeles", "country": "US", "latitude": 34.052235, "longitude": -118.243683},
+    "replace-016": {"city": "Seattle", "country": "US", "latitude": 47.608013, "longitude": -122.335167},
+}
+
 template_city_data = {
+    "replace-001": {"city": "NewYorkCity", "country": "US", "latitude": 40.712776, "longitude": -74.005974},
+    "replace-002": {"city": "Seattle", "country": "US", "latitude": 47.608013, "longitude": -122.335167},
+    "replace-003": {"city": "SanFrancisco", "country": "US", "latitude": 37.773972, "longitude": -122.431297},
+    "replace-004": {"city": "Atlanta", "country": "US", "latitude": 33.749, "longitude": -84.387984},
+    "replace-005": {"city": "Miami", "country": "US", "latitude": 25.76168, "longitude": -80.19179},
+    "replace-006": {"city": "Chicago", "country": "US", "latitude": 41.878114, "longitude": -87.629798},
+    "replace-007": {"city": "Minneapolis", "country": "US", "latitude": 44.977753, "longitude": -93.265011},
+    "replace-008": {"city": "Kansas City", "country": "US", "latitude": 39.099727, "longitude": -94.578567},
+    "replace-009": {"city": "Minneapolis", "country": "US", "latitude": 44.977753, "longitude": -93.265011},
+    "replace-010": {"city": "Denver", "country": "US", "latitude": 39.739235, "longitude": -104.99025},
+    "replace-011": {"city": "Billings", "country": "US", "latitude": 45.783286, "longitude": -108.50069},
+    "replace-012": {"city": "Phoenix", "country": "US", "latitude": 33.448376, "longitude": -112.074036},
+    "replace-013": {"city": "SaltLakeCity", "country": "US", "latitude": 40.76078, "longitude": -111.891045},
+    "replace-014": {"city": "Detroit", "country": "US", "latitude": 42.331427, "longitude": -83.045754},
+    "replace-015": {"city": "LosAngeles", "country": "US", "latitude": 34.052235, "longitude": -118.243683},
+    "replace-016": {"city": "Houston", "country": "US", "latitude": 29.760427, "longitude": -95.369803},
+}
+
+template_city_data_wordwide = {
     "replace-001": {"city": "GrandPrairie", "country": "US", "latitude": 32.745964, "longitude": -96.997785},
     "replace-002": {"city": "Urayasu", "country": "JP", "latitude": 35.653052, "longitude": 139.901849},
     "replace-003": {"city": "SpringValley", "country": "US", "latitude": 29.791118, "longitude": -95.503158},
