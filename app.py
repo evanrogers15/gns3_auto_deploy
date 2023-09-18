@@ -79,8 +79,8 @@ def update_config():
             project_id = gns3_create_project(server_ip, server_port, new_project_name)
     else:
         project_id = gns3_query_get_project_id(server_ip, server_port, new_project_name)
-        gns3_delete_all_nodes(server_ip, server_port, project_id)
-        gns3_delete_all_drawings(server_ip, server_port, project_id)
+        # gns3_delete_all_nodes(server_ip, server_port, project_id)
+        # gns3_delete_all_drawings(server_ip, server_port, project_id)
     projects = gns3_query_get_projects(server_ip, server_port)
     project_names = [project['name'] for project in projects]
     project_ids = [project['project_id'] for project in projects]

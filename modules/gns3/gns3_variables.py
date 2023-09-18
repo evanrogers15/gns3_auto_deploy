@@ -276,7 +276,7 @@ template_city_data = {
     "replace-004": {"city": "Atlanta", "country": "US", "latitude": 33.749, "longitude": -84.387984},
     "replace-005": {"city": "Miami", "country": "US", "latitude": 25.76168, "longitude": -80.19179},
     "replace-006": {"city": "Chicago", "country": "US", "latitude": 41.878114, "longitude": -87.629798},
-    "replace-007": {"city": "Minneapolis", "country": "US", "latitude": 44.977753, "longitude": -93.265011},
+    "replace-007": {"city": "Nashville", "country": "US", "latitude": 36.162664, "longitude": -86.781602},
     "replace-008": {"city": "Kansas City", "country": "US", "latitude": 39.099727, "longitude": -94.578567},
     "replace-009": {"city": "Minneapolis", "country": "US", "latitude": 44.977753, "longitude": -93.265011},
     "replace-010": {"city": "Denver", "country": "US", "latitude": 39.739235, "longitude": -104.99025},
