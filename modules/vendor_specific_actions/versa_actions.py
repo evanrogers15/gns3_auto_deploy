@@ -135,7 +135,9 @@ def versa_create_device_template(director_ip):
                                     "ipv4DhcpServer": True,
                                     "dhcpv4Profile": "DHCP",
                                     "dhcpV4Relay": False,
-                                    "dhcpV4RelayAddress": ""
+                                    "dhcpV4RelayAddress": "",
+                                    "bandwidthDownlink": "100000",
+                                    "bandwidthUplink": "100000",
                                     }]},
             ],
             "providerOrg": {"name": "Versa-Root", "nextGenFW": False, "statefulFW": False},
@@ -161,8 +163,8 @@ def versa_create_device_template(director_ip):
                                                                                                "ipv6Dhcp": False,
                                                                                                "transportDomains": [
                                                                                                    "Internet"],
-                                                                                                "bandwidthDownlink": "500000",
-                                                                                                "bandwidthUplink": "500000",
+                                                                                                "bandwidthDownlink": "100000",
+                                                                                                "bandwidthUplink": "100000",
                                                                                            }]
                               }, {
                                   "pppoe": False, "interfaceName": "vni-0/1", "unitInfo": [{
@@ -176,8 +178,8 @@ def versa_create_device_template(director_ip):
                                                                                                "ipv6Dhcp": False,
                                                                                                "transportDomains": [
                                                                                                    "Internet"],
-                                                                                                "bandwidthDownlink": "10000",
-                                                                                                "bandwidthUplink": "10000",
+                                                                                                "bandwidthDownlink": "100000",
+                                                                                                "bandwidthUplink": "100000",
                                                                                            }]
                               }], "l2Interfaces": [], "stp": "RSTP"
         }
