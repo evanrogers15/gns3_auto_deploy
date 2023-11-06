@@ -4,6 +4,9 @@ from modules.gns3.gns3_dynamic_data import *
 from modules.gns3.gns3_query import *
 from modules.gns3.gns3_variables import *
 from modules.vendor_specific_actions.appneta_actions import *
+from apscheduler.schedulers.blocking import BlockingScheduler
+import argparse
+
 
 import telnetlib
 import time
@@ -69,7 +72,7 @@ def delete_node(gns3_server_data, project_id, node_id):
         response = make_request("DELETE", delete_url)
         log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Deleted node on GNS3 Server {server_ip}")
 
-def versa_refresh(server_ip, server_port, project_name, site_count, mgmt_subnet_ip):
+def versa_refresh(server_ip, server_port, project_name, mgmt_subnet_ip):
     # region Variables
     deployment_type = 'versa'
     deployment_status = 'running'
@@ -93,8 +96,7 @@ def versa_refresh(server_ip, server_port, project_name, site_count, mgmt_subnet_
     
     gns3_server_data = [{
         "GNS3 Server": server_ip, "Server Name": server_name, "Server Port": server_port, "Project Name": project_name,
-        "Project ID": project_id, "Site Count": site_count,
-        "Deployment Type": deployment_type, "Deployment Status": deployment_status, "Deployment Step": deployment_step
+        "Project ID": project_id, "Deployment Type": deployment_type, "Deployment Status": deployment_status, "Deployment Step": deployment_step
     }]
 
     # endregion
@@ -327,12 +329,21 @@ def versa_refresh(server_ip, server_port, project_name, site_count, mgmt_subnet_
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Total time for Versa Refresh {total_time:.2f} minutes")
     # endregion
 
-server_ip = "192.168.122.1"
-server_port = "80"
-project_name = "versa-gss-team-lab-flow-ate"
-site_count = 5
-mgmt_subnet_ip = "172.16.30"
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Schedule the versa_refresh function.")
+    parser.add_argument("server_ip", help="Server IP address.")
+    parser.add_argument("server_port", help="Server port.")
+    parser.add_argument("project_name", help="Project name.")
+    parser.add_argument("mgmt_subnet_ip", help="Management subnet IP.")
 
+    args = parser.parse_args()
 
-versa_refresh(server_ip, server_port, project_name, site_count, mgmt_subnet_ip)
+    # Run the function immediately
+    versa_refresh(args.server_ip, args.server_port, args.project_name, args.mgmt_subnet_ip)
 
+    scheduler = BlockingScheduler()
+    # Schedule the job to run every 13 days at 1 AM Eastern Time
+    scheduler.add_job(lambda: versa_refresh(args.server_ip, args.server_port, args.project_name, args.mgmt_subnet_ip),
+                      'cron', day='*/13', hour=1, timezone='US/Eastern')
+
+    scheduler.start()

@@ -105,63 +105,15 @@ def versa_refresh(server_ip, server_port, project_name, site_count, mgmt_subnet_
     gns3_delete_template(gns3_server_data, versa_director_template_name)
     versa_director_template_id = gns3_create_template(gns3_server_data, versa_director_template_data)
     # endregion
-    # region Versa Director Backup
-    deployment_step = 'Director Backup'
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting Director Backup")
-    server_ips = set(d['GNS3 Server'] for d in gns3_server_data)
-    for server_ip in server_ips:
-        temp_node_name = f'Director'
-        matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, project_id, temp_node_name)
-        if matching_nodes:
-            for matching_node in matching_nodes:
-                node_id, console_port, aux = matching_node
-                log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Logging in to console for node {temp_node_name}")
-                tn = telnetlib.Telnet(server_ip, console_port)
-                while True:
-                    tn.write(b"\r\n")
-                    output = tn.read_until(b"login:", timeout=2).decode('ascii')
-                    if '[Administrator@director: ~] $' in output:
-                        break
-                    tn.write(versa_director_username.encode("ascii") + b"\n")
-                    tn.read_until(b"Password:", timeout=5)
-                    tn.write(versa_old_password.encode("ascii") + b"\n")
-                    output = tn.read_until(b"Password:", timeout=5).decode('ascii')
-                    if '[Administrator@director: ~] $' in output:
-                        break
-                    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
-                                      f"{temp_node_name} not available yet, trying again in 30 seconds")
-                    time.sleep(30)
-                tn.write(b"\r\n")
-                tn.read_until(b"[Administrator@director: ~] $")
-                tn.write(b'cli\r\n')
-                tn.read_until(b"director>")
-                tn.write(b'request system recovery backup\r\n')
-                output = tn.read_until(b"Backup operation took").decode('ascii')
-                match = re.search(r"Backup filename: (\S+)", output)
-                backup_filename = match.group(1)
-                tn.write(b"\r\n")
-                tn.read_until(b"director>")
-                tn.write(b"exit\r\n")
-                tn.read_until(b"[Administrator@director: ~] $")
-                scp_backup_command = f"scp /var/versa/backups/{backup_filename} admin@{analytics_mgmt_ip}:/home/admin"
-                tn.write(scp_backup_command.encode('ascii') + b"\n")
-                output = tn.read_until(b"?").decode('ascii')
-                if "fingerprint" in output:
-                    tn.write(b'yes\r\n')
-                else:
-                    tn.write(b"\n")
-                tn.read_until(b"password:")
-                tn.write(versa_old_password.encode("ascii") + b"\n")
-                tn.read_until(b"[Administrator@director: ~] $")
-    log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, "Completed Versa Director Backup")
-    # endregion
     # region Deploy GNS3 Nodes
     deployment_step = 'Deploy GNS3 Nodes'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step,
                       f"Starting Node Deployment")
-    versa_director_node_id = query_find_nodes_by_field(server_ip, server_port, project_id, 'name', 'node_id', 'Versa_Director')
-    versa_director_x, versa_director_y = get_node_coordinates(server_ip, server_port, project_id, versa_director_node_id)
-    delete_node(gns3_server_data, project_id, versa_director_node_id)
+    # versa_director_node_id = query_find_nodes_by_field(server_ip, server_port, project_id, 'name', 'node_id', 'Versa_Director')
+    # versa_director_x, versa_director_y = get_node_coordinates(server_ip, server_port, project_id, versa_director_node_id)
+    versa_director_x = 100
+    versa_director_y = 100
+    # delete_node(gns3_server_data, project_id, versa_director_node_id)
     versa_director_node_id = gns3_create_node(gns3_server_data, project_id, versa_director_template_id, versa_director_deploy_data)
     gns3_update_nodes(gns3_server_data, project_id, versa_director_node_id, versa_director_deploy_data)
     update_node_coordinates(server_ip, server_port, project_id, versa_director_node_id, versa_director_x, versa_director_y)
@@ -327,12 +279,12 @@ def versa_refresh(server_ip, server_port, project_name, site_count, mgmt_subnet_
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Total time for Versa Refresh {total_time:.2f} minutes")
     # endregion
 
-server_ip = "192.168.122.1"
+server_ip = "100.103.164.104"
 server_port = "80"
-project_name = "versa-gss-team-lab-flow-ate"
-site_count = 5
+project_name = "versa-demo"
+site_count = 4
 mgmt_subnet_ip = "172.16.30"
+backup_filename = "vnms@2023-10-24T06:25:03.backup"
 
 
 versa_refresh(server_ip, server_port, project_name, site_count, mgmt_subnet_ip)
-

@@ -23,21 +23,19 @@ def get_ip_address(interface):
 
 PORTS = [80, 443, 21, 23]
 
-def start_iperf_server_session(client_ip, port):
+def start_iperf_server_session(port):
     server_log_file = f'iperf3_server_port_{port}.log'
     delete_file(server_log_file)
     server_cmd = ['iperf3', '-s', '--logfile', server_log_file, '-p', str(port)]
     subprocess.Popen(server_cmd, stderr=subprocess.STDOUT, universal_newlines=True)
 
-def start_iperf_server_sessions(other_clients):
+def start_iperf_server_sessions():
     processes = []
-    for idx, client in enumerate(other_clients):
-        port = PORTS[idx % len(PORTS)]
-        process = multiprocessing.Process(target=start_iperf_server_session, args=(client['ip'], port))
+    for port in PORTS:
+        process = multiprocessing.Process(target=start_iperf_server_session, args=(port,))
         process.start()
         processes.append(process)
     return processes
-
 
 def start_iperf_client_sessions(other_clients, local_ip):
     for client in other_clients:
@@ -51,7 +49,6 @@ def start_iperf_client_sessions(other_clients, local_ip):
             client_cmd = ['iperf3', '-c', client ['ip'], '-p', str(random_port), '-b', f'{bandwidth}K', '--logfile',
                           client_log_file, '-t', str(duration)]
             subprocess.Popen(client_cmd, stderr=subprocess.STDOUT, universal_newlines=True)
-
 
 def terminate_iperf_server_sessions(server_processes):
     for process in server_processes:
@@ -80,7 +77,7 @@ def main(num_clients, ports):
     clients = [{'ip': f'172.16.1{i:02d}.51'} for i in range(1, num_clients + 1)]
 
     # Start iperf3 server sessions
-    server_processes = start_iperf_server_sessions(clients)
+    server_processes = start_iperf_server_sessions()
 
     run_count = 0
 
@@ -97,7 +94,7 @@ def main(num_clients, ports):
                 terminate_iperf_server_sessions(server_processes)
 
                 # Start new iperf3 server sessions
-                server_processes = start_iperf_server_sessions(clients)
+                server_processes = start_iperf_server_sessions()
                 # print("Started new iperf server sessions..")
                 run_count = 0
             run_count += 1

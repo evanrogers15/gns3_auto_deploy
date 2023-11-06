@@ -1,5 +1,6 @@
 import requests
 import time
+import argparse
 
 
 def get_project_id(base_url, project_name):
@@ -42,27 +43,20 @@ def start_or_stop_node(base_url, project_id, node_id, action):
 
 
 if __name__ == "__main__":
-    # Get server details and criteria from user
-    server_ip = input("Enter server IP: ")
-    server_port = input("Enter server port: ")
-    base_url = f"http://{server_ip}:{server_port}/v2"
+    parser = argparse.ArgumentParser(description="Start or stop nodes in GNS3 projects.")
+    parser.add_argument("server_ip", help="IP address of the server.")
+    parser.add_argument("server_port", type=int, help="Port number of the server.")
+    parser.add_argument("project_name", help="Name of the GNS3 project.")
+    parser.add_argument("action", choices=["start", "stop"], help="Action to perform on matching devices (start/stop).")
+    parser.add_argument("match_strings", help="Comma-separated strings to match nodes.")
 
-    projects = list_projects(server_ip, server_port)
-    for idx, project in enumerate(projects):
-        print(f"{idx}. {project ['name']}")
 
-    project_idx = int(input("Select a project by entering its index: "))
-    project_id = projects [project_idx]['project_id']
+    args = parser.parse_args()
 
-    match_strings = input("Enter comma-separated strings to match nodes: ").split(',')
+    base_url = f"http://{args.server_ip}:{args.server_port}/v2"
+    project_id = get_project_id(base_url, args.project_name)
 
-    # Ask user for action
-    action = input("Do you want to start or stop the matching devices? (start/stop): ").strip().lower()
-    if action not in ["start", "stop"]:
-        print("Invalid choice.")
-        exit()
-
-    for match_string in match_strings:
+    for match_string in args.match_strings.split(','):
         match_string = match_string.strip()  # Remove any spaces
 
         # Get nodes matching the current string
@@ -73,6 +67,6 @@ if __name__ == "__main__":
 
         # Start or stop nodes
         for node in matching_nodes:
-            print(f"{action.capitalize()}ing {node['name']}...")
-            start_or_stop_node(base_url, project_id, node["node_id"], action)
-            print(f"{node['name']} {action}ed successfully.")
+            print(f"{args.action.capitalize()}ing {node['name']}...")
+            start_or_stop_node(base_url, project_id, node["node_id"], args.action)
+            print(f"{node['name']} {args.action}ed successfully.")
