@@ -279,12 +279,12 @@ def versa_refresh(server_ip, server_port, project_name, site_count, mgmt_subnet_
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Total time for Versa Refresh {total_time:.2f} minutes")
     # endregion
 
-server_ip = "100.103.164.104"
+server_ip = "192.168.122.1"
 server_port = "80"
-project_name = "versa-demo"
+project_name = "bgp_core_versa_01"
 site_count = 4
-mgmt_subnet_ip = "172.16.30"
-backup_filename = "vnms@2023-10-24T06:25:03.backup"
+mgmt_subnet_ip = "172.16.253"
+backup_filename = "vnms@2023-11-01T04:59:57.backup"
 
 
 versa_refresh(server_ip, server_port, project_name, site_count, mgmt_subnet_ip)

@@ -273,7 +273,7 @@ def viptela_vedge_appneta_deploy():
     deployment_step = 'Node Configs'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting Node Config Creation")
     matching_nodes = gns3_query_find_nodes_by_name(server_ip, server_port, new_project_id, "Cloud_ISP")
-    starting_subnet = 6
+    starting_subnet = 8
     router_ip = 0
     switch_index = 0
     vedge_index = 1
