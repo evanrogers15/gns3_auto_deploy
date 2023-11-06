@@ -288,6 +288,13 @@ template_city_data = {
     "replace-016": {"city": "Houston", "country": "US", "latitude": 29.760427, "longitude": -95.369803},
 }
 
+template_city_data_multivendor = {
+    "replace-001": {"city": "Miami", "country": "US", "latitude": 25.76168, "longitude": -80.19179},
+    "replace-002": {"city": "Nashville", "country": "US", "latitude": 36.162664, "longitude": -86.781602},
+    "replace-003": {"city": "Houston", "country": "US", "latitude": 29.760427, "longitude": -95.369803},
+    "replace-004": {"city": "Kansas City", "country": "US", "latitude": 39.099727, "longitude": -94.578567},
+}
+
 template_city_data_wordwide = {
     "replace-001": {"city": "GrandPrairie", "country": "US", "latitude": 32.745964, "longitude": -96.997785},
     "replace-002": {"city": "Urayasu", "country": "JP", "latitude": 35.653052, "longitude": 139.901849},
