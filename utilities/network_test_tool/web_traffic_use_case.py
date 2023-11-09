@@ -7,6 +7,8 @@ import fcntl
 import struct
 import multiprocessing
 import os
+import signal
+from datetime import datetime, timedelta
 
 def get_ip_address(interface):
     # Get the IP address of the specified interface
@@ -23,32 +25,35 @@ def get_ip_address(interface):
 
 PORTS = [80, 443, 21, 23]
 
-def start_iperf_server_session(port):
+def start_iperf_server_session(client_ip, port):
     server_log_file = f'iperf3_server_port_{port}.log'
     delete_file(server_log_file)
     server_cmd = ['iperf3', '-s', '--logfile', server_log_file, '-p', str(port)]
     subprocess.Popen(server_cmd, stderr=subprocess.STDOUT, universal_newlines=True)
 
-def start_iperf_server_sessions():
+def start_iperf_server_sessions(other_clients):
     processes = []
-    for port in PORTS:
-        process = multiprocessing.Process(target=start_iperf_server_session, args=(port,))
+    for idx, client in enumerate(other_clients):
+        port = PORTS[idx % len(PORTS)]
+        process = multiprocessing.Process(target=start_iperf_server_session, args=(client['ip'], port))
         process.start()
         processes.append(process)
     return processes
+
 
 def start_iperf_client_sessions(other_clients, local_ip):
     for client in other_clients:
         if client ['ip'] != local_ip:
             random_port = random.choice(PORTS)  # Choose a random port for each client
-            bandwidth = random.randint(20, 5000)  # kbps
-            duration = random.randint(5, 60)  # seconds
+            bandwidth = random.randint(2000, 50000)  # kbps
+            duration = random.randint(180, 600)  # seconds
 
             client_log_file = f'iperf3_client_{client ["ip"]}.log'
             delete_file(client_log_file)
-            client_cmd = ['iperf3', '-c', client ['ip'], '-p', str(random_port), '-b', f'{bandwidth}K', '--logfile',
+            client_cmd = ['iperf3', '-c', client ['ip'], '-p', str(random_port), '--logfile',
                           client_log_file, '-t', str(duration)]
             subprocess.Popen(client_cmd, stderr=subprocess.STDOUT, universal_newlines=True)
+
 
 def terminate_iperf_server_sessions(server_processes):
     for process in server_processes:
@@ -74,10 +79,7 @@ def main(num_clients, ports):
     eth0_ip = get_ip_address('eth0')
 
     # Generate a list of client IP addresses
-    clients = [{'ip': f'172.16.1{i:02d}.51'} for i in range(1, num_clients + 1)]
-
-    # Start iperf3 server sessions
-    server_processes = start_iperf_server_sessions()
+    clients = [{'ip': f'12.2.238.102'}]
 
     run_count = 0
 
@@ -86,21 +88,11 @@ def main(num_clients, ports):
             # Start iperf3 client sessions
             start_iperf_client_sessions(clients, eth0_ip)
 
-            # Sleep for 5 minutes before restarting the iperf3 server sessions
-            time.sleep(62)
-            if run_count == 10:
-                # Terminate iperf3 server sessions
-                # print("Terminating existing iperf server sessions..")
-                terminate_iperf_server_sessions(server_processes)
+            time.sleep(605)
 
-                # Start new iperf3 server sessions
-                server_processes = start_iperf_server_sessions()
-                # print("Started new iperf server sessions..")
-                run_count = 0
-            run_count += 1
     except KeyboardInterrupt:
         # Clean up when interrupted
-        terminate_iperf_server_sessions(server_processes)
+        print("Exiting..")
 
 
 if __name__ == '__main__':

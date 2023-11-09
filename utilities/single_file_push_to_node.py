@@ -35,9 +35,7 @@ def main():
 
     search_string = input("Enter a string to search for GNS3 nodes: ")
     nodes = list_nodes(server, port, selected_project['project_id'])
-    print(nodes)
     nodes = [node for node in nodes if search_string.lower() in node['name'].lower()]
-    print(selected_project['project_id'])
 
     for node in nodes:
         node_dir = node['name']
