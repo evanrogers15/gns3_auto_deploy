@@ -15,11 +15,11 @@ def run_command(cmd):
 
 def main():
     commands = [
-        "python3 start_nodes_utility.py 192.168.122.1 80 bgp_core_versa_01 start bgp,isp,Versa,FlexVNF,sw-core,sw-dist,sw-acc,Client,Server,vk35,Tix",
-        "python3 latency_utility.py 192.168.122.1 80 bgp_core_versa_01 add bgp",
-        "python3 traffic_control_utility.py 192.168.122.1 80 bgp_core_versa_01 start Client",
-        "python3 start_nodes_utility.py 192.168.122.1 80 bgp_core_versa_01 start ISP_Router",
-        "python3 isp_route_utility.py 192.168.122.1 80 bgp_core_versa_01 ISP_Router",
+        "python3 start_nodes_utility.py 192.168.122.1 80 multivendor-sdwan start bgp,isp,Versa,FlexVNF,sw-core,sw-dist,sw-acc,Client,Server,Tix",
+        "python3 latency_utility.py 192.168.122.1 80 multivendor-sdwan add bgp",
+        "python3 start_nodes_utility.py 192.168.122.1 80 multivendor-sdwan start ISP_Router",
+        "python3 isp_route_utility.py 192.168.122.1 80 multivendor-sdwan ISP_Router",
+        "python3 start_nodes_utility.py 192.168.122.1 80 multivendor-sdwan start vk35",
     ]
 
     for cmd in commands:
