@@ -482,6 +482,19 @@ def gns3_set_single_packet_filter(server, port, project_id, link_id, filter_type
         print(f"\nAn unexpected error occurred: {response.status_code}")
         return None, None
 
+def gns3_set_single_packet_filter_simple(server, port, project_id, link_id, filter_type, filter_value):
+    selected_filter_type = filter_type
+    selected_filter_value = filter_value
+
+    payload = {
+        "filters": {
+            selected_filter_type: [int(selected_filter_value)]
+        }
+    }
+    # Submit the PUT request
+    url = f"http://{server}:{port}/v2/projects/{project_id}/links/{link_id}"
+    response = requests.put(url, json=payload)
+
 def gns3_remove_single_packet_filter(server, port, project_id, link_id):
     # Remove all filters
     payload = {"filters": {}}

@@ -91,7 +91,7 @@ def use_case_2(server, port, project_id, state):
             client_node_id, client_node_console, client_node_aux = gns3_query_find_node_by_name(nodes, client)
             gns3_change_node_state(server, port, project_id, client_node_id, 'off')
         return {'message': 'Scenario started successfully.'}, 200
-def use_case_1(server, port, project_id, state):
+def use_case_1_temp(server, port, project_id, state):
     matching_nodes = gns3_query_find_nodes_by_field(server, port, project_id, 'name', 'name', 'Client')
     site_001_matching_nodes = gns3_query_find_nodes_by_field(server, port, project_id, 'name', 'name', '001')
     for node_name in site_001_matching_nodes:
@@ -121,5 +121,16 @@ def use_case_1(server, port, project_id, state):
         for index, client in enumerate(matching_nodes):
             client_node_id, client_node_console, client_node_aux = gns3_query_find_node_by_name(nodes, client)
             gns3_change_node_state(server, port, project_id, client_node_id, 'off')
+        gns3_remove_single_packet_filter(server, port, project_id, link_id)
+        return {'message': 'Scenario started successfully.'}, 200
+
+def use_case_1(server, port, project_id, state):
+    filter_type = 'packet_loss'
+    filter_value = '10'
+    link_id = "3ef7c13a-2fab-4f1d-9339-685a1ce5a269"
+    if state == 'on':
+        gns3_set_single_packet_filter_simple(server, port, project_id, link_id, filter_type, filter_value)
+        return {'message': 'Scenario started successfully.'}, 200
+    else:
         gns3_remove_single_packet_filter(server, port, project_id, link_id)
         return {'message': 'Scenario started successfully.'}, 200
