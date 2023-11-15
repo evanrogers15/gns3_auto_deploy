@@ -42,7 +42,7 @@ def use_case_12(server, port, project_id, state):
         gns3_remove_single_packet_filter(server, port, project_id, link_id)
         return {'message': 'Scenario started successfully.'}, 200
 
-def use_case_2(server, port, project_id, state):
+def use_case_2_old(server, port, project_id, state):
     client_nodes = gns3_query_find_nodes_by_field(server, port, project_id, 'name', 'name', 'Client')
     site_001_matching_nodes = gns3_query_find_nodes_by_field(server, port, project_id, 'name', 'name', '001')
     for node_name in site_001_matching_nodes:
@@ -134,3 +134,8 @@ def use_case_1(server, port, project_id, state):
     else:
         gns3_remove_single_packet_filter(server, port, project_id, link_id)
         return {'message': 'Scenario started successfully.'}, 200
+
+def use_case_2(server, port, project_id, state):
+    link_id = "c3cef7b6-77b3-4b27-b419-23900542c6a3"
+    gns3_set_suspend(server, port, project_id, link_id)
+    return {'message': 'Scenario started successfully.'}, 200
