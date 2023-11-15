@@ -114,7 +114,7 @@ conn.execute('''INSERT INTO uc_scenarios (scenario_name, scenario_description)
                 VALUES ('Use Case #1', 'Start / Stop Manually: Causes a 10% packet loss degradation to the ISP-1 uplink on the Seattle SDWAN Router.')''')
 
 conn.execute('''INSERT INTO uc_scenarios (scenario_name, scenario_description)
-                VALUES ('Use Case #2', 'Disables the link between atlanta-sw-core-01 and atlanta-sw-dist-02.')''')
+                VALUES ('Use Case #2', 'Start / Stop Manually: Disables the link between atlanta-sw-core-01 and atlanta-sw-dist-02.')''')
 
 conn.execute('''INSERT INTO uc_scenarios (scenario_name, scenario_description)
                 VALUES ('Use Case #3', 'TBD.')''')
