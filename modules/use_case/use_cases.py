@@ -127,7 +127,7 @@ def use_case_1_temp(server, port, project_id, state):
 def use_case_1(server, port, project_id, state):
     filter_type = 'packet_loss'
     filter_value = '10'
-    link_id = "3ef7c13a-2fab-4f1d-9339-685a1ce5a269"
+    link_id = "0f296ad9-2992-4d32-afda-3deeafe908b1"
     if state == 'on':
         gns3_set_single_packet_filter_simple(server, port, project_id, link_id, filter_type, filter_value)
         return {'message': 'Scenario started successfully.'}, 200
