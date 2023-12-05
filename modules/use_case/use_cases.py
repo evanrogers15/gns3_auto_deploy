@@ -1,3 +1,5 @@
+import time
+
 from modules.gns3.gns3_query import *
 from modules.gns3.gns3_actions import *
 import logging.handlers
@@ -167,21 +169,24 @@ def use_case_4(server, port, project_id, state):
     output = tn.read_until(b"login:", timeout=1)
     if b"login" in output:
         tn.write(viptela_username.encode("ascii") + b"\n")
-    output = tn.read_until(b"Password:", timeout=3)
-    if b"Password:" in output:
-        tn.write(viptela_password.encode("ascii") + b"\n")
+        output = tn.read_until(b"Password:", timeout=3)
+        if b"Password:" in output:
+            tn.write(viptela_password.encode("ascii") + b"\n")
 
+    time.sleep(5)
     if state == "on":
         for command in config_commands_start:
             client_command = command
             tn.write(b"\r\n")
             tn.write(client_command.encode("ascii") + b"\n")
+            time.sleep(.5)
             # gns3_run_telnet_command(server, port, project_id, remote_node_id, remote_node_console, state, client_command)
     elif state == "off":
         for command in config_commands_stop:
             client_command = command
             tn.write(b"\r\n")
             tn.write(client_command.encode("ascii") + b"\n")
+            time.sleep(.5)
             # gns3_run_telnet_command(server, port, project_id, remote_node_id, remote_node_console, state, client_command)
 
     return {'message': 'Scenario started successfully.'}, 200
