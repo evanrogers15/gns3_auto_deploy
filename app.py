@@ -520,6 +520,13 @@ def uc_delete_task(scenario_id):
             success = use_case_function(server_ip, port, project_id, 'off')
             if success:
                 status = 0
+    elif scenario_id == 3:
+        use_case_function_name = f"use_case_{scenario_id}"
+        use_case_function = globals().get(use_case_function_name)
+        if use_case_function is not None:
+            success = use_case_function(server_ip, port, project_id, 'off')
+            if success:
+                status = 0
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
     c.execute("UPDATE uc_scenario_status SET status=? WHERE server_ip=? AND project_id=? AND scenario_id=?",
