@@ -160,13 +160,20 @@ def use_case_4(server, port, project_id, state):
 
     config_commands_stop = ["conf t", "vpn 0", "int ge0/0", "nat", "respond-to-ping", "no block-icmp-error", "int ge0/1",
         "no nat", "commit and-quit"]
+
+    tn = telnetlib.Telnet(server, remote_node_console, timeout=1)
+
     if state == "on":
         for command in config_commands_start:
             client_command = command
-            gns3_run_telnet_command(server, port, project_id, remote_node_id, remote_node_console, state, client_command)
+            tn.write(b"\r\n")
+            tn.write(client_command.encode("ascii") + b"\n")
+            # gns3_run_telnet_command(server, port, project_id, remote_node_id, remote_node_console, state, client_command)
     elif state == "off":
         for command in config_commands_stop:
             client_command = command
-            gns3_run_telnet_command(server, port, project_id, remote_node_id, remote_node_console, state, client_command)
+            tn.write(b"\r\n")
+            tn.write(client_command.encode("ascii") + b"\n")
+            # gns3_run_telnet_command(server, port, project_id, remote_node_id, remote_node_console, state, client_command)
 
     return {'message': 'Scenario started successfully.'}, 200
