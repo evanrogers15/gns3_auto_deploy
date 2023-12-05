@@ -120,7 +120,7 @@ conn.execute('''INSERT INTO uc_scenarios (scenario_name, scenario_description)
                 VALUES ('Use Case #3', 'Start / Stop Manually: Runs for roughly 1 hour and starts torrent traffic from SanFran client to "Torrent Web Server" in the lab.')''')
 
 conn.execute('''INSERT INTO uc_scenarios (scenario_name, scenario_description)
-                VALUES ('Use Case #4', 'TBD.')''')
+                VALUES ('Use Case #4', 'Start / Stop Manually: Changes primary route for traffic on Houston Site in the vEdge Configuration.')''')
 
 # Commit the changes and close the connection
 conn.commit()

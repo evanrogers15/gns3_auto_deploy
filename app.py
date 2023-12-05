@@ -472,6 +472,9 @@ def uc_create_task(scenario_id):
     elif scenario_id == 3:
         use_case_function_name = "use_case_3"
         use_case_function = globals().get(use_case_function_name)
+    elif scenario_id == 4:
+        use_case_function_name = "use_case_4"
+        use_case_function = globals().get(use_case_function_name)
     else:
         return jsonify({'error': 'Invalid scenario ID.'}), 400
     if use_case_function is not None:
@@ -524,6 +527,13 @@ def uc_delete_task(scenario_id):
             if success:
                 status = 0
     elif scenario_id == 3:
+        use_case_function_name = f"use_case_{scenario_id}"
+        use_case_function = globals().get(use_case_function_name)
+        if use_case_function is not None:
+            success = use_case_function(server_ip, port, project_id, 'off')
+            if success:
+                status = 0
+    elif scenario_id == 4:
         use_case_function_name = f"use_case_{scenario_id}"
         use_case_function = globals().get(use_case_function_name)
         if use_case_function is not None:
