@@ -163,10 +163,10 @@ def use_case_4(server, port, project_id, state):
     if state == "on":
         for command in config_commands_start:
             client_command = command
-            gns3_run_telnet_command(server, port, project_id, remote_node_id, remote_node_aux, state, client_command)
+            gns3_run_telnet_command(server, port, project_id, remote_node_id, remote_node_console, state, client_command)
     elif state == "off":
         for command in config_commands_stop:
             client_command = command
-            gns3_run_telnet_command(server, port, project_id, remote_node_id, remote_node_aux, state, client_command)
+            gns3_run_telnet_command(server, port, project_id, remote_node_id, remote_node_console, state, client_command)
 
     return {'message': 'Scenario started successfully.'}, 200
