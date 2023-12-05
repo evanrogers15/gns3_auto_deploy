@@ -469,6 +469,9 @@ def uc_create_task(scenario_id):
     elif scenario_id == 2:
         use_case_function_name = "use_case_2"
         use_case_function = globals().get(use_case_function_name)
+    elif scenario_id == 3:
+        use_case_function_name = "use_case_3"
+        use_case_function = globals().get(use_case_function_name)
     else:
         return jsonify({'error': 'Invalid scenario ID.'}), 400
     if use_case_function is not None:
