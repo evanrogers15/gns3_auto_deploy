@@ -145,7 +145,7 @@ def use_case_3(server, port, project_id, state):
     remote_node_name = 'SanFran-Client'
     nodes = gns3_query_get_nodes(server, port, project_id)
     remote_node_id, remote_node_console, remote_node_aux = gns3_query_find_node_by_name(nodes, remote_node_name)
-    client_command = f'python3 /home/torrent_use_case.py 6681 &'
-    gns3_run_telnet_command(server, port, project_id, remote_node_id, remote_node_console, state, client_command)
+    client_command = f'python3 /home/torrent_use_case.py 6681'
+    gns3_run_telnet_command(server, port, project_id, remote_node_id, remote_node_aux, state, client_command)
 
     return {'message': 'Scenario started successfully.'}, 200
