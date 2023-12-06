@@ -11,6 +11,7 @@ LATENCY_DATA = {
     "core_bgp_atlanta": [{"interface": "eth2", "delay": "15ms"}, {"interface": "eth3", "delay": "18ms"}],
     "core_bgp_miami": [{"interface": "eth2", "delay": "25ms"}],
     "core_bgp_houston": [{"interface": "eth2", "delay": "22ms"}],
+    "isp-houston": [{"interface": "eth4", "delay": "20ms"}],
     "core_bgp_kansascity": [{"interface": "eth2", "delay": "10ms"}],
     "core_bgp_denver": [{"interface": "eth1", "delay": "20ms"}, {"interface": "eth2", "delay": "8ms"},
         {"interface": "eth3", "delay": "5ms"}, {"interface": "eth4", "delay": "12ms"}],

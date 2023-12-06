@@ -41,12 +41,12 @@ def start_iperf_server_sessions(other_clients):
     return processes
 
 
-def start_iperf_client_sessions(other_clients, local_ip):
+def start_iperf_client_sessions(other_clients, local_ip, duration):
     for client in other_clients:
         if client ['ip'] != local_ip:
             random_port = random.choice(PORTS)  # Choose a random port for each client
             bandwidth = random.randint(2000, 50000)  # kbps
-            duration = random.randint(180, 600)  # seconds
+
 
             client_log_file = f'iperf3_client_{client ["ip"]}.log'
             delete_file(client_log_file)
@@ -71,24 +71,26 @@ def delete_file(file_path):
     if os.path.exists(file_path):
         os.remove(file_path)
 
-def main(num_clients, ports):
+def main(ports):
     # Use the ports list provided by the user
     global PORTS
     PORTS = ports
     # Get the IP address of the eth0 interface
     eth0_ip = get_ip_address('eth0')
-
+    duration = random.randint(60, 100)  # seconds
+    interval_delay = duration + 5
     # Generate a list of client IP addresses
     clients = [{'ip': f'12.2.238.102'}]
 
     run_count = 0
 
     try:
-        while True:
+        while run_count <= 10:
             # Start iperf3 client sessions
-            start_iperf_client_sessions(clients, eth0_ip)
+            start_iperf_client_sessions(clients, eth0_ip, duration)
 
-            time.sleep(605)
+            time.sleep(interval_delay)
+            run_count += 1
 
     except KeyboardInterrupt:
         # Clean up when interrupted
@@ -97,9 +99,9 @@ def main(num_clients, ports):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('sites', help='The type of test to be run, currently only "sites" is supported')
-    parser.add_argument('num_clients', type=int, help='Number of iperf3 clients to start')
+    # parser.add_argument('sites', help='The type of test to be run, currently only "sites" is supported')
+    # parser.add_argument('num_clients', type=int, help='Number of iperf3 clients to start')
     parser.add_argument('ports', type=lambda s: [int(item) for item in s.split(',')], help='Ports to use, separated by commas e.g. 21,22,23,80,443')
     args = parser.parse_args()
 
-    main(args.num_clients, args.ports)
+    main(args.ports)
