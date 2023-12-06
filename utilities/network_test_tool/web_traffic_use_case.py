@@ -45,13 +45,13 @@ def start_iperf_client_sessions(other_clients, local_ip, duration):
     for client in other_clients:
         if client ['ip'] != local_ip:
             random_port = random.choice(PORTS)  # Choose a random port for each client
-            bandwidth = random.randint(2000, 50000)  # kbps
+            bandwidth = random.randint(40000, 70000)  # kbps
 
 
             client_log_file = f'iperf3_client_{client ["ip"]}.log'
             delete_file(client_log_file)
             client_cmd = ['iperf3', '-c', client ['ip'], '-p', str(random_port), '--logfile',
-                          client_log_file, '-t', str(duration)]
+                          client_log_file, '-u', '-t', str(duration), '-b', '60M']
             subprocess.Popen(client_cmd, stderr=subprocess.STDOUT, universal_newlines=True)
 
 
