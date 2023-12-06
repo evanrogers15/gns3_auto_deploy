@@ -171,7 +171,7 @@ def versa_refresh(server_ip, server_port, project_name, mgmt_subnet_ip):
     # region Connect GNS3 Lab Nodes
     deployment_step = 'Connect GNS3 Nodes'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting GNS3 Nodes Connect")
-    mgmt_main_switch_node_id = query_find_nodes_by_field(server_ip, server_port, project_id, 'name', 'node_id', 'Main_MGMT-switch')
+    mgmt_main_switch_node_id = query_find_nodes_by_field(server_ip, server_port, project_id, 'name', 'node_id', 'Versa_MGMT_Switch')
     versa_director_node_id = query_find_nodes_by_field(server_ip, server_port, project_id, 'name', 'node_id', 'Versa_Director')
     versa_control_switch_node_id = query_find_nodes_by_field(server_ip, server_port, project_id, 'name', 'node_id', 'Control_Network')
 

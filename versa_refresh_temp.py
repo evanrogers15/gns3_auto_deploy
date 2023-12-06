@@ -90,6 +90,7 @@ def versa_refresh(server_ip, server_port, project_name, site_count, mgmt_subnet_
 
     server_name = gns3_query_get_computes_name(server_ip, server_port)
     project_id = gns3_query_get_project_id(server_ip, server_port, project_name)
+    print(project_id)
     
     gns3_server_data = [{
         "GNS3 Server": server_ip, "Server Name": server_name, "Server Port": server_port, "Project Name": project_name,
@@ -121,7 +122,7 @@ def versa_refresh(server_ip, server_port, project_name, site_count, mgmt_subnet_
     # region Connect GNS3 Lab Nodes
     deployment_step = 'Connect GNS3 Nodes'
     log_and_update_db(server_name, project_name, deployment_type, deployment_status, deployment_step, f"Starting GNS3 Nodes Connect")
-    mgmt_main_switch_node_id = query_find_nodes_by_field(server_ip, server_port, project_id, 'name', 'node_id', 'Main_MGMT-switch')
+    mgmt_main_switch_node_id = query_find_nodes_by_field(server_ip, server_port, project_id, 'name', 'node_id', 'Versa_MGMT_Switch')
     versa_director_node_id = query_find_nodes_by_field(server_ip, server_port, project_id, 'name', 'node_id', 'Versa_Director')
     versa_control_switch_node_id = query_find_nodes_by_field(server_ip, server_port, project_id, 'name', 'node_id', 'Control_Network')
 
@@ -281,10 +282,10 @@ def versa_refresh(server_ip, server_port, project_name, site_count, mgmt_subnet_
 
 server_ip = "192.168.122.1"
 server_port = "80"
-project_name = "bgp_core_versa_01"
+project_name = "multivendor-sdwan"
 site_count = 4
 mgmt_subnet_ip = "172.16.253"
-backup_filename = "vnms@2023-11-01T04:59:57.backup"
+backup_filename = "vnms@2023-11-30T06:25:01.backup"
 
 
 versa_refresh(server_ip, server_port, project_name, site_count, mgmt_subnet_ip)

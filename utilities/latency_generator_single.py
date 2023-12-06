@@ -7,6 +7,7 @@ def apply_delay(eth_interface, delay=None, action="add"):
 
     if action == "add" and delay:
         cmd = ["tc", "qdisc", "add", "dev", eth_interface, "root", "netem", "delay", delay, JITTER]
+        print(cmd)
         subprocess.run(cmd)
         print(f"Base delay of {delay} with +/- {JITTER} jitter applied to {eth_interface}")
     elif action == "remove":
