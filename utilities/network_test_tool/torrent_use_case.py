@@ -40,7 +40,6 @@ def start_iperf_server_sessions(other_clients):
         processes.append(process)
     return processes
 
-
 def start_iperf_client_sessions(other_clients, local_ip, duration):
     for client in other_clients:
         if client ['ip'] != local_ip:
@@ -51,9 +50,8 @@ def start_iperf_client_sessions(other_clients, local_ip, duration):
             client_log_file = f'iperf3_client_{client ["ip"]}.log'
             delete_file(client_log_file)
             client_cmd = ['iperf3', '-c', client ['ip'], '-p', str(random_port), '--logfile',
-                          client_log_file, '-u', '-t', str(duration), '-b', '60M']
+                          client_log_file, '-t', str(duration)]
             subprocess.Popen(client_cmd, stderr=subprocess.STDOUT, universal_newlines=True)
-
 
 def terminate_iperf_server_sessions(server_processes):
     for process in server_processes:

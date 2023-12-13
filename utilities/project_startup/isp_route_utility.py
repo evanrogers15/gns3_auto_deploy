@@ -32,6 +32,8 @@ def main(args):
 
     command_1 = f"ip route add 172.16.6.0/24 via 172.16.254.2"
     command_2 = f"ip route add 172.16.7.0/24 via 172.16.254.2"
+    command_3 = f"ip route add 172.16.8.0/24 via 172.16.254.2"
+    command_4 = f"ip route add 172.16.9.0/24 via 172.16.254.2"
 
     nodes = list_nodes(args.server, args.port, project_id)
     filtered_nodes = [node for node in nodes if args.node_name_portion in node['name']]
@@ -40,6 +42,8 @@ def main(args):
         console_port = node['properties']['aux']
         output = run_telnet_command(args.server, console_port, command_1)
         output = run_telnet_command(args.server, console_port, command_2)
+        output = run_telnet_command(args.server, console_port, command_3)
+        output = run_telnet_command(args.server, console_port, command_4)
         print(f"Output for {node['name']}:\n{output}")
 
 if __name__ == "__main__":
