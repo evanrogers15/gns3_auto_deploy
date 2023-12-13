@@ -117,7 +117,7 @@ conn.execute('''INSERT INTO uc_scenarios (scenario_name, scenario_description)
                 VALUES ('Use Case #2 - Rapid & Accurate Isolation', 'Start / Stop Manually: Disables the link between atlanta-sw-core-01 and atlanta-sw-dist-02.')''')
 
 conn.execute('''INSERT INTO uc_scenarios (scenario_name, scenario_description)
-                VALUES ('Use Case #3 - Tame Complexity', 'Start / Stop Manually: Runs for ~1 hour and starts torrent traffic from SanFran client to "Torrent Web Server" in the lab from SanFran-Client-2.')''')
+                VALUES ('Use Case #3 - Tame Complexity', 'Start / Stop Manually: Runs for ~1 hour and starts torrent traffic from Miami client to "Torrent Web Server" in the lab from Miami-Client-2.')''')
 
 conn.execute('''INSERT INTO uc_scenarios (scenario_name, scenario_description)
                 VALUES ('Use Case #4 - Operational Consistency', 'Start / Stop Manually: Changes primary route configuration for traffic on Houston Site in the vEdge Configuration.')''')
