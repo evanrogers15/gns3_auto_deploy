@@ -50,7 +50,7 @@ def start_iperf_client_sessions(other_clients, local_ip, duration):
             client_log_file = f'iperf3_client_{client ["ip"]}.log'
             delete_file(client_log_file)
             client_cmd = ['iperf3', '-c', client ['ip'], '-p', str(random_port), '--logfile',
-                          client_log_file, '-t', str(duration)]
+                          client_log_file, '-t', str(duration), '-b', '70M']
             subprocess.Popen(client_cmd, stderr=subprocess.STDOUT, universal_newlines=True)
 
 def terminate_iperf_server_sessions(server_processes):
@@ -75,8 +75,7 @@ def main(ports):
     PORTS = ports
     # Get the IP address of the eth0 interface
     eth0_ip = get_ip_address('eth0')
-    duration = random.randint(60, 100)  # seconds
-    interval_delay = duration + 5
+
     # Generate a list of client IP addresses
     clients = [{'ip': f'12.2.238.102'}]
 
@@ -84,6 +83,9 @@ def main(ports):
 
     try:
         while run_count <= 10:
+            duration = random.randint(60, 100)  # seconds
+
+            interval_delay = duration + random.randint(10, 30)
             # Start iperf3 client sessions
             start_iperf_client_sessions(clients, eth0_ip, duration)
 
