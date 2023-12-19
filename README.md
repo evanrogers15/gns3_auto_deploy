@@ -77,7 +77,7 @@
 
 Example workflow of the application deploying the Versa Lab:
 
-1. Deploy application by using Docker - docker run -d -p 8085:8080 evanrogers719/gns3_auto_deploy:latest
+1. Deploy application by using Docker - docker run -d -p 8080:8080 evanrogers719/gns3_auto_deploy:latest
     1. This will deploy the application and expose the container on port 8080 of the host, browse host_ip:8080 to access the app
     2. User selects the Versa version of deployment
     3. User enters required information and uploads needed device images if they dont exists on the GNS3 server
