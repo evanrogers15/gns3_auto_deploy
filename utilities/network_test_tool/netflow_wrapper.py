@@ -11,8 +11,8 @@ def run_script():
     process = subprocess.Popen(['python3', script_path])
 
     try:
-        # Let the script run for 6 hours
-        time.sleep(6 * 3600)
+        # Let the script run for 3 hours
+        time.sleep(3 * 3600)
 
         # Stop the script
         process.send_signal(signal.SIGTERM)
