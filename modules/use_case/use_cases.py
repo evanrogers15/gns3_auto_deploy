@@ -58,14 +58,12 @@ def use_case_4(server, port, project_id, state):
             tn.write(b"\r\n")
             tn.write(client_command.encode("ascii") + b"\n")
             time.sleep(.5)
-            # gns3_run_telnet_command(server, port, project_id, remote_node_id, remote_node_console, state, client_command)
     elif state == "off":
         for command in config_commands_stop:
             client_command = command
             tn.write(b"\r\n")
             tn.write(client_command.encode("ascii") + b"\n")
             time.sleep(.5)
-            # gns3_run_telnet_command(server, port, project_id, remote_node_id, remote_node_console, state, client_command)
 
     return {'message': 'Scenario started successfully.'}, 200
 
@@ -78,24 +76,23 @@ def use_case_5(server, port, project_id, state):
 
     config_commands_stop = ["bash", "cd /etc/frr", "python3 bandwidth_adjuster.py remove eth0", "exit"]
 
-    tn = telnetlib.Telnet(server, remote_node_console, timeout=1)
+    tn = telnetlib.Telnet(server, remote_node_aux, timeout=1)
 
     tn.write(b"\r\n")
 
-    time.sleep(5)
+    time.sleep(2)
     if state == "on":
         for command in config_commands_start:
             client_command = command
             tn.write(b"\r\n")
             tn.write(client_command.encode("ascii") + b"\n")
             time.sleep(.5)
-            # gns3_run_telnet_command(server, port, project_id, remote_node_id, remote_node_console, state, client_command)
+
     elif state == "off":
         for command in config_commands_stop:
             client_command = command
             tn.write(b"\r\n")
             tn.write(client_command.encode("ascii") + b"\n")
             time.sleep(.5)
-            # gns3_run_telnet_command(server, port, project_id, remote_node_id, remote_node_console, state, client_command)
 
     return {'message': 'Scenario started successfully.'}, 200
