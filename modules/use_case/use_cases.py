@@ -81,12 +81,6 @@ def use_case_5(server, port, project_id, state):
     tn = telnetlib.Telnet(server, remote_node_console, timeout=1)
 
     tn.write(b"\r\n")
-    output = tn.read_until(b"login:", timeout=1)
-    if b"login" in output:
-        tn.write(viptela_username.encode("ascii") + b"\n")
-        output = tn.read_until(b"Password:", timeout=3)
-        if b"Password:" in output:
-            tn.write(viptela_password.encode("ascii") + b"\n")
 
     time.sleep(5)
     if state == "on":
