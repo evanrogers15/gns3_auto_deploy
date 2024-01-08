@@ -123,7 +123,7 @@ conn.execute('''INSERT INTO uc_scenarios (scenario_name, scenario_description)
                 VALUES ('Use Case #4 - Operational Consistency / End-to-End Coverage', 'Start / Stop Manually: Changes primary route configuration for traffic on Houston Site in the vEdge Configuration.')''')
 
 conn.execute('''INSERT INTO uc_scenarios (scenario_name, scenario_description)
-                VALUES ('Use Case #5 - Broaden Visibility', 'Start / Stop Manually: Changes primary route configuration for traffic on Houston Site in the vEdge Configuration.')''')
+                VALUES ('Use Case #5 - Broaden Visibility', 'Start / Stop Manually: Changes interface speed for uplink to isp-chicago to 30mbps for the Chicago site.')''')
 
 # Commit the changes and close the connection
 conn.commit()
