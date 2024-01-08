@@ -70,15 +70,13 @@ def use_case_4(server, port, project_id, state):
     return {'message': 'Scenario started successfully.'}, 200
 
 def use_case_5(server, port, project_id, state):
-    remote_node_name = 'isp-miami'
+    remote_node_name = 'isp-chicago'
     nodes = gns3_query_get_nodes(server, port, project_id)
     remote_node_id, remote_node_console, remote_node_aux = gns3_query_find_node_by_name(nodes, remote_node_name)
 
-    config_commands_start = ["bash", "cd /etc/frr", "python3 bandwidth_adjuster.py ", "nat", "respond-to-ping", "no block-icmp-error",
-                            "int ge0/0", "no nat", "commit and-quit"]
+    config_commands_start = ["bash", "cd /etc/frr", "python3 bandwidth_adjuster.py add eth0 30", "exit"]
 
-    config_commands_stop = ["conf t", "vpn 0", "int ge0/0", "nat", "respond-to-ping", "no block-icmp-error", "int ge0/1",
-        "no nat", "commit and-quit"]
+    config_commands_stop = ["bash", "cd /etc/frr", "python3 bandwidth_adjuster.py remove eth0", "exit"]
 
     tn = telnetlib.Telnet(server, remote_node_console, timeout=1)
 
