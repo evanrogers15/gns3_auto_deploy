@@ -49,10 +49,8 @@ def start_iperf_client_sessions(other_clients, local_ip, duration):
 
             client_log_file = f'iperf3_client_{client ["ip"]}.log'
             delete_file(client_log_file)
-            client_cmd = ['iperf3', '-c', client ['ip'], '-p', str(random_port), '--logfile',
-                          client_log_file, '-t', str(duration), '-b', '70M', '-u']
-            client_cmd = ['iperf3', '-c', client ['ip'], '-p', str(random_port), '--logfile', client_log_file, '-t',
-                          str(duration)]
+            client_cmd = ['iperf3', '-c', client ['ip'], '-p', str(random_port), '--logfile', client_log_file, '-u', '-b', '100M', '-t',
+                          str(duration) ,'-R']
             subprocess.Popen(client_cmd, stderr=subprocess.STDOUT, universal_newlines=True)
 
 def terminate_iperf_server_sessions(server_processes):
