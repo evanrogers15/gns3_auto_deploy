@@ -16,8 +16,8 @@ def use_case_1(server, port, project_id, state):
         return {'message': 'Scenario started successfully.'}, 200
 
 def use_case_2(server, port, project_id, state):
-    link_id_test = "c3cef7b6-77b3-4b27-b419-23900542c6a3"
-    link_id = "8606cf9c-da87-4bf6-b620-5e6d344adeb7"
+    link_id = "24196a68-abd6-4927-a615-926bd8ab08b9"
+    link_id_test = "8606cf9c-da87-4bf6-b620-5e6d344adeb7"
     gns3_set_suspend(server, port, project_id, link_id)
     return {'message': 'Scenario started successfully.'}, 200
 
