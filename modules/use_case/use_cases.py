@@ -36,6 +36,7 @@ def use_case_3(server, port, project_id, state):
     return {'message': 'Scenario started successfully.'}, 200
 
 def use_case_4(server, port, project_id, state):
+    viptela_new_password = "CAdemo@123"
     remote_node_name = 'vEdge_001_Houston'
     nodes = gns3_query_get_nodes(server, port, project_id)
     remote_node_id, remote_node_console, remote_node_aux = gns3_query_find_node_by_name(nodes, remote_node_name)
@@ -54,7 +55,7 @@ def use_case_4(server, port, project_id, state):
         tn.write(viptela_username.encode("ascii") + b"\n")
         output = tn.read_until(b"Password:", timeout=3)
         if b"Password:" in output:
-            tn.write(viptela_password.encode("ascii") + b"\n")
+            tn.write(viptela_new_password.encode("ascii") + b"\n")
 
     time.sleep(5)
     if state == "on":
