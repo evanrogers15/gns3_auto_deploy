@@ -53,7 +53,7 @@ def arista_deploy():
             (server_ip, server_name, project_name))
         conn.commit()
 
-    gns3_actions_remove_templates(gns3_server_data)
+    # gns3_actions_remove_templates(gns3_server_data)
     gns3_set_project(gns3_server_data, new_project_id)
     # endregion
     # region Deploy Nodes
