@@ -133,7 +133,7 @@ arista_ceos_template_data = {"compute_id": "local", "adapters": 20, "category": 
                              "symbol": ":/symbols/classic/multilayer_switch.svg", "template_type": "docker",
                              "usage": "By default all interfaces are connected to the br0",
                              "start_command": "/sbin/init systemd.setenv=INTFTYPE=eth systemd.setenv=ETBA=1 systemd.setenv=SKIP_ZEROTOUCH_BARRIER_IN_SYSDBINIT=1 systemd.setenv=CEOS=1 systemd.setenv=EOS_PLATFORM=ceoslab systemd.setenv=container=docker",
-                             "environment": "INTFTYPE=eth\nETBA=1 \nSKIP_ZEROTOUCH_BARRIER_IN_SYSDBINIT=1 \nCEOS=1 \nEOS_PLATFORM=ceoslab \ncontainer=docker\nMAPETH0=1\nMGMTINF=eth0", }
+                             "environment": "INTFTYPE=eth\nETBA=1 \nSKIP_ZEROTOUCH_BARRIER_IN_SYSDBINIT=1 \nCEOS=1 \nEOS_PLATFORM=ceoslab \ncontainer=docker\nMAPETH0=1\nMGMTINF=eth0", "extra_volumes": ["/mnt/flash"]}
 # endregion
 versa_director_template_data = {"compute_id": "local", "cpus": 16, "adapters": 6,
                                  "symbol": ":/symbols/affinity/circle/blue/server_cluster.svg",

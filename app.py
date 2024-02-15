@@ -69,6 +69,7 @@ def update_config():
     mgmt_subnet_ip = '.'.join(mgmt_subnet_ip.split('/')[0].split('.')[:3])
     projects = gns3_query_get_projects(server_ip, server_port)
     server_name = gns3_query_get_computes_name(server_ip, server_port)
+    print(req_data)
     if req_data.get('use_existing_project') == 'n':
         if new_project_name not in [project['name'] for project in projects]:
             project_id = gns3_create_project(server_ip, server_port, new_project_name)
